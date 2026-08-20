@@ -1,0 +1,46 @@
+## Teste 01 — tier + pgvector + versão
+=== HEROKU_POSTGRESQL_CHARCOAL_URL
+
+Plan:                  essential-0
+Status:                Available
+Connections:           0/20
+PG Version:            17.9
+Created:               2025-08-11 20:13 
+Data Size:             773 MB / 1 GB (75.49%) (In compliance)
+Tables:                99/4000 (In compliance)
+Fork/Follow:           Unsupported
+Rollback:              Unsupported
+Continuous Protection: On
+Add-on:                postgresql-concentric-30231
+
+=== DATABASE_URL, HEROKU_POSTGRESQL_GRAY_URL
+
+Plan:                  Standard 0
+Status:                Available
+Data Size:             768 MB / 64 GB (1.17%)
+Tables:                99
+PG Version:            18.6
+Connections:           16/200
+Connection Pooling:    Available
+Credentials:           5
+Fork/Follow:           Available
+Rollback:              earliest from 2026-08-19 13:03 
+Created:               2026-08-19 12:59 
+Region:                us
+Data Encryption:       In Use
+Continuous Protection: On
+Enhanced Certificates: Off
+Maintenance:           not required
+Maintenance window:    Wednesdays 17:30 to 21:30 UTC
+Add-on:                postgresql-fluffy-10310
+
+                                                              version                                                               
+------------------------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 18.6 (Ubuntu 18.6-1.pgdg26.04+2) on aarch64-unknown-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit
+(1 row)
+
+ extname | extversion 
+---------+------------
+ vector  | 0.8.6
+(1 row)
+

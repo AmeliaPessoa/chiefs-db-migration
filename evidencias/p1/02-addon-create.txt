@@ -1,0 +1,14 @@
+Creating heroku-postgresql:standard-0 on chiefsgroup-homolog... ~$0.069/hour (max $50/month)
+ ›   Warning: Release command executing: config vars set by this add-on will
+ ›   not be available until the command succeeds. Use ⁠ heroku releases:output ⁠
+ ›   to view the log.
+The database should be available in 3-5 minutes.
+Use ⁠ heroku pg:wait ⁠ to track status.
+postgresql-fluffy-10310 is being created in the background. The app will restart when complete...
+Run heroku addons:info postgresql-fluffy-10310 to check creation progress.
+
+--- Status pós-provisionamento ---
+Addon:       postgresql-fluffy-10310 (standard-0)
+Attachment:  HEROKU_POSTGRESQL_GRAY_URL
+Status:      Available (provisionou em ~2 min, criado 2026-08-19 12:59 UTC)
+PG Version:  18.6 (o atual é 17.9 — pg:copy atravessa major version normalmente)

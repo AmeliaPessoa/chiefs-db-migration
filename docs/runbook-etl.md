@@ -53,7 +53,7 @@ escreve). Duração de referência (homolog): **~3 min** (o gargalo é
 
 1. `ddl/ddl-main-enrichment.sql` (ALTERs em `app.chiefs`/`app.pipedrive_deals`);
 2. `ddl/ddl-intelligence-schema.sql` (48 tabelas + índices + view);
-3. Grants do P1 aplicados (`p1/2.schemas-roles-grants.sql`).
+3. Grants do P1 aplicados (`ddl/p1-schemas-roles-grants.sql`).
 
 ## Validar depois de cada execução
 
@@ -65,6 +65,34 @@ psql "<url-destino>" -v app_schema=app -f etl/04-integridade.sql
   `== ZERO DIVERGÊNCIAS ==` e merges com `divergentes=0`.
 - Órfãos "AUDITORIA/INFO" refletem a origem (ids fora do pool do main) —
   acompanhar tendência, não reprovar.
+
+## Gates pré-execução e pré-cutover (feedback Chiefs 20/08)
+
+1. **Drift de schema (Achado #1)** — a origem segue em desenvolvimento
+   ativo; coluna nova lá que não exista no destino = perda silenciosa.
+   Desde 20/08 o `etl.py` faz o **check simétrico e falha alto** (coluna
+   a mais na origem = erro; `ETL_ALLOW_SCHEMA_DRIFT=1` rebaixa para WARN
+   em emergência consciente). Gates de processo:
+   - **D-1 do cutover**: rodar `python3 etl.py --validate-only` — além
+     das contagens, ele reporta o **re-diff de colunas** origem × destino
+     de todas as 48 tabelas;
+   - **Regenerar a DDL de um dump fresco** imediatamente antes do cutover
+     (ou aplicar os ALTERs do diff);
+   - **Congelar migrations do Intelligence** durante a janela de cutover
+     (combinar com o time; drift detectado durante a janela = abortar).
+2. **Extensões × search_path × USAGE (Achado #2)** — o Heroku instala
+   extensões novas no schema `heroku_ext`; role least-privilege precisa
+   de `USAGE` nele e do schema no `search_path`. Antes de qualquer
+   cutover, conferir para TODOS os roles novos:
+   ```sql
+   SELECT e.extname, n.nspname FROM pg_extension e
+     JOIN pg_namespace n ON n.oid = e.extnamespace;
+   SELECT r.rolname, has_schema_privilege(r.rolname,'heroku_ext','USAGE')
+     FROM pg_roles r WHERE r.rolname IN
+     ('app_user','intelligence_user','looker_reader','analytical_reader');
+   ```
+   O `ddl/p1-schemas-roles-grants.sql` (≥20/08) já aplica o grant e o
+   `search_path = app, public, heroku_ext`.
 
 ## Reprocessar
 
@@ -86,7 +114,7 @@ reaplica os mesmos valores). Falha no meio = rollback total (transação
   `app.pipedrive_deals` — não remover o enrichment.
 - Este ETL é **full load**; o delta incremental (watermarks
   `COALESCE(updated_at, created_at)`, soft deletes) é a evolução prevista —
-  ver `(levantamento diff-vs-main, workspace do projeto)` §2.
+  ver `data/diff-vs-main.md` §2.
 
 ## Troubleshooting (lições das execuções reais)
 

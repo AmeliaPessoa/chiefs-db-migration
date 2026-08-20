@@ -1,0 +1,11 @@
+## Teste 07 — intelligence_user escreve em intelligence (esperado: Permitido)
+## Executado em: 2026-08-19T21:12:39Z
+$ psql -c "CREATE TABLE IF NOT EXISTS intelligence.p1_smoke (id int)"
+CREATE TABLE
+---
+$ psql -c "INSERT INTO intelligence.p1_smoke VALUES (1)"
+INSERT 0 1
+---
+$ psql -c "DROP TABLE intelligence.p1_smoke"
+DROP TABLE
+---

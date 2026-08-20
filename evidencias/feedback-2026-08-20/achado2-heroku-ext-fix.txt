@@ -1,0 +1,22 @@
+GRANT
+DO
+       search_path       
+-------------------------
+ app, public, heroku_ext
+(1 row)
+
+  sem_prefixo  
+---------------
+ coracao-teste
+(1 row)
+
+  qualificado  
+---------------
+ coracao-teste
+(1 row)
+
+ intel_usage 
+-------------
+ t
+(1 row)
+

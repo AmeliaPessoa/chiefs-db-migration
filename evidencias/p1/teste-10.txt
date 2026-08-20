@@ -1,0 +1,9 @@
+## Teste 10 — looker_reader SELECT em analytical (esperado: Permitido)
+## Executado em: 2026-08-19T21:12:43Z
+$ psql -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='analytical'"
+ count 
+-------
+     0
+(1 row)
+
+---

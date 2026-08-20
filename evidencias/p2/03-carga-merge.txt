@@ -1,0 +1,107 @@
+Carga: interchange.proxy.rlwy.net/chiefs_intelligence → ec2-52-54-236-134.compute-1.amazonaws.com/devpemtfal8rfl.intelligence (48 tabelas, transação única)
+  [ 1/48] alembic_version (0.2s)
+  [ 2/48] allocation_history (0.2s)
+  [ 3/48] allocation_history_shortlist (0.2s)
+  [ 4/48] attractiveness_snapshots (0.2s)
+  [ 5/48] backtest_jobs (0.6s)
+  [ 6/48] benchmark_market_cache (0.2s)
+  [ 7/48] benchmark_qa (0.2s)
+  [ 8/48] chief_career_history (1.1s)
+  [ 9/48] chief_contextual_qa (0.2s)
+  [10/48] chief_enrichment_history (0.3s)
+  [11/48] chief_improvement_event (0.3s)
+  [12/48] chief_laudo (0.3s)
+  [13/48] chief_laudo_modal_state (0.2s)
+  [14/48] chief_platform_history (0.3s)
+  [15/48] chief_rerank_cache (0.3s)
+  [16/48] chief_reverse_matches (1.9s)
+  [17/48] chief_reverse_profile (0.3s)
+  [18/48] chief_snapshot_before_op (0.2s)
+  [19/48] chief_stimulus_event (0.2s)
+  [20/48] deal_enrichment_jobs (0.2s)
+  [21/48] deal_enrichments (0.3s)
+  [22/48] deal_sales_ops (1.8s)
+  [23/48] governance_conflicts (0.2s)
+  [24/48] ingestion_logs (0.2s)
+  [25/48] iqp_snapshots (0.5s)
+  [26/48] jd_chief_alerts (0.2s)
+  [27/48] jd_chief_match_comments (0.2s)
+  [28/48] jd_chief_stages (0.3s)
+  [29/48] jd_list_quality (0.2s)
+  [30/48] mcp_query_log (0.3s)
+  [31/48] mql_candidates (0.4s)
+  [32/48] novo_funil_pipedrive (2.0s)
+  [33/48] pipedrive_write_log (0.2s)
+  [34/48] pipeline_runs (13.9s)
+  [35/48] platform_sync_state (0.2s)
+  [36/48] system_prompts (0.2s)
+  [37/48] ui_access_grant (0.2s)
+  [38/48] uploaded_files (0.4s)
+  [39/48] user_activity_log (0.3s)
+  [40/48] user_favorites (0.2s)
+  [41/48] users (0.2s)
+  [42/48] chief_embeddings (115.2s)
+  [43/48] chief_field_history (0.7s)
+  [44/48] job_descriptions (0.5s)
+  [45/48] job_embeddings (0.2s)
+  [46/48] jd_briefing_embeddings (0.5s)
+  [47/48] jd_extracted_metadata (0.3s)
+  [48/48] jd_results (1.3s)
+  merge chiefs: fonte=5263 atualizados=5180 descartados(sem match)=83 divergentes=0
+  merge pipedrive_deals: fonte=3726 atualizados=3542 descartados(sem match)=184 divergentes=0
+Commit OK — 42 sequences reposicionadas.
+
+tabela                                origem     destino  status
+------------------------------------------------------------------
+alembic_version                            1           1  OK
+allocation_history                         0           0  OK
+allocation_history_shortlist               0           0  OK
+attractiveness_snapshots                   0           0  OK
+backtest_jobs                             10          10  OK
+benchmark_market_cache                     0           0  OK
+benchmark_qa                               1           1  OK
+chief_career_history                   22647       22647  OK
+chief_contextual_qa                      137         137  OK
+chief_enrichment_history                7297        7297  OK
+chief_improvement_event                 1482        1482  OK
+chief_laudo                               22          22  OK
+chief_laudo_modal_state                   40          40  OK
+chief_platform_history                  1084        1084  OK
+chief_rerank_cache                      6669        6669  OK
+chief_reverse_matches                 194480      194480  OK
+chief_reverse_profile                     99          99  OK
+chief_snapshot_before_op                   0           0  OK
+chief_stimulus_event                     353         353  OK
+deal_enrichment_jobs                       0           0  OK
+deal_enrichments                          54          54  OK
+deal_sales_ops                         18935       18935  OK
+governance_conflicts                     141         141  OK
+ingestion_logs                             8           8  OK
+iqp_snapshots                          46753       46753  OK
+jd_chief_alerts                            0           0  OK
+jd_chief_match_comments                    0           0  OK
+jd_chief_stages                          261         261  OK
+jd_list_quality                          387         387  OK
+mcp_query_log                           5833        5833  OK
+mql_candidates                           797         797  OK
+novo_funil_pipedrive                    3646        3646  OK
+pipedrive_write_log                        0           0  OK
+pipeline_runs                           3172        3172  OK
+platform_sync_state                       16          16  OK
+system_prompts                            47          47  OK
+ui_access_grant                           18          18  OK
+uploaded_files                           139         139  OK
+user_activity_log                       4069        4069  OK
+user_favorites                            20          20  OK
+users                                      0           0  OK
+chief_embeddings                       15207       15207  OK
+chief_field_history                     7051        7051  OK
+job_descriptions                         534         534  OK
+job_embeddings                             0           0  OK
+jd_briefing_embeddings                   110         110  OK
+jd_extracted_metadata                    125         125  OK
+jd_results                             17196       17196  OK
+------------------------------------------------------------------
+TOTAL                                 358841      358841
+
+== ZERO DIVERGÊNCIAS ==

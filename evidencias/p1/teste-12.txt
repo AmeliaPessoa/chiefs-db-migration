@@ -1,0 +1,6 @@
+## Teste 12 — tabela nova em analytical criada pela credencial DEFAULT (refeito 19/08 pós-correção)
+## Executado em: 2026-08-19T21:14:56Z
+$ psql (default) -c "CREATE TABLE analytical.p1_defpriv_test ... INSERT 42"
+CREATE TABLE
+INSERT 0 1
+DROP TABLE

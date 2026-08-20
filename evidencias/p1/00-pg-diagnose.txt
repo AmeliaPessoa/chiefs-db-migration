@@ -1,0 +1,25 @@
+Report 8245947a-709f-4a8f-b6f5-8516d7310014 for chiefsgroup-homolog::DATABASE_URL
+available for one month after creation on 2026-08-19T00:05:12.297196+00:00
+
+RED: Hit Rate
+  Name                     Ratio
+ ──────────────────────────────────────────────
+  overall index hit rate   0.9886893428052708
+  overall cache hit rate   0.7283672463913368
+  public.page_views        0.14285714285714285
+
+GREEN: Connection Count
+GREEN: Long Queries
+GREEN: Long Transactions
+GREEN: Idle in Transaction
+GREEN: Indexes
+GREEN: Bloat
+GREEN: Blocking Queries
+GREEN: Sequences
+GREEN: Unlogged Tables
+GREEN: Table Transaction ID Wraparound
+GREEN: Schema Count
+SKIPPED: Database Transaction ID Wraparound
+Error Database wraparound check not supported on this plan
+SKIPPED: Load
+Error Load check not supported on this plan

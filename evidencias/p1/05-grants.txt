@@ -1,0 +1,50 @@
+BEGIN
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+REVOKE
+DO
+GRANT
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+GRANT
+ALTER DEFAULT PRIVILEGES
+COMMIT
+BEGIN
+DO
+ tipo |              nome              
+------+--------------------------------
+ VIEW | pg_stat_statements_info
+ VIEW | pg_stat_statements
+ VIEW | vw_ca_categorias_classificadas
+ VIEW | vw_ca_clientes_ouro
+ VIEW | vw_ca_comissao_mensal
+ VIEW | vw_ca_contratos_ltv
+ VIEW | vw_ca_inadimplencia
+ VIEW | vw_ca_mrr_ativo
+ VIEW | vw_ca_repasse_chiefs_mensal
+ VIEW | vw_ca_tpv_mensal
+ VIEW | vw_ca_take_rate_mensal
+ VIEW | vw_ca_top_clientes_receita_12m
+(12 rows)
+
+COMMIT
+psql:p1/2.schemas-roles-grants.sql:116: ERROR:  permission denied to alter role
+DETAIL:  Only roles with the CREATEROLE attribute and the ADMIN option on role "app_user" may alter this role.
+CONTEXT:  SQL statement "ALTER ROLE app_user IN DATABASE devpemtfal8rfl SET search_path = app, public"
+PL/pgSQL function inline_code_block line 2 at EXECUTE

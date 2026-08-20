@@ -31,8 +31,8 @@ Flags:
     --validate-only   só compara contagens origem × destino (não escreve)
 
 Pré-requisitos no destino: schema `intelligence` criado
-(../ddl/ddl-intelligence-schema.sql), extensão pgvector e — para o merge —
-../ddl/ddl-main-enrichment.sql aplicado.
+(../ddl-intelligence-schema.sql), extensão pgvector e — para o merge —
+../ddl-main-enrichment.sql aplicado.
 """
 
 import argparse
@@ -303,7 +303,14 @@ def validate(src, dst) -> bool:
     print("-" * 66)
     ok = True
     total_src = total_dst = 0
+    drift_report = []
     for table in TABLES:
+        s_cols = set(columns_of(src, src_schema, table))
+        d_cols = set(columns_of(dst, dst_schema, table))
+        if s_cols - d_cols:
+            drift_report.append(f"{table}: origem tem a mais {sorted(s_cols - d_cols)}")
+        if d_cols - s_cols:
+            drift_report.append(f"{table}: destino tem a mais {sorted(d_cols - s_cols)}")
         with src.cursor() as cur:
             cur.execute(f"SELECT count(*) FROM {quote_ident(src_schema, src)}.{quote_ident(table, src)}")
             n_src = cur.fetchone()[0]
@@ -317,6 +324,11 @@ def validate(src, dst) -> bool:
         print(f"{table:<32}{n_src:>12}{n_dst:>12}  {status}")
     print("-" * 66)
     print(f"{'TOTAL':<32}{total_src:>12}{total_dst:>12}")
+    if drift_report:
+        ok = False
+        print("\n!! DRIFT DE SCHEMA (Achado #1 — colunas divergentes):")
+        for line in drift_report:
+            print(f"   {line}")
     print("\n== ZERO DIVERGÊNCIAS ==" if ok else "\n== HÁ DIVERGÊNCIAS ==")
     return ok
 
@@ -369,9 +381,24 @@ def main() -> int:
                 cols = columns_of(dst, dst_schema, table)
                 if not cols:
                     raise RuntimeError(f"tabela {dst_schema}.{table} não existe no destino — rodar o DDL antes")
-                missing = set(cols) - set(columns_of(src, cfg("SRC_SCHEMA"), table))
+                src_cols = set(columns_of(src, cfg("SRC_SCHEMA"), table))
+                missing = set(cols) - src_cols
                 if missing:
                     raise RuntimeError(f"{table}: colunas ausentes na origem: {sorted(missing)}")
+                # Achado #1 (feedback Chiefs 20/08): check SIMÉTRICO — coluna
+                # nova na ORIGEM ausente no destino é drift de schema e
+                # perderia dado silenciosamente (a contagem fecharia mesmo
+                # assim). Erro por padrão; ETL_ALLOW_SCHEMA_DRIFT=1 rebaixa
+                # para WARN (uso emergencial e consciente).
+                drift = src_cols - set(cols)
+                if drift:
+                    msg = (f"{table}: colunas na ORIGEM ausentes no destino "
+                           f"(DRIFT DE SCHEMA — regenerar DDL/ALTER antes da "
+                           f"carga): {sorted(drift)}")
+                    if os.environ.get("ETL_ALLOW_SCHEMA_DRIFT") == "1":
+                        print(f"  !! WARN drift tolerado: {msg}")
+                    else:
+                        raise RuntimeError(msg)
                 t0 = time.monotonic()
                 stream_table(src, dst, table, cols)
                 print(f"  [{i:2}/{len(TABLES)}] {table} ({time.monotonic() - t0:.1f}s)")

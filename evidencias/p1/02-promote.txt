@@ -1,0 +1,3 @@
+Ensuring an alternate alias for existing DATABASE_URL... HEROKU_POSTGRESQL_CHARCOAL_URL
+Promoting postgresql-fluffy-10310 to DATABASE_URL on chiefsgroup-homolog... done
+Checking release phase... pg:promote succeeded. It is safe to ignore the failed Detach DATABASE (@ref:postgresql-concentric-30231) release.

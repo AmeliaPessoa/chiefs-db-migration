@@ -1,0 +1,9 @@
+--> Connecting to postgresql-fluffy-10310
+   nspname    
+--------------
+ intelligence
+ app
+ analytical
+ lab
+(4 rows)
+

@@ -1,0 +1,10 @@
+## Teste 17 — Rails funcional com search_path = app (smoke test)
+   Evidência: SHOW search_path conectado como app_user + prints do portal
+   (login, perfil, criação/edição) + heroku logs sem "relation does not exist".
+## Teste 18 — Rollback do upgrade documentado e revisado
+   Evidência: p1/rollback-upgrade-standard0.md com aprovação do Renan.
+## Teste 19 — Alerta de falhas de autenticação (>5 em 5 min)
+   Evidência: print da configuração do Papertrail + disparo de teste
+   (5 logins com senha errada → alerta recebido no canal).
+## Teste 20 — Runbook de rotação de credenciais
+   Evidência: p1/runbook-rotacao-credenciais.md entregue.

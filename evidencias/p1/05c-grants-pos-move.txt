@@ -1,0 +1,8 @@
+GRANT
+GRANT
+GRANT
+ sel | ins | upd_chiefs | intel_sel 
+-----+-----+------------+-----------
+ t   | t   | t          | t
+(1 row)
+

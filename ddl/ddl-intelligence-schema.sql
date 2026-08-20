@@ -903,7 +903,8 @@ CREATE TABLE intelligence.jd_results (
     manual_add_reason_note text,
     shadow_rank integer,
     shadow_score double precision,
-    shadow_method character varying(20)
+    shadow_method character varying(20),
+    rerank_detail jsonb  -- adicionada 18/08 na origem (PR #842); incorporada 20/08 (Achado #1)
 );
 
 

@@ -1,0 +1,12 @@
+--> Connecting to postgresql-fluffy-10310
+CREATE EXTENSION
+                                                              version                                                               
+------------------------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 18.6 (Ubuntu 18.6-1.pgdg26.04+2) on aarch64-unknown-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit
+(1 row)
+
+ extname | extversion 
+---------+------------
+ vector  | 0.8.6
+(1 row)
+

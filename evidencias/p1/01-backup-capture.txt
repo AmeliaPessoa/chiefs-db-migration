@@ -1,0 +1,11 @@
+ ›   Warning: Continuous protection is already enabled for this database. 
+ ›   Logical backups of large databases are likely to fail.
+ ›   Warning: See https://devcenter.heroku.com/articles/heroku-postgres-data-sa
+ ›   fety-and-continuous-protection#physical-backups-on-heroku-postgres.
+Starting backup of postgresql-concentric-30231... done
+
+Use Ctrl-C at any time to stop monitoring progress; the backup will continue running.
+Use heroku pg:backups:info to check progress.
+Stop a running backup with heroku pg:backups:cancel.
+
+Backing up DATABASE to b139... done

@@ -1,0 +1,11 @@
+--> Connecting to postgresql-fluffy-10310
+ nspname |             coalesce             
+---------+----------------------------------
+ public  | u8tu26o4qg0v85=UC/u8tu26o4qg0v85
+(1 row)
+
+ tabelas_restantes_em_public 
+-----------------------------
+                           0
+(1 row)
+

@@ -1,6 +1,5 @@
 .env
 *.env
-evidencias*/
 *.log
 __pycache__/
 *.pyc

@@ -1,0 +1,15 @@
+
+=== DATABASE_URL
+
+Plan:                  essential-0
+Status:                Available
+Connections:           0/20
+PG Version:            17.9
+Created:               2025-08-11 20:13 
+Data Size:             773 MB / 1 GB (75.49%) (In compliance)
+Tables:                99/4000 (In compliance)
+Fork/Follow:           Unsupported
+Rollback:              Unsupported
+Continuous Protection: On
+Add-on:                postgresql-concentric-30231
+

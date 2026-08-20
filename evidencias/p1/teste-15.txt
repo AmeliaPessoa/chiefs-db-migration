@@ -1,0 +1,6 @@
+## Teste 15 — conexão de IP fora do allowlist (esperado: Rejeitada)
+MANUAL: executar psql com a credencial intelligence_user a partir de uma
+máquina cujo IP NÃO seja o Static Outbound IP do Railway e anexar a saída.
+⚠ Depende da disponibilidade de IP allowlist no plano (ver 00-comandos §0.3);
+se indisponível no Common Runtime, registrar como desvio no relatório (§4) e
+escalar — NÃO marcar como OK sem evidência.

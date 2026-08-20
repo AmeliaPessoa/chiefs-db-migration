@@ -1,0 +1,9 @@
+## Teste 13b — lab invisível para looker_reader (esperado: Negado)
+## Executado em: 2026-08-19T21:12:53Z
+$ psql -c "SELECT has_schema_privilege('looker_reader','lab','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---

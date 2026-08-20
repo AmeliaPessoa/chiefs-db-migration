@@ -1,0 +1,9 @@
+## Teste 08 — intelligence_user SELECT em app (esperado: Permitido)
+## Executado em: 2026-08-19T21:12:41Z
+$ psql -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='app'"
+ count 
+-------
+    97
+(1 row)
+
+---

@@ -1,0 +1,26 @@
+## Teste 17 — Rails funcional com search_path → app (evidência TÉCNICA parcial)
+## Executado em: 2026-08-19T21:17:12Z
+## SMOKE MANUAL NO PORTAL: PULADO em 19/08 — login do portal é via
+## LinkedIn (OAuth) e não havia usuário de teste logado disponível.
+## Evidência alternativa abaixo: conexão como app_user resolve
+## search_path=app,public e enxerga as tabelas do Rails; release v248
+## rodou rake db:migrate limpo; web/worker up sem erros (07-logs).
+
+$ psql (app_user) -c "SHOW search_path"
+ search_path 
+-------------
+ app, public
+(1 row)
+
+$ psql (app_user) -c "SELECT count(*) FROM chiefs" (sem prefixo de schema — via search_path)
+ count 
+-------
+  5351
+(1 row)
+
+$ psql (app_user) -c "SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1"
+    version     
+----------------
+ 20260724142901
+(1 row)
+

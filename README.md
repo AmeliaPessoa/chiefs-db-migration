@@ -41,6 +41,8 @@ migra — só migra o que nasce no Intelligence**.
 ddl/
   ddl-main-enrichment.sql      ALTER TABLE no main: chiefs +53, pipedrive_deals +4 (idempotente)
   ddl-intelligence-schema.sql  schema intelligence: 48 tabelas, 42 sequences, índices (3 HNSW), view
+  p1-schemas-roles-grants.sql  schemas/roles/grants do P1 (inclui heroku_ext — Achado #2 de 20/08)
+  main-schema-snapshot.sql     snapshot schema-only do main (canônico: migrations do Rails; snapshot de 11/08)
 etl/
   etl.py                       ETL recomendado: carga + merge + validação (streaming em memória)
   00-fdw-setup.sql             alternativa SQL: conexão read-only com a origem via postgres_fdw
@@ -51,7 +53,9 @@ etl/
 scripts/
   run-local-validation.sh      validação local em Docker (pgvector/pg17) a partir de dumps
 docs/
-  runbook-etl.md               runbook de operação (credenciais, monitoração, troubleshooting)
+  runbook-etl.md               runbook de operação (credenciais, monitoração, gates pré-cutover, troubleshooting)
+evidencias/
+  p1/  p2/  feedback-2026-08-20/   evidências das execuções em homolog (critério "com evidência" do §11.1)
 .env.example                   modelo das variáveis de conexão (copiar para .env)
 ```
 
@@ -180,4 +184,5 @@ quebra se ninguém cuidar, troubleshooting): **`docs/runbook-etl.md`**.
 | `must be able to SET ROLE "postgres"` | DDL regenerado de pg_dump com `OWNER TO` — os DDLs deste repo já estão saneados |
 | `permission denied for table ...` na carga/merge | credencial errada → usar a **default** (dona) |
 | Validação diverge por poucas linhas com origem ativa | usar o `etl.py` deste repo (≥19/08: snapshot único corrigido) |
+| `DRIFT DE SCHEMA` na carga | coluna nova na origem (migration recente) ausente no destino — aplicar o ALTER/DDL e re-rodar; `--validate-only` é o re-diff do D-1 (Achado #1, 20/08); `ETL_ALLOW_SCHEMA_DRIFT=1` só em emergência consciente |
 | `heroku pg:psql < arquivo` não executa nada | CLI v11.9 engole stdin → usar `psql "$DST_URL" -f` |

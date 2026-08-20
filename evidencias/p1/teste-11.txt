@@ -1,0 +1,26 @@
+## Teste 11 — looker_reader em app/intelligence (esperado: Negado)
+## Executado em: 2026-08-19T21:12:44Z
+$ psql -c "SELECT has_schema_privilege('looker_reader','app','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---
+$ psql -c "SELECT has_schema_privilege('looker_reader','intelligence','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---
+$ psql -c "SELECT count(*) FROM app.chiefs"
+ERROR:  permission denied for schema app
+LINE 1: SELECT count(*) FROM app.chiefs
+                             ^
+---
+$ psql -c "CREATE TABLE analytical.deve_falhar (id int)"
+ERROR:  permission denied for schema analytical
+LINE 1: CREATE TABLE analytical.deve_falhar (id int)
+                     ^
+---

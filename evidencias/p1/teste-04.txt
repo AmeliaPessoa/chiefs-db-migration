@@ -1,0 +1,24 @@
+## Teste 04 — app_user CRUD em app (esperado: Permitido)
+## Executado em: 2026-08-19T21:12:31Z
+$ psql -c "CREATE TABLE IF NOT EXISTS app.p1_smoke (id int, txt text)"
+CREATE TABLE
+---
+$ psql -c "INSERT INTO app.p1_smoke VALUES (1,'ok')"
+INSERT 0 1
+---
+$ psql -c "SELECT * FROM app.p1_smoke"
+ id | txt 
+----+-----
+  1 | ok
+(1 row)
+
+---
+$ psql -c "UPDATE app.p1_smoke SET txt='ok2' WHERE id=1"
+UPDATE 1
+---
+$ psql -c "DELETE FROM app.p1_smoke WHERE id=1"
+DELETE 1
+---
+$ psql -c "DROP TABLE app.p1_smoke"
+DROP TABLE
+---

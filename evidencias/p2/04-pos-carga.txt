@@ -1,0 +1,35 @@
+ tabelas_intelligence 
+----------------------
+                   48
+(1 row)
+
+ view_deal_quality_scores 
+--------------------------
+                     3542
+(1 row)
+
+ intel_le_48 | intel_escreve_48 | looker_nada 
+-------------+------------------+-------------
+ t           | t                | f
+(1 row)
+
+ colunas_chiefs 
+----------------
+            151
+(1 row)
+
+ chiefs_enriquecidos 
+---------------------
+                5180
+(1 row)
+
+ deals_com_notes 
+-----------------
+             449
+(1 row)
+
+ hnsw 
+------
+    3
+(1 row)
+

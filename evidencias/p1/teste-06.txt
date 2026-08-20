@@ -1,0 +1,14 @@
+## Teste 06 — app_user acessa analytical (esperado: Negado)
+## Executado em: 2026-08-19T21:12:37Z
+$ psql -c "CREATE TABLE analytical.deve_falhar (id int)"
+ERROR:  permission denied for schema analytical
+LINE 1: CREATE TABLE analytical.deve_falhar (id int)
+                     ^
+---
+$ psql -c "SELECT has_schema_privilege('app_user','analytical','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---

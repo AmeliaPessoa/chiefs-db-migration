@@ -1,0 +1,9 @@
+--> Connecting to postgresql-fluffy-10310
+      rolname      | rolcanlogin 
+-------------------+-------------
+ looker_reader     | t
+ analytical_reader | t
+ intelligence_user | t
+ app_user          | t
+(4 rows)
+

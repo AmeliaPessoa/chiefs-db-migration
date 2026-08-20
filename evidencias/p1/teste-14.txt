@@ -1,0 +1,2 @@
+## Teste 14 — conexão sem SSL (esperado: Rejeitada)
+psql: error: connection to server at "ec2-52-54-236-134.compute-1.amazonaws.com" (52.54.236.134), port 5432 failed: FATAL:  no pg_hba.conf entry for host "179.181.110.133", user "looker_reader", database "devpemtfal8rfl", no encryption

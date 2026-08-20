@@ -1,0 +1,9 @@
+--> Connecting to postgresql-concentric-30231
+     tabela      | count 
+-----------------+-------
+ chiefs          |  5351
+ startup_ads     |   158
+ pipedrive_deals |  3542
+ chiefs          |  5351
+(4 rows)
+

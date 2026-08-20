@@ -1,0 +1,14 @@
+## Teste 13 — lab invisível para app_user e looker_reader (esperado: Negado)
+## Executado em: 2026-08-19T21:12:51Z
+$ psql -c "SELECT has_schema_privilege('app_user','lab','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---
+$ psql -c "CREATE TABLE lab.deve_falhar (id int)"
+ERROR:  permission denied for schema lab
+LINE 1: CREATE TABLE lab.deve_falhar (id int)
+                     ^
+---

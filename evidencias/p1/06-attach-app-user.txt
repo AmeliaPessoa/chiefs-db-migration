@@ -1,0 +1,2 @@
+Attaching app_user of postgresql-fluffy-10310 as DATABASE to chiefsgroup-homolog... done
+Setting DATABASE config vars and restarting chiefsgroup-homolog... done, v248

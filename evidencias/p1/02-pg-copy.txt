@@ -1,0 +1,7 @@
+ ›   Warning: WARNING: Destructive action
+ ›   This command will remove all data from GRAY
+ ›   Data from DATABASE will then be transferred to GRAY
+
+[34m?[39m [1mTo proceed, type GRAY or re-run this command with --confirm GRAY[22m[68G[69G[2K[G[34m?[39m [1mTo proceed, type GRAY or re-run this command with --confirm GRAY[22m G[69G[70G[2K[G[34m?[39m [1mTo proceed, type GRAY or re-run this command with --confirm GRAY[22m GR[70G[71G[2K[G[34m?[39m [1mTo proceed, type GRAY or re-run this command with --confirm GRAY[22m GRA[71G[72G[2K[G[34m?[39m [1mTo proceed, type GRAY or re-run this command with --confirm GRAY[22m GRAY[72G[68G[2K[G[34m?[39m [1mTo proceed, type GRAY or re-run this command with --confirm GRAY[22m GRAY[72G[2K[G[32m✔[39m [1mTo proceed, type GRAY or re-run this command with --confirm GRAY[22m [36mGRAY[39m[72G
+[?25hStarting copy of DATABASE to GRAY... done
+Copying... done

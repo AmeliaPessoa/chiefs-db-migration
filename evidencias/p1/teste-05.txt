@@ -1,0 +1,20 @@
+## Teste 05 — app_user acessa intelligence (esperado: Negado)
+## Executado em: 2026-08-19T21:12:35Z
+$ psql -c "SELECT * FROM information_schema.tables WHERE table_schema='intelligence'"
+ table_catalog | table_schema | table_name | table_type | self_referencing_column_name | reference_generation | user_defined_type_catalog | user_defined_type_schema | user_defined_type_name | is_insertable_into | is_typed | commit_action 
+---------------+--------------+------------+------------+------------------------------+----------------------+---------------------------+--------------------------+------------------------+--------------------+----------+---------------
+(0 rows)
+
+---
+$ psql -c "CREATE TABLE intelligence.deve_falhar (id int)"
+ERROR:  permission denied for schema intelligence
+LINE 1: CREATE TABLE intelligence.deve_falhar (id int)
+                     ^
+---
+$ psql -c "SELECT has_schema_privilege('app_user','intelligence','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---

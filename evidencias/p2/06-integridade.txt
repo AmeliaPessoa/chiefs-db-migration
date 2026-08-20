@@ -1,0 +1,49 @@
+CREATE TABLE
+DO
+INSERT 0 1
+ set_config 
+------------
+ app
+(1 row)
+
+DO
+  classe   |                                item                                |            valor             |  ok  
+-----------+--------------------------------------------------------------------+------------------------------+------
+ DURO      | sequences verificadas                                              | 42 sequences, 0 atrás do MAX | OK
+ AUDITORIA | benchmark_qa.chief_id → app.chiefs                                 | 0 órfãos de 1 (0.0%)         | OK
+ AUDITORIA | chief_career_history.chief_id → app.chiefs                         | 64 órfãos de 22647 (0.3%)    | INFO
+ AUDITORIA | chief_contextual_qa.chief_id → app.chiefs                          | 0 órfãos de 137 (0.0%)       | OK
+ AUDITORIA | chief_contextual_qa.jd_id → intelligence.job_descriptions          | 0 órfãos de 137 (0.0%)       | OK
+ AUDITORIA | chief_embeddings.chief_id → app.chiefs                             | 710 órfãos de 15207 (4.7%)   | INFO
+ AUDITORIA | chief_enrichment_history.chief_id → app.chiefs                     | 598 órfãos de 7297 (8.2%)    | INFO
+ AUDITORIA | chief_field_history.chief_id → app.chiefs                          | 0 órfãos de 7051 (0.0%)      | OK
+ AUDITORIA | chief_improvement_event.chief_id → app.chiefs                      | 270 órfãos de 1482 (18.2%)   | INFO
+ AUDITORIA | chief_laudo.chief_id → app.chiefs                                  | 7 órfãos de 22 (31.8%)       | INFO
+ AUDITORIA | chief_laudo_modal_state.chief_id → app.chiefs                      | 10 órfãos de 40 (25.0%)      | INFO
+ AUDITORIA | chief_platform_history.chief_id → app.chiefs                       | 34 órfãos de 1084 (3.1%)     | INFO
+ AUDITORIA | chief_rerank_cache.chief_id → app.chiefs                           | 42 órfãos de 6669 (0.6%)     | INFO
+ AUDITORIA | chief_reverse_matches.chief_id → app.chiefs                        | 0 órfãos de 194480 (0.0%)    | OK
+ AUDITORIA | chief_reverse_matches.jd_id → intelligence.job_descriptions        | 0 órfãos de 194480 (0.0%)    | OK
+ AUDITORIA | chief_reverse_profile.chief_id → app.chiefs                        | 0 órfãos de 99 (0.0%)        | OK
+ AUDITORIA | chief_stimulus_event.chief_id → app.chiefs                         | 89 órfãos de 353 (25.2%)     | INFO
+ AUDITORIA | deal_enrichments.deal_id → app.pipedrive_deals                     | 0 órfãos de 54 (0.0%)        | OK
+ AUDITORIA | deal_sales_ops.deal_id → app.pipedrive_deals                       | 1889 órfãos de 18935 (10.0%) | INFO
+ AUDITORIA | governance_conflicts.chief_id → app.chiefs                         | 58 órfãos de 141 (41.1%)     | INFO
+ AUDITORIA | iqp_snapshots.chief_id → app.chiefs                                | 0 órfãos de 46753 (0.0%)     | OK
+ AUDITORIA | jd_briefing_embeddings.jd_id → intelligence.job_descriptions       | 0 órfãos de 110 (0.0%)       | OK
+ AUDITORIA | jd_chief_stages.chief_id → app.chiefs                              | 14 órfãos de 261 (5.4%)      | INFO
+ AUDITORIA | jd_chief_stages.jd_id → intelligence.job_descriptions              | 0 órfãos de 261 (0.0%)       | OK
+ AUDITORIA | jd_extracted_metadata.jd_id → intelligence.job_descriptions        | 0 órfãos de 125 (0.0%)       | OK
+ AUDITORIA | jd_list_quality.job_description_id → intelligence.job_descriptions | 0 órfãos de 387 (0.0%)       | OK
+ AUDITORIA | jd_results.chief_id → app.chiefs                                   | 78 órfãos de 17196 (0.5%)    | INFO
+ AUDITORIA | jd_results.job_description_id → intelligence.job_descriptions      | 0 órfãos de 17196 (0.0%)     | OK
+ AUDITORIA | novo_funil_pipedrive.deal_id → app.pipedrive_deals                 | 115 órfãos de 3646 (3.2%)    | INFO
+ INFO      | tabelas sem PK em intelligence                                     | nenhuma                      | OK
+ AUDITORIA | user_favorites.jd_id → intelligence.job_descriptions               | 0 órfãos de 20 (0.0%)        | OK
+(31 rows)
+
+                                            case                                            
+--------------------------------------------------------------------------------------------
+ INTEGRIDADE: OK — checks duros aprovados; órfãos lógicos são auditoria (refletem a origem)
+(1 row)
+

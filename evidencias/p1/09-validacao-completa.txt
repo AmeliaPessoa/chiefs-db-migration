@@ -1,0 +1,253 @@
+## Teste 01 — tier + pgvector + versão
+=== HEROKU_POSTGRESQL_CHARCOAL_URL
+
+Plan:                  essential-0
+Status:                Available
+Connections:           0/20
+PG Version:            17.9
+Created:               2025-08-11 20:13 
+Data Size:             773 MB / 1 GB (75.49%) (In compliance)
+Tables:                99/4000 (In compliance)
+Fork/Follow:           Unsupported
+Rollback:              Unsupported
+Continuous Protection: On
+Add-on:                postgresql-concentric-30231
+
+=== DATABASE_URL, HEROKU_POSTGRESQL_GRAY_URL
+
+Plan:                  Standard 0
+Status:                Available
+Data Size:             768 MB / 64 GB (1.17%)
+Tables:                99
+PG Version:            18.6
+Connections:           16/200
+Connection Pooling:    Available
+Credentials:           5
+Fork/Follow:           Available
+Rollback:              earliest from 2026-08-19 13:03 
+Created:               2026-08-19 12:59 
+Region:                us
+Data Encryption:       In Use
+Continuous Protection: On
+Enhanced Certificates: Off
+Maintenance:           not required
+Maintenance window:    Wednesdays 17:30 to 21:30 UTC
+Add-on:                postgresql-fluffy-10310
+
+--> Connecting to postgresql-fluffy-10310
+                                                              version                                                               
+------------------------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 18.6 (Ubuntu 18.6-1.pgdg26.04+2) on aarch64-unknown-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit
+(1 row)
+
+ extname | extversion 
+---------+------------
+ vector  | 0.8.6
+(1 row)
+
+--> Connecting to postgresql-fluffy-10310
+   nspname    
+--------------
+ intelligence
+ app
+ analytical
+ lab
+(4 rows)
+
+--> Connecting to postgresql-fluffy-10310
+      rolname      | rolcanlogin 
+-------------------+-------------
+ looker_reader     | t
+ analytical_reader | t
+ intelligence_user | t
+ app_user          | t
+(4 rows)
+
+## Teste 04 — app_user CRUD em app (esperado: Permitido)
+## Executado em: 2026-08-19T21:12:31Z
+$ psql -c "CREATE TABLE IF NOT EXISTS app.p1_smoke (id int, txt text)"
+CREATE TABLE
+---
+$ psql -c "INSERT INTO app.p1_smoke VALUES (1,'ok')"
+INSERT 0 1
+---
+$ psql -c "SELECT * FROM app.p1_smoke"
+ id | txt 
+----+-----
+  1 | ok
+(1 row)
+
+---
+$ psql -c "UPDATE app.p1_smoke SET txt='ok2' WHERE id=1"
+UPDATE 1
+---
+$ psql -c "DELETE FROM app.p1_smoke WHERE id=1"
+DELETE 1
+---
+$ psql -c "DROP TABLE app.p1_smoke"
+DROP TABLE
+---
+## Teste 05 — app_user acessa intelligence (esperado: Negado)
+## Executado em: 2026-08-19T21:12:35Z
+$ psql -c "SELECT * FROM information_schema.tables WHERE table_schema='intelligence'"
+ table_catalog | table_schema | table_name | table_type | self_referencing_column_name | reference_generation | user_defined_type_catalog | user_defined_type_schema | user_defined_type_name | is_insertable_into | is_typed | commit_action 
+---------------+--------------+------------+------------+------------------------------+----------------------+---------------------------+--------------------------+------------------------+--------------------+----------+---------------
+(0 rows)
+
+---
+$ psql -c "CREATE TABLE intelligence.deve_falhar (id int)"
+ERROR:  permission denied for schema intelligence
+LINE 1: CREATE TABLE intelligence.deve_falhar (id int)
+                     ^
+---
+$ psql -c "SELECT has_schema_privilege('app_user','intelligence','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---
+## Teste 06 — app_user acessa analytical (esperado: Negado)
+## Executado em: 2026-08-19T21:12:37Z
+$ psql -c "CREATE TABLE analytical.deve_falhar (id int)"
+ERROR:  permission denied for schema analytical
+LINE 1: CREATE TABLE analytical.deve_falhar (id int)
+                     ^
+---
+$ psql -c "SELECT has_schema_privilege('app_user','analytical','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---
+## Teste 07 — intelligence_user escreve em intelligence (esperado: Permitido)
+## Executado em: 2026-08-19T21:12:39Z
+$ psql -c "CREATE TABLE IF NOT EXISTS intelligence.p1_smoke (id int)"
+CREATE TABLE
+---
+$ psql -c "INSERT INTO intelligence.p1_smoke VALUES (1)"
+INSERT 0 1
+---
+$ psql -c "DROP TABLE intelligence.p1_smoke"
+DROP TABLE
+---
+## Teste 08 — intelligence_user SELECT em app (esperado: Permitido)
+## Executado em: 2026-08-19T21:12:41Z
+$ psql -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='app'"
+ count 
+-------
+    97
+(1 row)
+
+---
+## Teste 09 — intelligence_user escreve em app (esperado: Negado)
+## Executado em: 2026-08-19T21:12:42Z
+$ psql -c "CREATE TABLE app.deve_falhar (id int)"
+ERROR:  permission denied for schema app
+LINE 1: CREATE TABLE app.deve_falhar (id int)
+                     ^
+---
+$ psql -c "INSERT INTO app.schema_migrations VALUES ('deve_falhar')"
+ERROR:  permission denied for table schema_migrations
+---
+## Teste 10 — looker_reader SELECT em analytical (esperado: Permitido)
+## Executado em: 2026-08-19T21:12:43Z
+$ psql -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='analytical'"
+ count 
+-------
+     0
+(1 row)
+
+---
+## Teste 11 — looker_reader em app/intelligence (esperado: Negado)
+## Executado em: 2026-08-19T21:12:44Z
+$ psql -c "SELECT has_schema_privilege('looker_reader','app','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---
+$ psql -c "SELECT has_schema_privilege('looker_reader','intelligence','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---
+$ psql -c "SELECT count(*) FROM app.chiefs"
+ERROR:  permission denied for schema app
+LINE 1: SELECT count(*) FROM app.chiefs
+                             ^
+---
+$ psql -c "CREATE TABLE analytical.deve_falhar (id int)"
+ERROR:  permission denied for schema analytical
+LINE 1: CREATE TABLE analytical.deve_falhar (id int)
+                     ^
+---
+--> Connecting to postgresql-fluffy-10310
+ERROR:  permission denied for schema analytical
+LINE 1: CREATE TABLE analytical.p1_defpriv_test (id int); INSERT INT...
+                     ^
+    Error: psql exited with code 1
+## Teste 12b — looker_reader lê tabela nova sem grant manual (esperado: Permitido)
+## Executado em: 2026-08-19T21:12:49Z
+$ psql -c "SELECT * FROM analytical.p1_defpriv_test"
+ERROR:  relation "analytical.p1_defpriv_test" does not exist
+LINE 1: SELECT * FROM analytical.p1_defpriv_test
+                      ^
+---
+## Teste 13 — lab invisível para app_user e looker_reader (esperado: Negado)
+## Executado em: 2026-08-19T21:12:51Z
+$ psql -c "SELECT has_schema_privilege('app_user','lab','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---
+$ psql -c "CREATE TABLE lab.deve_falhar (id int)"
+ERROR:  permission denied for schema lab
+LINE 1: CREATE TABLE lab.deve_falhar (id int)
+                     ^
+---
+## Teste 13b — lab invisível para looker_reader (esperado: Negado)
+## Executado em: 2026-08-19T21:12:53Z
+$ psql -c "SELECT has_schema_privilege('looker_reader','lab','USAGE')"
+ has_schema_privilege 
+----------------------
+ f
+(1 row)
+
+---
+## Teste 14 — conexão sem SSL (esperado: Rejeitada)
+psql: error: connection to server at "ec2-52-54-236-134.compute-1.amazonaws.com" (52.54.236.134), port 5432 failed: FATAL:  no pg_hba.conf entry for host "179.181.110.133", user "looker_reader", database "devpemtfal8rfl", no encryption
+## Teste 15 — conexão de IP fora do allowlist (esperado: Rejeitada)
+MANUAL: executar psql com a credencial intelligence_user a partir de uma
+máquina cujo IP NÃO seja o Static Outbound IP do Railway e anexar a saída.
+⚠ Depende da disponibilidade de IP allowlist no plano (ver 00-comandos §0.3);
+se indisponível no Common Runtime, registrar como desvio no relatório (§4) e
+escalar — NÃO marcar como OK sem evidência.
+--> Connecting to postgresql-fluffy-10310
+ nspname |             coalesce             
+---------+----------------------------------
+ public  | u8tu26o4qg0v85=UC/u8tu26o4qg0v85
+(1 row)
+
+ tabelas_restantes_em_public 
+-----------------------------
+                           0
+(1 row)
+
+## Teste 17 — Rails funcional com search_path = app (smoke test)
+   Evidência: SHOW search_path conectado como app_user + prints do portal
+   (login, perfil, criação/edição) + heroku logs sem "relation does not exist".
+## Teste 18 — Rollback do upgrade documentado e revisado
+   Evidência: p1/rollback-upgrade-standard0.md com aprovação do Renan.
+## Teste 19 — Alerta de falhas de autenticação (>5 em 5 min)
+   Evidência: print da configuração do Papertrail + disparo de teste
+   (5 logins com senha errada → alerta recebido no canal).
+## Teste 20 — Runbook de rotação de credenciais
+   Evidência: p1/runbook-rotacao-credenciais.md entregue.
+Concluído. Evidências em ./evidencias/ — anexar ao relatório de validação.

@@ -1,0 +1,8 @@
+## Teste 12b — looker_reader lê tabela nova sem grant manual (esperado: Permitido)
+## Executado em: 2026-08-19T21:14:57Z
+$ psql (looker_reader) -c "SELECT * FROM analytical.p1_defpriv_test"
+ id 
+----
+ 42
+(1 row)
+

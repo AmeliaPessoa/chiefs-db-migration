@@ -1,0 +1,325 @@
+=== Backup b139
+
+Database:         DATABASE
+Started at:       2026-08-19 20:32:03 +0000
+Finished at:      2026-08-19 20:32:19 +0000
+Status:           Completed
+Type:             Manual
+Original DB Size: 773.04MB
+Backup Size:      97.95MB (87% compression)
+
+
+=== Backup Logs
+
+2026-08-19 20:32:03 +0000 pg_dump: last built-in OID is 16383
+
+2026-08-19 20:32:03 +0000 pg_dump: reading extensions
+
+2026-08-19 20:32:03 +0000 pg_dump: identifying extension members
+
+2026-08-19 20:32:03 +0000 pg_dump: reading schemas
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined tables
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined functions
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined types
+
+2026-08-19 20:32:03 +0000 pg_dump: reading procedural languages
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined aggregate functions
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined operators
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined access methods
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined operator classes
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined operator families
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined text search parsers
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined text search templates
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined text search dictionaries
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined text search configurations
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined foreign-data wrappers
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined foreign servers
+
+2026-08-19 20:32:03 +0000 pg_dump: reading default privileges
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined collations
+
+2026-08-19 20:32:03 +0000 pg_dump: reading user-defined conversions
+
+2026-08-19 20:32:03 +0000 pg_dump: reading type casts
+
+2026-08-19 20:32:03 +0000 pg_dump: reading transforms
+
+2026-08-19 20:32:03 +0000 pg_dump: reading table inheritance information
+
+2026-08-19 20:32:03 +0000 pg_dump: reading event triggers
+
+2026-08-19 20:32:03 +0000 pg_dump: finding extension tables
+
+2026-08-19 20:32:03 +0000 pg_dump: finding inheritance relationships
+
+2026-08-19 20:32:03 +0000 pg_dump: reading column info for interesting tables
+
+2026-08-19 20:32:03 +0000 pg_dump: finding table default expressions
+
+2026-08-19 20:32:03 +0000 pg_dump: finding table check constraints
+
+2026-08-19 20:32:03 +0000 pg_dump: flagging inherited columns in subtables
+
+2026-08-19 20:32:03 +0000 pg_dump: reading partitioning data
+
+2026-08-19 20:32:03 +0000 pg_dump: reading indexes
+
+2026-08-19 20:32:03 +0000 pg_dump: flagging indexes in partitioned tables
+
+2026-08-19 20:32:03 +0000 pg_dump: reading extended statistics
+
+2026-08-19 20:32:03 +0000 pg_dump: reading constraints
+
+2026-08-19 20:32:03 +0000 pg_dump: reading triggers
+
+2026-08-19 20:32:03 +0000 pg_dump: reading rewrite rules
+
+2026-08-19 20:32:03 +0000 pg_dump: reading policies
+
+2026-08-19 20:32:03 +0000 pg_dump: reading row-level security policies
+
+2026-08-19 20:32:03 +0000 pg_dump: reading publications
+
+2026-08-19 20:32:03 +0000 pg_dump: reading publication membership of tables
+
+2026-08-19 20:32:04 +0000 pg_dump: reading publication membership of schemas
+
+2026-08-19 20:32:04 +0000 pg_dump: reading subscriptions
+
+2026-08-19 20:32:04 +0000 pg_dump: reading subscription membership of tables
+
+2026-08-19 20:32:04 +0000 pg_dump: reading large objects
+
+2026-08-19 20:32:04 +0000 pg_dump: reading dependency data
+
+2026-08-19 20:32:04 +0000 pg_dump: saving encoding = UTF8
+
+2026-08-19 20:32:04 +0000 pg_dump: saving "standard_conforming_strings = on"
+
+2026-08-19 20:32:04 +0000 pg_dump: saving "search_path = "
+
+2026-08-19 20:32:04 +0000 pg_dump: saving database definition
+
+2026-08-19 20:32:04 +0000 pg_dump: dumping contents of table "analytics.chiefs_actives_monthly_avg"
+
+2026-08-19 20:32:04 +0000 pg_dump: dumping contents of table "analytics.companies_actives_monthly_avg"
+
+2026-08-19 20:32:04 +0000 pg_dump: dumping contents of table "public.active_campaign_campaigns"
+
+2026-08-19 20:32:04 +0000 pg_dump: dumping contents of table "public.active_campaign_contact_messages"
+
+2026-08-19 20:32:04 +0000 pg_dump: dumping contents of table "public.active_campaign_contact_monthly_snapshots"
+
+2026-08-19 20:32:04 +0000 pg_dump: dumping contents of table "public.active_campaign_contacts"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.active_campaign_tags"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.active_campaign_webhook_events"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.active_storage_attachments"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.active_storage_blobs"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.agent_conversations"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.agent_messages"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.analytics_chief_view_rankings"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.analytics_page_view_summaries"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.api_tokens"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ar_internal_metadata"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_acquittances"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_categories"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_contracts"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_cost_centers"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_dre_categories"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_dre_category_categorias"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_event_apportionments"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_financial_accounts"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_financial_events"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_financial_installments"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_people"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_sale_items"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_sales"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_sellers"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.ca_service_invoices"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.careers"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.chief_accounts"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.chief_ads"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.chief_comments"
+
+2026-08-19 20:32:05 +0000 pg_dump: dumping contents of table "public.chiefs"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.chiefs_csv_exports"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.chiefs_posts"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.chiefs_projects"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.chiefs_shortlists"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.chiefs_start"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.chiefs_startup_ads"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.companies"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.conta_azul_oauth_tokens"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.contract_mentorships"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.coupons"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.credit_cards"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.curriculos"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.friendly_id_slugs"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.invite_orders"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.invites"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.journeys"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.legal_pages"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.libraries"
+
+2026-08-19 20:32:06 +0000 pg_dump: dumping contents of table "public.linkedin_profiles"
+
+2026-08-19 20:32:07 +0000 pg_dump: dumping contents of table "public.matches"
+
+2026-08-19 20:32:07 +0000 pg_dump: dumping contents of table "public.messages"
+
+2026-08-19 20:32:07 +0000 pg_dump: dumping contents of table "public.my_projects"
+
+2026-08-19 20:32:07 +0000 pg_dump: dumping contents of table "public.nps_responses"
+
+2026-08-19 20:32:07 +0000 pg_dump: dumping contents of table "public.oauth_accounts"
+
+2026-08-19 20:32:07 +0000 pg_dump: dumping contents of table "public.orders"
+
+2026-08-19 20:32:07 +0000 pg_dump: dumping contents of table "public.page_views"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.pipedrive_deal_files"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.pipedrive_deal_heat_snapshots"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.pipedrive_deal_notes"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.pipedrive_deal_stage_changes"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.pipedrive_deals"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.pipedrive_owner_contacts"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.plans"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.posts"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.project_categories"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.project_matches"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.projects"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.recording_calls"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.recordings"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.recruiter_survey_responses"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.schema_migrations"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.searches"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.settings"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.short_links"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.shortlists"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.skill_values"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.skills"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.stars"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.startup_ad_match_comments"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.startup_ad_matches"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.startup_ads"
+
+2026-08-19 20:32:17 +0000 pg_dump: dumping contents of table "public.startup_companies"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.startups"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.subscriptions"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.survey_responses"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.surveys"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.terms_of_uses"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.ticket_comments"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.tickets"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.timesheets"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.transactions"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.trix_images"
+
+2026-08-19 20:32:18 +0000 pg_dump: dumping contents of table "public.versions"
+
+2026-08-19 20:32:18 +0000 waiting for upload to complete
+
+2026-08-19 20:32:19 +0000 upload finished successfully
+
+2026-08-19 20:32:19 +0000 waiting for pg_dump to complete
+
+2026-08-19 20:32:19 +0000 pg_dump finished successfully
+
+
+
