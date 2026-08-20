@@ -43,6 +43,7 @@ ddl/
   ddl-intelligence-schema.sql  schema intelligence: 48 tabelas, 42 sequences, índices (3 HNSW), view
   p1-schemas-roles-grants.sql  schemas/roles/grants do P1 (inclui heroku_ext — Achado #2 de 20/08)
   main-schema-snapshot.sql     snapshot schema-only do main (canônico: migrations do Rails; snapshot de 11/08)
+  intelligence-origin-schema.sql  snapshot schema-only da ORIGEM (regenerado 20/08 — inclui rerank_detail; regenerar no gate D-1)
 etl/
   etl.py                       ETL recomendado: carga + merge + validação (streaming em memória)
   00-fdw-setup.sql             alternativa SQL: conexão read-only com a origem via postgres_fdw
@@ -51,7 +52,7 @@ etl/
   03-validate.sql              contagens 48/48 origem × destino
   04-integridade.sql           sequences (check duro) + órfãos das FKs lógicas (auditoria)
 scripts/
-  run-local-validation.sh      validação local em Docker (pgvector/pg17) a partir de dumps
+  run-local-validation.sh      validação local em Docker (pgvector/pg17) — modo sintético §5.1 por padrão
 docs/
   runbook-etl.md               runbook de operação (credenciais, monitoração, gates pré-cutover, troubleshooting)
 evidencias/
@@ -151,13 +152,18 @@ psql "$DST_URL" -v ON_ERROR_STOP=1 -v app_schema=$APP_SCHEMA -f etl/02-merge-mai
 psql "$DST_URL" -f etl/03-validate.sql
 ```
 
-### Validação local em Docker (não toca bases reais)
+### Validação local em Docker (não toca bases reais — §5.1)
 
 ```bash
-DUMP_INTEL=/caminho/dump-intelligence.sql \
-DUMP_MAIN=/caminho/dump-main.sql \
 bash scripts/run-local-validation.sh
 ```
+
+**Modo padrão: SINTÉTICO** — origem e destino criados de schema-only
+(snapshots em `ddl/`) + seed sintético gerado pelo próprio script
+(nenhum dado real na máquina local). Exercita carga das 48, merge com
+conflito ativos×todos e ids sem match, sequences, view, contagens e
+integridade. Modo legado com dumps reais: `USE_REAL_DUMPS=1
+DUMP_INTEL=... [DUMP_MAIN=...]` — somente em ambiente autorizado.
 
 ## Reprocessamento e idempotência
 
