@@ -1,0 +1,10 @@
+GRANT
+ colunas_com_update 
+--------------------
+                 53
+(1 row)
+
+ fora_da_lista_de_enriquecimento 
+---------------------------------
+(0 rows)
+
