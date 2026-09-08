@@ -1,0 +1,458 @@
+# Validação local em Docker (modo sintético §5.1) — 08/09/2026
+# bash scripts/run-local-validation.sh — inclui passo 9: re-execução D-1 com etl.py
+
+==> [1/8] Subindo container (chiefs-etl-validate, porta 5599)
+==> [2/8] MODO SINTÉTICO: origem/destino de schema-only + seed sintético
+ set_config 
+------------
+ 
+(1 row)
+
+ set_config 
+------------
+ 
+(1 row)
+
+==> [2b/8] Seed sintético na ORIGEM (nenhum dado real)
+==> [2c/8] Seed sintético no DESTINO (main schema-only) + role intelligence_user
+==> [3/8] Enriquecimento do main (chiefs +53, pipedrive_deals +4) — schema public local
+==> [4/8] DDL do schema intelligence (49 tabelas + view) — view repontada para public local
+==> [5/8] FDW → carga das 48
+psql:<stdin>:7: NOTICE:  schema "intel_src" does not exist, skipping
+psql:<stdin>:8: NOTICE:  server "intel_srv" does not exist, skipping
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      2
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+   7002
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+==> [6/8] Merge das híbridas
+                          item                           | origem | destino |  ok  
+---------------------------------------------------------+--------+---------+------
+ chiefs · ids na fonte (ativos ∪ todos)                  |      4 |         | —
+ chiefs · com match (atualizados)                        |      3 |       3 | OK
+ chiefs · sem match (descartados)                        |      1 |         | INFO
+ pipedrive_deals · ids na fonte                          |      3 |         | —
+ pipedrive_deals · com match (atualizados)               |      2 |       2 | OK
+ pipedrive_deals · sem match (descartados)               |      1 |         | INFO
+ chiefs · linhas com match divergentes da fonte          |      0 |       0 | OK
+ pipedrive_deals · linhas com match divergentes da fonte |      0 |       0 | OK
+(8 rows)
+
+           case           
+--------------------------
+ MERGE: ZERO DIVERGÊNCIAS
+(1 row)
+
+==> [7/8] Validação das contagens (48 tabelas)
+             item             | origem | destino | ok 
+------------------------------+--------+---------+----
+ allocation_history           |      0 |       0 | OK
+ allocation_history_shortlist |      0 |       0 | OK
+ attractiveness_snapshots     |      0 |       0 | OK
+ backtest_jobs                |      0 |       0 | OK
+ benchmark_market_cache       |      0 |       0 | OK
+ benchmark_qa                 |      0 |       0 | OK
+ chief_career_history         |      0 |       0 | OK
+ chief_contextual_qa          |      0 |       0 | OK
+ chief_embeddings             |      0 |       0 | OK
+ chief_enrichment_history     |      0 |       0 | OK
+ chief_field_history          |      0 |       0 | OK
+ chief_improvement_event      |      0 |       0 | OK
+ chief_laudo                  |      0 |       0 | OK
+ chief_laudo_modal_state      |      0 |       0 | OK
+ chief_perfil_perguntas       |      1 |       1 | OK
+ chief_platform_history       |      0 |       0 | OK
+ chief_rerank_cache           |      0 |       0 | OK
+ chief_reverse_matches        |      0 |       0 | OK
+ chief_reverse_profile        |      0 |       0 | OK
+ chief_snapshot_before_op     |      0 |       0 | OK
+ chief_stimulus_event         |      0 |       0 | OK
+ deal_enrichment_jobs         |      0 |       0 | OK
+ deal_enrichments             |      0 |       0 | OK
+ deal_sales_ops               |      0 |       0 | OK
+ governance_conflicts         |      0 |       0 | OK
+ ingestion_logs               |      0 |       0 | OK
+ iqp_snapshots                |      0 |       0 | OK
+ jd_briefing_embeddings       |      0 |       0 | OK
+ jd_chief_alerts              |      0 |       0 | OK
+ jd_chief_match_comments      |      0 |       0 | OK
+ jd_chief_stages              |      0 |       0 | OK
+ jd_extracted_metadata        |      0 |       0 | OK
+ jd_list_quality              |      0 |       0 | OK
+ jd_results                   |      0 |       0 | OK
+ job_descriptions             |      1 |       1 | OK
+ job_embeddings               |      0 |       0 | OK
+ mcp_query_log                |      0 |       0 | OK
+ mql_candidates               |      0 |       0 | OK
+ novo_funil_pipedrive         |      0 |       0 | OK
+ pipedrive_write_log          |      0 |       0 | OK
+ pipeline_runs                |      0 |       0 | OK
+ platform_sync_state          |      1 |       1 | OK
+ system_prompts               |      0 |       0 | OK
+ ui_access_grant              |      0 |       0 | OK
+ uploaded_files               |      0 |       0 | OK
+ user_activity_log            |      0 |       0 | OK
+ user_favorites               |      0 |       0 | OK
+ users                        |      0 |       0 | OK
+(48 rows)
+
+      item       |     origem     |    destino     | ok 
+-----------------+----------------+----------------+----
+ alembic_version | sintetico_0001 | sintetico_0001 | OK
+(1 row)
+
+                      case                       
+-------------------------------------------------
+ RESULTADO: ZERO DIVERGÊNCIAS — 48/48 TABELAS OK
+(1 row)
+
+==> [8/8] Integridade (sequences + FKs lógicas)
+ INFO      | tabelas sem PK em intelligence                  | nenhuma                      | OK
+(3 rows)
+
+                                            case                                            
+--------------------------------------------------------------------------------------------
+ INTEGRIDADE: OK — checks duros aprovados; órfãos lógicos são auditoria (refletem a origem)
+(1 row)
+
+==> [9] Re-execução D-1 com etl.py — cenário do feedback 08/09 (objetos do Intelligence no schema)
+Carga: localhost/chiefs_intelligence → localhost/destino.intelligence (48 tabelas, transação única)
+  !! WARN backup operacional na origem, descartado por regra: chief_embeddings_bak_20260803
+  !! WARN backup operacional na origem, descartado por regra: chiefs_reenrich_backup_20260831
+  [ 1/48] allocation_history (0.0s)
+  [ 2/48] allocation_history_shortlist (0.0s)
+  [ 3/48] attractiveness_snapshots (0.0s)
+  [ 4/48] backtest_jobs (0.0s)
+  [ 5/48] benchmark_market_cache (0.0s)
+  [ 6/48] benchmark_qa (0.0s)
+  [ 7/48] chief_career_history (0.0s)
+  [ 8/48] chief_contextual_qa (0.0s)
+  [ 9/48] chief_enrichment_history (0.0s)
+  [10/48] chief_improvement_event (0.0s)
+  [11/48] chief_laudo (0.0s)
+  [12/48] chief_laudo_modal_state (0.0s)
+  [13/48] chief_perfil_perguntas (0.0s)
+  [14/48] chief_platform_history (0.0s)
+  [15/48] chief_rerank_cache (0.0s)
+  [16/48] chief_reverse_matches (0.0s)
+  [17/48] chief_reverse_profile (0.0s)
+  [18/48] chief_snapshot_before_op (0.0s)
+  [19/48] chief_stimulus_event (0.0s)
+  [20/48] deal_enrichment_jobs (0.0s)
+  [21/48] deal_enrichments (0.0s)
+  [22/48] deal_sales_ops (0.0s)
+  [23/48] governance_conflicts (0.0s)
+  [24/48] ingestion_logs (0.0s)
+  [25/48] iqp_snapshots (0.0s)
+  [26/48] jd_chief_alerts (0.0s)
+  [27/48] jd_chief_match_comments (0.0s)
+  [28/48] jd_chief_stages (0.0s)
+  [29/48] jd_list_quality (0.0s)
+  [30/48] mcp_query_log (0.0s)
+  [31/48] mql_candidates (0.0s)
+  [32/48] novo_funil_pipedrive (0.0s)
+  [33/48] pipedrive_write_log (0.0s)
+  [34/48] pipeline_runs (0.0s)
+  [35/48] platform_sync_state (0.0s)
+  [36/48] system_prompts (0.0s)
+  [37/48] ui_access_grant (0.0s)
+  [38/48] uploaded_files (0.0s)
+  [39/48] user_activity_log (0.0s)
+  [40/48] user_favorites (0.0s)
+  [41/48] users (0.0s)
+  [42/48] chief_embeddings (0.0s)
+  [43/48] chief_field_history (0.0s)
+  [44/48] job_descriptions (0.0s)
+  [45/48] job_embeddings (0.0s)
+  [46/48] jd_briefing_embeddings (0.0s)
+  [47/48] jd_extracted_metadata (0.0s)
+  !! INFO jd_results: coluna só no destino (fica com DEFAULT): ['coluna_so_no_destino']
+  [48/48] jd_results (0.0s)
+  alembic_version: preservada (destino já versionado pelo Alembic)
+  merge chiefs: fonte=4 atualizados=3 descartados(sem match)=1 divergentes=0
+  merge pipedrive_deals: fonte=3 atualizados=2 descartados(sem match)=1 divergentes=0
+Commit OK — 43 sequences reposicionadas; owner → intelligence_user: 94 objeto(s) alterado(s).
+
+tabela                                origem     destino  status
+------------------------------------------------------------------
+allocation_history                         0           0  OK
+allocation_history_shortlist               0           0  OK
+attractiveness_snapshots                   0           0  OK
+backtest_jobs                              0           0  OK
+benchmark_market_cache                     0           0  OK
+benchmark_qa                               0           0  OK
+chief_career_history                       0           0  OK
+chief_contextual_qa                        0           0  OK
+chief_enrichment_history                   0           0  OK
+chief_improvement_event                    0           0  OK
+chief_laudo                                0           0  OK
+chief_laudo_modal_state                    0           0  OK
+chief_perfil_perguntas                     1           1  OK
+chief_platform_history                     0           0  OK
+chief_rerank_cache                         0           0  OK
+chief_reverse_matches                      0           0  OK
+chief_reverse_profile                      0           0  OK
+chief_snapshot_before_op                   0           0  OK
+chief_stimulus_event                       0           0  OK
+deal_enrichment_jobs                       0           0  OK
+deal_enrichments                           0           0  OK
+deal_sales_ops                             0           0  OK
+governance_conflicts                       0           0  OK
+ingestion_logs                             0           0  OK
+iqp_snapshots                              0           0  OK
+jd_chief_alerts                            0           0  OK
+jd_chief_match_comments                    0           0  OK
+jd_chief_stages                            0           0  OK
+jd_list_quality                            0           0  OK
+mcp_query_log                              0           0  OK
+mql_candidates                             0           0  OK
+novo_funil_pipedrive                       0           0  OK
+pipedrive_write_log                        0           0  OK
+pipeline_runs                              0           0  OK
+platform_sync_state                        1           1  OK
+system_prompts                             0           0  OK
+ui_access_grant                            0           0  OK
+uploaded_files                             0           0  OK
+user_activity_log                          0           0  OK
+user_favorites                             0           0  OK
+users                                      0           0  OK
+chief_embeddings                           0           0  OK
+chief_field_history                        0           0  OK
+job_descriptions                           1           1  OK
+job_embeddings                             0           0  OK
+jd_briefing_embeddings                     0           0  OK
+jd_extracted_metadata                      0           0  OK
+jd_results                                 0           0  OK
+------------------------------------------------------------------
+TOTAL                                      3           3
+alembic_version: origem=sintetico_0001 destino=107_cliente  (INFO: destino gerido pelo Alembic do Intelligence)
+
+!! INFO destino à frente da origem (migration do Intelligence; coluna fica com DEFAULT):
+   jd_results: destino tem a mais ['coluna_so_no_destino']
+
+== ZERO DIVERGÊNCIAS ==
+view chiefs_todos preservada: 1
+tabela do cliente preservada (linhas): 2
+coluna só no destino preservada: 1
+alembic_version preservada: 107_cliente
+owner intelligence_user (tabelas/seqs/views): 96 de 96
+grant SELECT intelligence_user em jd_results: true
+default privileges no schema: 1
+chief_perfil_perguntas carregada: 1
+job_descriptions.is_test/outcome carregados: 1
+CENÁRIO D-1: OK
+
+Relatórios: /tmp/etl-validation-report.txt e /tmp/etl-merge-report.txt
+Container 'chiefs-etl-validate' fica no ar: psql -h localhost -p 5599 -U postgres -d destino
+Para derrubar: docker rm -f chiefs-etl-validate
+rc=0

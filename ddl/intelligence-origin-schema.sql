@@ -887,6 +887,40 @@ CREATE TABLE public.chief_laudo_modal_state (
 
 
 --
+-- Name: chief_perfil_perguntas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.chief_perfil_perguntas (
+    id bigint NOT NULL,
+    chief_id bigint NOT NULL,
+    perguntas jsonb NOT NULL,
+    answers jsonb,
+    answers_at timestamp with time zone,
+    answers_enriched_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: chief_perfil_perguntas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.chief_perfil_perguntas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: chief_perfil_perguntas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.chief_perfil_perguntas_id_seq OWNED BY public.chief_perfil_perguntas.id;
+
+
+--
 -- Name: chief_platform_history; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1255,6 +1289,19 @@ CREATE SEQUENCE public.chiefs_platform_id_seq
 --
 
 ALTER SEQUENCE public.chiefs_platform_id_seq OWNED BY public.chiefs_platform.id;
+
+
+--
+-- Name: chiefs_reenrich_backup_20260831; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.chiefs_reenrich_backup_20260831 (
+    id character varying,
+    enrichment_status character varying(20),
+    enrichment_claimed_at timestamp with time zone,
+    needs_re_enrichment boolean,
+    vectorization_status character varying(20)
+);
 
 
 --
@@ -2207,7 +2254,12 @@ CREATE TABLE public.job_descriptions (
     rails_synced_at timestamp with time zone,
     rails_viewer_company_ids integer[] DEFAULT '{}'::integer[],
     jd_variants jsonb,
-    created_by character varying
+    created_by character varying,
+    is_test boolean DEFAULT false NOT NULL,
+    outcome character varying(30),
+    outcome_chief_id bigint,
+    outcome_note text,
+    outcome_at timestamp with time zone
 );
 
 
@@ -2845,6 +2897,13 @@ ALTER TABLE ONLY public.chief_laudo ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: chief_perfil_perguntas id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chief_perfil_perguntas ALTER COLUMN id SET DEFAULT nextval('public.chief_perfil_perguntas_id_seq'::regclass);
+
+
+--
 -- Name: chief_platform_history id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3321,6 +3380,22 @@ ALTER TABLE ONLY public.chief_laudo_modal_state
 
 ALTER TABLE ONLY public.chief_laudo
     ADD CONSTRAINT chief_laudo_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: chief_perfil_perguntas chief_perfil_perguntas_chief_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chief_perfil_perguntas
+    ADD CONSTRAINT chief_perfil_perguntas_chief_id_key UNIQUE (chief_id);
+
+
+--
+-- Name: chief_perfil_perguntas chief_perfil_perguntas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chief_perfil_perguntas
+    ADD CONSTRAINT chief_perfil_perguntas_pkey PRIMARY KEY (id);
 
 
 --
@@ -4510,6 +4585,13 @@ CREATE INDEX ix_chief_laudo_chief ON public.chief_laudo USING btree (chief_id);
 
 
 --
+-- Name: ix_chief_perfil_perguntas_pending; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_chief_perfil_perguntas_pending ON public.chief_perfil_perguntas USING btree (answers_at) WHERE ((answers IS NOT NULL) AND (answers_enriched_at IS NULL));
+
+
+--
 -- Name: ix_chief_rerank_cache_chief_fact; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4965,10 +5047,24 @@ CREATE INDEX ix_job_descriptions_created_at ON public.job_descriptions USING btr
 
 
 --
+-- Name: ix_job_descriptions_is_test; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_job_descriptions_is_test ON public.job_descriptions USING btree (is_test) WHERE (is_test = true);
+
+
+--
 -- Name: ix_job_descriptions_jd_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_job_descriptions_jd_status ON public.job_descriptions USING btree (jd_status);
+
+
+--
+-- Name: ix_job_descriptions_outcome; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_job_descriptions_outcome ON public.job_descriptions USING btree (outcome) WHERE (outcome IS NOT NULL);
 
 
 --

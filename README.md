@@ -8,7 +8,10 @@ nas tabelas do main. Este repositório cumpre o critério contratual de
 
 **Validado em homologação em 19/08/2026**: 358.844 linhas, 48/48 tabelas,
 zero divergências, com a origem viva recebendo escrita durante a carga;
-re-execução idempotente comprovada.
+re-execução idempotente comprovada. **08/09/2026** (feedback do teste de
+cutover em homolog): re-diff da origem (alembic 106) incorporado —
+49 tabelas —, re-execução D-1 que **preserva** o que o Intelligence cria no
+schema, e owner final `intelligence_user` (ver "Re-execução D-1").
 
 ---
 
@@ -17,10 +20,12 @@ re-execução idempotente comprovada.
 Desenho definido pelos vereditos de 13/08 (Renan): **tabela espelho não
 migra — só migra o que nasce no Intelligence**.
 
-1. **Carga full, espelho 1:1, das 48 tabelas** que nascem no Intelligence
-   → schema `intelligence` do destino. `TRUNCATE ... RESTART IDENTITY
-   CASCADE` + INSERT por streaming COPY→COPY **em memória** (nenhum dado
-   toca disco — regra §5.1), `setval` das 42 sequences, tudo em **uma
+1. **Carga full, espelho 1:1, das tabelas que nascem no Intelligence**
+   → schema `intelligence` do destino: 49 no schema (48 + `alembic_version`,
+   que é semeada na 1ª carga e **nunca sobrescrita** depois). `TRUNCATE
+   ... RESTART IDENTITY` (**sem CASCADE**) + INSERT por streaming COPY→COPY
+   **em memória** (nenhum dado toca disco — regra §5.1), `setval` das 43
+   sequences, owner dos objetos → `intelligence_user`, tudo em **uma
    transação** (falha = rollback total; re-executar nunca duplica).
 2. **Merge das híbridas** no main:
    - `app.chiefs` **+53 colunas** de enriquecimento — fonte
@@ -40,23 +45,27 @@ migra — só migra o que nasce no Intelligence**.
 ```
 ddl/
   ddl-main-enrichment.sql      ALTER TABLE no main: chiefs +53, pipedrive_deals +4 (idempotente)
-  ddl-intelligence-schema.sql  schema intelligence: 48 tabelas, 42 sequences, índices (3 HNSW), view
+  ddl-main-enrichment-indexes.sql  índices em app.chiefs p/ o enrichment (mínimo p/ produção + candidatos GIN) — feedback 08/09 item 3
+  ddl-intelligence-schema.sql  schema intelligence: 49 tabelas, 43 sequences, índices (3 HNSW), view (re-diff 08/09: alembic 106)
   p1-schemas-roles-grants.sql  schemas/roles/grants do P1 (inclui heroku_ext — Achado #2 de 20/08)
+  p2-grants-enrichment-update.sql  GRANT UPDATE por coluna (53) em app.chiefs → intelligence_user — feedback 08/09 item 1
+  p2-search-path-intelligence-user.sql  search_path da role intelligence_user (rodar COMO a role) — feedback 08/09 item 2
   main-schema-snapshot.sql     snapshot schema-only do main (canônico: migrations do Rails; snapshot de 11/08)
-  intelligence-origin-schema.sql  snapshot schema-only da ORIGEM (regenerado 20/08 — inclui rerank_detail; regenerar no gate D-1)
+  intelligence-origin-schema.sql  snapshot schema-only da ORIGEM (regenerado 08/09 — alembic 106; regenerar no gate D-1)
 etl/
-  etl.py                       ETL recomendado: carga + merge + validação (streaming em memória)
+  etl.py                       ETL recomendado: carga + merge + validação + owner (streaming em memória)
   00-fdw-setup.sql             alternativa SQL: conexão read-only com a origem via postgres_fdw
-  01-load-intelligence.sql     alternativa SQL: carga das 48 em ordem de FK + setval
+  01-load-intelligence.sql     alternativa SQL: carga das 48 em ordem de FK + setval (alembic_version só se vazia)
   02-merge-main.sql            alternativa SQL: merge das híbridas + relatório de fidelidade
-  03-validate.sql              contagens 48/48 origem × destino
+  03-validate.sql              contagens 48/48 origem × destino (+ versão alembic à parte)
   04-integridade.sql           sequences (check duro) + órfãos das FKs lógicas (auditoria)
+  05-owner-intelligence.sql    passo final: owner de intelligence.* → intelligence_user — feedback 08/09 item 5
 scripts/
-  run-local-validation.sh      validação local em Docker (pgvector/pg17) — modo sintético §5.1 por padrão
+  run-local-validation.sh      validação local em Docker (pgvector/pg17) — modo sintético §5.1 + cenário de re-execução D-1
 docs/
-  runbook-etl.md               runbook de operação (credenciais, monitoração, gates pré-cutover, troubleshooting)
+  runbook-etl.md               runbook de operação (credenciais, monitoração, gates pré-cutover, re-execução D-1, troubleshooting)
 evidencias/
-  p1/  p2/  feedback-2026-08-20/   evidências das execuções em homolog (critério "com evidência" do §11.1)
+  p1/  p2/  feedback-2026-08-20/  feedback-2026-09-08/   evidências das execuções (critério "com evidência" do §11.1)
 .env.example                   modelo das variáveis de conexão (copiar para .env)
 ```
 
@@ -88,6 +97,7 @@ set -a; source .env; set +a
 | `DST_USER` / `DST_PASSWORD` | ✅ | **Credencial `default`** do banco (dona das tabelas). `intelligence_user` NÃO serve para a carga (TRUNCATE exige ownership) nem para o merge (não tem UPDATE em `app`) |
 | `DST_SSLMODE` | — | `require` (default no .env.example) — obrigatório no Heroku |
 | `DST_SCHEMA` | — | default `intelligence` |
+| `DST_OBJECT_OWNER` | — | default `intelligence_user`: owner final de tabelas/sequences/views de `DST_SCHEMA` (passo final da carga; vazio = não alterar) |
 | `APP_SCHEMA` | — | default `app`; usar `public` em bancos restaurados de dump (validação local) |
 | `DST_URL` | scripts psql | Connection string montada, para os passos com `psql -f` |
 | `DUMP_INTEL` / `DUMP_MAIN` | validação local | Caminhos dos dumps locais (não versionados) |
@@ -110,15 +120,36 @@ psql "$DST_URL" -v ON_ERROR_STOP=1 -f ddl/ddl-intelligence-schema.sql
 > `app` (pós-P1). Em base restaurada de dump (tabelas em `public`),
 > troque o `SET search_path` no topo do arquivo.
 
+### 1b · Grants de cutover para `intelligence_user` (uma vez por ambiente — feedback 08/09)
+
+O serviço de inteligência passa a gravar o enriquecimento **direto em
+`app.chiefs`** e a rodar suas migrations Alembic no schema `intelligence`:
+
+```bash
+# item 1 — UPDATE só nas 53 colunas de enriquecimento (credencial DEFAULT, owner de app.chiefs)
+psql "$DST_URL" -v ON_ERROR_STOP=1 -f ddl/p2-grants-enrichment-update.sql
+
+# item 2 — search_path da role: rodar CONECTADO COMO intelligence_user (a default não altera roles no Heroku)
+psql "$(heroku pg:credentials:url DATABASE_URL --name intelligence_user -a <app> | grep -oE 'postgres://[^ ]+')" \
+     -v ON_ERROR_STOP=1 -f ddl/p2-search-path-intelligence-user.sql
+
+# item 3 — índices em app.chiefs (produção; CONCURRENTLY, fora de transação)
+psql "$DST_URL" -v ON_ERROR_STOP=1 -f ddl/ddl-main-enrichment-indexes.sql
+```
+
+O item 5 (owner de `intelligence.*` = `intelligence_user`) é passo final
+automático do `etl.py`; no caminho 100% SQL, rodar `etl/05-owner-intelligence.sql`.
+
 ### 2 · Carga + merge + validação
 
 ```bash
 python3 etl/etl.py --merge
 ```
 
-Saída esperada: 48 tabelas carregadas, linhas de merge com
-`divergentes=0`, `Commit OK — 42 sequences reposicionadas` e
-`== ZERO DIVERGÊNCIAS ==`. Duração de referência: **~3 min** (gargalo:
+Saída esperada: 48 tabelas carregadas, `alembic_version: semeada da origem`
+(1ª carga) ou `preservada` (re-execução), linhas de merge com
+`divergentes=0`, `Commit OK — 43 sequences reposicionadas; owner →
+intelligence_user: N objeto(s)` e `== ZERO DIVERGÊNCIAS ==`. Duração de referência: **~3 min** (gargalo:
 `chief_embeddings`, vetores 1536).
 
 Flags:
@@ -150,6 +181,7 @@ psql "$DST_URL" -f etl/00-fdw-setup.sql \
 psql "$DST_URL" -v ON_ERROR_STOP=1 -f etl/01-load-intelligence.sql
 psql "$DST_URL" -v ON_ERROR_STOP=1 -v app_schema=$APP_SCHEMA -f etl/02-merge-main.sql
 psql "$DST_URL" -f etl/03-validate.sql
+psql "$DST_URL" -v ON_ERROR_STOP=1 -f etl/05-owner-intelligence.sql   # passo final (item 5)
 ```
 
 ### Validação local em Docker (não toca bases reais — §5.1)
@@ -161,16 +193,32 @@ bash scripts/run-local-validation.sh
 **Modo padrão: SINTÉTICO** — origem e destino criados de schema-only
 (snapshots em `ddl/`) + seed sintético gerado pelo próprio script
 (nenhum dado real na máquina local). Exercita carga das 48, merge com
-conflito ativos×todos e ids sem match, sequences, view, contagens e
-integridade. Modo legado com dumps reais: `USE_REAL_DUMPS=1
+conflito ativos×todos e ids sem match, sequences, view, contagens,
+integridade e, no passo 9, a **re-execução D-1 com o `etl.py`** no cenário
+do teste de cutover (view, tabela, coluna e `alembic_version` criadas pelo
+Intelligence no schema precisam sobreviver; owner final `intelligence_user`). Modo legado com dumps reais: `USE_REAL_DUMPS=1
 DUMP_INTEL=... [DUMP_MAIN=...]` — somente em ambiente autorizado.
 
-## Reprocessamento e idempotência
+## Reprocessamento e idempotência — re-execução D-1
 
 Rodar de novo = mesmo estado final (carga é TRUNCATE+reload; o merge
 reaplica os mesmos valores). Falha no meio = rollback total. Não há
-estado intermediário a limpar. Detalhes operacionais (monitoração, o que
-quebra se ninguém cuidar, troubleshooting): **`docs/runbook-etl.md`**.
+estado intermediário a limpar.
+
+O que a re-execução (ex.: D-1 do cutover, com o Intelligence já rodando
+migrations no schema `intelligence` do destino) **toca** e o que **preserva**
+(feedback 08/09, item 4 — provado no passo 9 da validação local):
+
+| | |
+|---|---|
+| **Recarrega** (TRUNCATE + INSERT, sem CASCADE) | só as 48 tabelas de `TABLES` no `etl.py` (lista idêntica ao `01-load-intelligence.sql`) — dado gravado pelo app nelas, no destino, é substituído pelo da origem |
+| **Nunca sobrescreve** | `intelligence.alembic_version` (só semeia se vazia); colunas que existem só no destino (ficam com o DEFAULT) |
+| **Não toca** | views (`chiefs_todos`, `chiefs_ativos`, `deal_quality_scores`), funções, tabelas fora da lista (ex.: `mcp_refresh_tokens`), grants, default privileges, o schema em si — não há `DROP`/`CREATE` no ETL; o DDL é passo separado e só da 1ª vez |
+| **Falha alto** | tabela nova na origem sem veredito; coluna nova na origem ausente no destino (drift, Achado #1); tabela do cliente com FK para uma das 48 (TRUNCATE sem CASCADE recusa) |
+| **Passo final** | owner de tabelas/sequences/views de `intelligence` → `intelligence_user` (idempotente) |
+
+Detalhes operacionais (monitoração, o que quebra se ninguém cuidar,
+troubleshooting): **`docs/runbook-etl.md`**.
 
 ## Segurança e regras contratuais
 
@@ -191,4 +239,7 @@ quebra se ninguém cuidar, troubleshooting): **`docs/runbook-etl.md`**.
 | `permission denied for table ...` na carga/merge | credencial errada → usar a **default** (dona) |
 | Validação diverge por poucas linhas com origem ativa | usar o `etl.py` deste repo (≥19/08: snapshot único corrigido) |
 | `DRIFT DE SCHEMA` na carga | coluna nova na origem (migration recente) ausente no destino — aplicar o ALTER/DDL e re-rodar; `--validate-only` é o re-diff do D-1 (Achado #1, 20/08); `ETL_ALLOW_SCHEMA_DRIFT=1` só em emergência consciente |
+| `tabelas NOVAS na origem sem veredito` | migration do Intelligence criou tabela nova — decidir: entra em `TABLES` (+ DDL) ou em `ORIGIN_EXCLUDED` |
+| `must be owner of table ...` no deploy do Intelligence | objetos de `intelligence.*` ainda com owner da credencial default — rodar `etl/05-owner-intelligence.sql` (o `etl.py` já faz ao fim da carga) |
+| `cannot truncate a table referenced in a foreign key constraint` | tabela do Intelligence com FK para uma das 48 — sinal de que ela nasce lá e precisa entrar em `TABLES`; nunca usar CASCADE |
 | `heroku pg:psql < arquivo` não executa nada | CLI v11.9 engole stdin → usar `psql "$DST_URL" -f` |

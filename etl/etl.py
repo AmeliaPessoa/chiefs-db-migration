@@ -3,10 +3,11 @@
 
 Vereditos de 13/08 (Renan): espelho NÃO migra. Este ETL faz:
 
-  1. Carga integral (full load) das 48 tabelas que nascem no Intelligence,
-     espelho 1:1 no schema `intelligence`: SELECT na origem e INSERT no
-     destino por streaming COPY→COPY, direto de conexão a conexão — nenhum
-     dado toca disco, repositório ou arquivo intermediário (§5.1).
+  1. Carga integral (full load) das tabelas que nascem no Intelligence
+     (49 no schema: 48 recarregadas + alembic_version preservada), espelho
+     1:1 no schema `intelligence`: SELECT na origem e INSERT no destino por
+     streaming COPY→COPY, direto de conexão a conexão — nenhum dado toca
+     disco, repositório ou arquivo intermediário (§5.1).
   2. (--merge) Merge das híbridas no main (schema APP_SCHEMA, default `app`):
      `chiefs` +53 colunas de enriquecimento (ativos ∪ todos; em conflito
      vale chiefs_ativos) e `pipedrive_deals` +4 colunas, casando
@@ -14,9 +15,28 @@ Vereditos de 13/08 (Renan): espelho NÃO migra. Este ETL faz:
      (nunca sobrescreve o main); ids sem match são descartados (decisão
      18/08) e apenas contabilizados.
 
-Idempotente: TRUNCATE ... RESTART IDENTITY CASCADE antes da carga, e a
-execução inteira (truncate + 48 tabelas + merge + setval) roda em UMA
+Idempotente: TRUNCATE ... RESTART IDENTITY (SEM CASCADE) antes da carga, e a
+execução inteira (truncate + 48 tabelas + merge + setval + owner) roda em UMA
 transação no destino — ou entra tudo, ou nada; re-executar nunca duplica.
+
+Garantias da re-execução (feedback Chiefs 08/09, item 4 — o Intelligence
+passa a criar objetos no schema `intelligence` via Alembic):
+  · só as tabelas de TABLES são esvaziadas/recarregadas; tabelas, views,
+    funções e colunas criadas pelas migrations do Intelligence NÃO são
+    tocadas (não há DROP/CREATE; o DDL é passo separado, só na 1ª vez);
+  · TRUNCATE sem CASCADE: tabela nova do cliente com FK para uma das 48
+    faz a carga FALHAR (alto) em vez de ser esvaziada em silêncio;
+  · intelligence.alembic_version NUNCA é sobrescrita — só semeada da origem
+    se estiver vazia (1ª carga); depois pertence ao Alembic do Intelligence;
+  · coluna que existe só no DESTINO (migration à frente da origem) é
+    tolerada com WARN e fica com o DEFAULT; coluna só na ORIGEM continua
+    sendo DRIFT (erro — Achado #1, perderia dado);
+  · tabela nova na ORIGEM fora de TABLES e fora da lista de excluídas
+    (vereditos 13/08) é erro: precisa de veredito (carregar ou excluir);
+  · grants e default privileges não mudam (nada é dropado/recriado);
+  · passo final: owner dos objetos de `intelligence` → DST_OBJECT_OWNER
+    (default intelligence_user; vazio desliga) — as migrations Alembic
+    exigem ownership para ALTER TABLE (item 5 do feedback).
 
 Uso: trocar apenas as variáveis de conexão (env vars ou o bloco CONFIG
 abaixo) e rodar:
@@ -37,6 +57,7 @@ Pré-requisitos no destino: schema `intelligence` criado
 
 import argparse
 import os
+import re
 import sys
 import threading
 import time
@@ -68,6 +89,7 @@ CONFIG = {
     "DST_SSLMODE": "prefer",          # na base real: require/verify-full
     "DST_SCHEMA": "intelligence",
     "APP_SCHEMA": "app",          # schema do monolito no destino (merge); local: public
+    "DST_OBJECT_OWNER": "intelligence_user",  # owner final de intelligence.* ("" = não alterar)
 }
 
 
@@ -75,14 +97,18 @@ def cfg(key: str) -> str:
     return os.environ.get(key, CONFIG[key])
 
 
-# As 48 tabelas que migram (vereditos 13/08), em ordem de FK
-# (mesma ordem do 01-load-intelligence.sql): pais primeiro, filhas depois.
+# As tabelas que migram (vereditos 13/08 + chief_perfil_perguntas, 08/09), em
+# ordem de FK (mesma ordem do 01-load-intelligence.sql): pais primeiro,
+# filhas depois. alembic_version fica FORA desta lista: é semeada uma vez e
+# depois pertence ao Alembic do Intelligence (ver seed_alembic_version).
+ALEMBIC_TABLE = "alembic_version"
 TABLES = [
-    "alembic_version", "allocation_history", "allocation_history_shortlist",
+    "allocation_history", "allocation_history_shortlist",
     "attractiveness_snapshots", "backtest_jobs", "benchmark_market_cache",
     "benchmark_qa", "chief_career_history", "chief_contextual_qa",
     "chief_enrichment_history", "chief_improvement_event", "chief_laudo",
-    "chief_laudo_modal_state", "chief_platform_history",
+    "chief_laudo_modal_state", "chief_perfil_perguntas",
+    "chief_platform_history",
     "chief_rerank_cache", "chief_reverse_matches", "chief_reverse_profile",
     "chief_snapshot_before_op", "chief_stimulus_event",
     "deal_enrichment_jobs", "deal_enrichments", "deal_sales_ops",
@@ -96,6 +122,17 @@ TABLES = [
     "job_embeddings", "jd_briefing_embeddings", "jd_extracted_metadata",
     "jd_results",
 ]
+
+# Tabelas da origem que NÃO migram (vereditos 13/08): espelhos re-syncáveis,
+# híbridas (entram via merge), tokens e backups. Qualquer outra tabela nova
+# na origem fora de TABLES precisa de veredito → erro (check_origin_tables).
+ORIGIN_EXCLUDED = {
+    "accounts", "companies", "chiefs_platform",            # espelhos do main
+    "pipedrive_deals", "chiefs_ativos", "chiefs_todos",    # híbridas (merge)
+    "mcp_refresh_tokens",                                  # tokens efêmeros
+}
+ORIGIN_EXCLUDED_PREFIXES = ("ca_", "ac_")                  # Conta Azul / ActiveCampaign
+BACKUP_TABLE_RE = re.compile(r"(_bak|_backup)_\d{8}$")   # ex.: chief_embeddings_bak_20260803
 
 # Merge das híbridas (vereditos 13/08) — colunas NOVAS escritas no main.
 # Fonte: ddl-main-enrichment.sql (gerado do diff chiefs_ativos × chiefs).
@@ -273,7 +310,9 @@ def merge_main(src, dst) -> bool:
 
 
 def reset_sequences(dst) -> int:
-    """setval(MAX(col)+1) para toda coluna serial/identity do schema destino."""
+    """setval(MAX(col)+1) para toda coluna serial/identity das tabelas
+    CARREGADAS (só TABLES — sequences de tabelas criadas pelo Intelligence
+    não são tocadas)."""
     dst_schema = cfg("DST_SCHEMA")
     with dst.cursor() as cur:
         cur.execute(
@@ -282,10 +321,11 @@ def reset_sequences(dst) -> int:
                                              quote_ident(table_name), column_name)
                FROM information_schema.columns
                WHERE table_schema = %s
+                 AND table_name = ANY(%s)
                  AND pg_get_serial_sequence(quote_ident(table_schema) || '.' ||
                                             quote_ident(table_name), column_name)
                      IS NOT NULL""",
-            (dst_schema,),
+            (dst_schema, TABLES),
         )
         seqs = cur.fetchall()
         for table, col, seq in seqs:
@@ -297,20 +337,110 @@ def reset_sequences(dst) -> int:
     return len(seqs)
 
 
+def check_origin_tables(src) -> None:
+    """Tabela nova na ORIGEM que não está em TABLES nem na lista de excluídas
+    precisa de veredito (carregar ou excluir) — senão o cutover perderia
+    dado que nasce no Intelligence. Backups (_bak_/_backup_YYYYMMDD) são
+    descartados por regra (13/08) e só geram aviso."""
+    src_schema = cfg("SRC_SCHEMA")
+    with src.cursor() as cur:
+        cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = %s", (src_schema,))
+        origin = {r[0] for r in cur.fetchall()}
+    known = set(TABLES) | {ALEMBIC_TABLE} | ORIGIN_EXCLUDED
+    unknown = sorted(
+        t for t in origin - known if not t.startswith(ORIGIN_EXCLUDED_PREFIXES)
+    )
+    backups = [t for t in unknown if BACKUP_TABLE_RE.search(t)]
+    for t in backups:
+        print(f"  !! WARN backup operacional na origem, descartado por regra: {t}")
+    unknown = [t for t in unknown if t not in backups]
+    if unknown:
+        msg = (f"tabelas NOVAS na origem sem veredito (carregar em TABLES ou "
+               f"excluir em ORIGIN_EXCLUDED): {unknown}")
+        if os.environ.get("ETL_ALLOW_SCHEMA_DRIFT") == "1":
+            print(f"  !! WARN drift tolerado: {msg}")
+        else:
+            raise RuntimeError(msg)
+    missing_in_origin = sorted(set(TABLES) - origin)
+    if missing_in_origin:
+        raise RuntimeError(f"tabelas de TABLES ausentes na origem: {missing_in_origin}")
+
+
+def check_truncate_privilege(dst) -> None:
+    """Falha cedo, com mensagem clara, se a credencial não puder TRUNCATE
+    (após o owner virar intelligence_user, a default opera por ser MEMBRO
+    da role — se a membership faltar, é aqui que aparece)."""
+    dst_schema = cfg("DST_SCHEMA")
+    with dst.cursor() as cur:
+        cur.execute(
+            """SELECT t FROM unnest(%s::text[]) AS t
+               WHERE to_regclass(quote_ident(%s) || '.' || quote_ident(t)) IS NOT NULL
+                 AND NOT has_table_privilege(quote_ident(%s) || '.' || quote_ident(t), 'TRUNCATE')""",
+            (TABLES, dst_schema, dst_schema),
+        )
+        denied = [r[0] for r in cur.fetchall()]
+    if denied:
+        raise RuntimeError(
+            f"credencial {cfg('DST_USER')} sem TRUNCATE em {dst_schema}.{denied[:3]}... — "
+            f"usar a credencial default (owner ou membro de {cfg('DST_OBJECT_OWNER') or 'owner'})")
+
+
+def seed_alembic_version(src, dst) -> str:
+    """intelligence.alembic_version: semeia da origem SÓ se o destino estiver
+    vazio (1ª carga). Nunca sobrescreve — depois da 1ª carga a tabela é do
+    Alembic do Intelligence (item 4 do feedback de 08/09)."""
+    src_schema, dst_schema = cfg("SRC_SCHEMA"), cfg("DST_SCHEMA")
+    qd = lambda n: quote_ident(n, dst)
+    with dst.cursor() as cur:
+        cur.execute(f"SELECT count(*) FROM {qd(dst_schema)}.{qd(ALEMBIC_TABLE)}")
+        if cur.fetchone()[0] > 0:
+            return "preservada (destino já versionado pelo Alembic)"
+    stream_table(src, dst, ALEMBIC_TABLE, columns_of(dst, dst_schema, ALEMBIC_TABLE))
+    return "semeada da origem (1ª carga)"
+
+
+def ensure_owner(dst) -> int:
+    """Passo final: owner de tabelas/sequences/views de DST_SCHEMA →
+    DST_OBJECT_OWNER (as migrations Alembic exigem ownership para ALTER
+    TABLE — item 5 do feedback de 08/09). Idempotente; exige que a
+    credencial atual seja owner E membro da role destino."""
+    owner = cfg("DST_OBJECT_OWNER")
+    if not owner:
+        return 0
+    dst_schema = cfg("DST_SCHEMA")
+    with dst.cursor() as cur:
+        cur.execute("SELECT 1 FROM pg_roles WHERE rolname = %s", (owner,))
+        if cur.fetchone() is None:
+            print(f"  !! WARN role {owner} não existe neste banco — owner não alterado")
+            return 0
+        cur.execute(
+            """SELECT c.relname FROM pg_class c
+               JOIN pg_namespace n ON n.oid = c.relnamespace
+               WHERE n.nspname = %s AND c.relkind IN ('r','p','S','v','m')
+                 AND c.relowner <> (SELECT oid FROM pg_roles WHERE rolname = %s)""",
+            (dst_schema, owner),
+        )
+        rels = [r[0] for r in cur.fetchall()]
+        for rel in rels:
+            cur.execute(f"ALTER TABLE {quote_ident(dst_schema, dst)}.{quote_ident(rel, dst)} "
+                        f"OWNER TO {quote_ident(owner, dst)}")
+    return len(rels)
+
+
 def validate(src, dst) -> bool:
     src_schema, dst_schema = cfg("SRC_SCHEMA"), cfg("DST_SCHEMA")
     print(f"\n{'tabela':<32}{'origem':>12}{'destino':>12}  status")
     print("-" * 66)
     ok = True
     total_src = total_dst = 0
-    drift_report = []
+    drift_report, ahead_report = [], []
     for table in TABLES:
         s_cols = set(columns_of(src, src_schema, table))
         d_cols = set(columns_of(dst, dst_schema, table))
         if s_cols - d_cols:
             drift_report.append(f"{table}: origem tem a mais {sorted(s_cols - d_cols)}")
         if d_cols - s_cols:
-            drift_report.append(f"{table}: destino tem a mais {sorted(d_cols - s_cols)}")
+            ahead_report.append(f"{table}: destino tem a mais {sorted(d_cols - s_cols)}")
         with src.cursor() as cur:
             cur.execute(f"SELECT count(*) FROM {quote_ident(src_schema, src)}.{quote_ident(table, src)}")
             n_src = cur.fetchone()[0]
@@ -324,9 +454,23 @@ def validate(src, dst) -> bool:
         print(f"{table:<32}{n_src:>12}{n_dst:>12}  {status}")
     print("-" * 66)
     print(f"{'TOTAL':<32}{total_src:>12}{total_dst:>12}")
+    with src.cursor() as cur:
+        cur.execute(f"SELECT string_agg(version_num, ',') FROM "
+                    f"{quote_ident(src_schema, src)}.{quote_ident(ALEMBIC_TABLE, src)}")
+        v_src = cur.fetchone()[0]
+    with dst.cursor() as cur:
+        cur.execute(f"SELECT string_agg(version_num, ',') FROM "
+                    f"{quote_ident(dst_schema, dst)}.{quote_ident(ALEMBIC_TABLE, dst)}")
+        v_dst = cur.fetchone()[0]
+    print(f"{ALEMBIC_TABLE}: origem={v_src} destino={v_dst}"
+          + ("" if v_src == v_dst else "  (INFO: destino gerido pelo Alembic do Intelligence)"))
+    if ahead_report:
+        print("\n!! INFO destino à frente da origem (migration do Intelligence; coluna fica com DEFAULT):")
+        for line in ahead_report:
+            print(f"   {line}")
     if drift_report:
         ok = False
-        print("\n!! DRIFT DE SCHEMA (Achado #1 — colunas divergentes):")
+        print("\n!! DRIFT DE SCHEMA (Achado #1 — coluna na ORIGEM ausente no destino):")
         for line in drift_report:
             print(f"   {line}")
     print("\n== ZERO DIVERGÊNCIAS ==" if ok else "\n== HÁ DIVERGÊNCIAS ==")
@@ -372,19 +516,27 @@ def main() -> int:
             print(f"Carga: {cfg('SRC_HOST')}/{cfg('SRC_DB')} → "
                   f"{cfg('DST_HOST')}/{cfg('DST_DB')}.{dst_schema} "
                   f"({len(TABLES)} tabelas, transação única)")
+            check_origin_tables(src)
+            check_truncate_privilege(dst)
             all_tables = ", ".join(
                 f"{quote_ident(dst_schema, dst)}.{quote_ident(t, dst)}" for t in TABLES
             )
             with dst.cursor() as cur:
-                cur.execute(f"TRUNCATE {all_tables} RESTART IDENTITY CASCADE")
+                # SEM CASCADE: tabela do cliente com FK para uma das 48 faz
+                # falhar aqui, em vez de ser esvaziada em silêncio (item 4).
+                cur.execute(f"TRUNCATE {all_tables} RESTART IDENTITY")
             for i, table in enumerate(TABLES, 1):
                 cols = columns_of(dst, dst_schema, table)
                 if not cols:
                     raise RuntimeError(f"tabela {dst_schema}.{table} não existe no destino — rodar o DDL antes")
                 src_cols = set(columns_of(src, cfg("SRC_SCHEMA"), table))
-                missing = set(cols) - src_cols
-                if missing:
-                    raise RuntimeError(f"{table}: colunas ausentes na origem: {sorted(missing)}")
+                ahead = set(cols) - src_cols
+                if ahead:
+                    # destino à frente (migration do Intelligence já aplicada
+                    # aqui e ainda não na origem): carrega a interseção; a
+                    # coluna nova fica com o DEFAULT. Não é perda de dado.
+                    print(f"  !! INFO {table}: coluna só no destino (fica com DEFAULT): {sorted(ahead)}")
+                    cols = [c for c in cols if c in src_cols]
                 # Achado #1 (feedback Chiefs 20/08): check SIMÉTRICO — coluna
                 # nova na ORIGEM ausente no destino é drift de schema e
                 # perderia dado silenciosamente (a contagem fecharia mesmo
@@ -402,11 +554,14 @@ def main() -> int:
                 t0 = time.monotonic()
                 stream_table(src, dst, table, cols)
                 print(f"  [{i:2}/{len(TABLES)}] {table} ({time.monotonic() - t0:.1f}s)")
+            print(f"  {ALEMBIC_TABLE}: {seed_alembic_version(src, dst)}")
             if args.merge:
                 merge_ok = merge_main(src, dst)
             n_seq = reset_sequences(dst)
+            n_own = ensure_owner(dst)
             dst.commit()
-            print(f"Commit OK — {n_seq} sequences reposicionadas.")
+            print(f"Commit OK — {n_seq} sequences reposicionadas; "
+                  f"owner → {cfg('DST_OBJECT_OWNER') or '(inalterado)'}: {n_own} objeto(s) alterado(s).")
         return 0 if (validate(src, dst) and merge_ok) else 1
     except Exception:
         dst.rollback()

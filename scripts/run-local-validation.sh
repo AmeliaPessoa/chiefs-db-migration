@@ -4,7 +4,10 @@
 # MODO PADRÃO (sintético): schema-only + dados sintéticos gerados aqui —
 # NENHUM dado real toca a máquina local (alinhado ao feedback de 20/08,
 # pendência 6). Exercita: carga das 48, merge das híbridas (conflito
-# ativos×todos, ids sem match), sequences, view e validações.
+# ativos×todos, ids sem match), sequences, view e validações — e, no passo 9,
+# a RE-EXECUÇÃO D-1 com o etl.py no cenário do feedback de 08/09: objetos
+# criados pelo Intelligence no schema (view, tabela, coluna, alembic_version)
+# precisam sobreviver, e o owner final precisa ser intelligence_user.
 #
 # MODO LEGADO (dumps reais): USE_REAL_DUMPS=1 + DUMP_INTEL=... [DUMP_MAIN=...]
 # — usar SOMENTE em ambiente autorizado pela Chiefs (§5.1).
@@ -70,10 +73,15 @@ VALUES (9001,'Deal Sintético A','[{"nota":"a"}]'::jsonb,'[]'::jsonb,'{"origem":
 INSERT INTO public.alembic_version (version_num) VALUES ('sintetico_0001');
 INSERT INTO public.platform_sync_state ("key", last_sync_at, last_full_sync_at)
 VALUES ('sintetico', now(), now());
+INSERT INTO public.chief_perfil_perguntas (chief_id, perguntas) VALUES (101, '["pergunta sintética"]'::jsonb);
+INSERT INTO public.job_descriptions (id, title, is_test, outcome) VALUES (7001, 'JD sintética', true, 'contratado');
+-- (o snapshot da origem já traz os backups chief_embeddings_bak_20260803 e
+--  chiefs_reenrich_backup_20260831 — o ETL deve só AVISAR e descartá-los)
 SQL
 
-  echo "==> [2c/8] Seed sintético no DESTINO (main schema-only)"
+  echo "==> [2c/8] Seed sintético no DESTINO (main schema-only) + role intelligence_user"
   psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 <<'SQL'
+CREATE ROLE intelligence_user NOLOGIN;
 INSERT INTO public.chiefs (id, name, email, created_at, updated_at)
 VALUES (101,'Chief Sintético Um','c101@teste.local',now(),now()),
        (102,'Chief Sintético Dois','c102@teste.local',now(),now()),
@@ -88,9 +96,13 @@ echo "==> [3/8] Enriquecimento do main (chiefs +53, pipedrive_deals +4) — sche
 sed 's/SET search_path = app;/SET search_path = public;/' "$DIR/../ddl/ddl-main-enrichment.sql" \
   | psql_c -d $MAIN_DB -v ON_ERROR_STOP=1
 
-echo "==> [4/8] DDL do schema intelligence (48 tabelas + view) — view repontada para public local"
+echo "==> [4/8] DDL do schema intelligence (49 tabelas + view) — view repontada para public local"
 sed 's/app\.pipedrive_deals/public.pipedrive_deals/' "$DIR/../ddl/ddl-intelligence-schema.sql" \
   | psql_c -d $MAIN_DB -v ON_ERROR_STOP=1
+# grants + default privileges como no P1 (para provar no passo 9 que sobrevivem)
+psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 -c "GRANT USAGE, CREATE ON SCHEMA intelligence TO intelligence_user;" \
+  -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA intelligence TO intelligence_user;" \
+  -c "ALTER DEFAULT PRIVILEGES IN SCHEMA intelligence GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO intelligence_user;"
 
 echo "==> [5/8] FDW → carga das 48"
 docker exec -i -e PGPASSWORD=etl-local $CT psql -U postgres -q -d $MAIN_DB \
@@ -108,6 +120,38 @@ psql_c -d $MAIN_DB < "$DIR/03-validate.sql" | tee /tmp/etl-validation-report.txt
 
 echo "==> [8/8] Integridade (sequences + FKs lógicas)"
 psql_c -d $MAIN_DB -v app_schema=public < "$DIR/04-integridade.sql" | tail -8
+
+echo "==> [9] Re-execução D-1 com etl.py — cenário do feedback 08/09 (objetos do Intelligence no schema)"
+if python3 -c 'import psycopg2' 2>/dev/null; then
+  # o que o Intelligence cria no destino durante o teste (migrations 104→107):
+  psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 <<'SQL'
+CREATE VIEW intelligence.chiefs_todos AS SELECT id::text AS id, name, enrichment_status FROM public.chiefs;
+CREATE TABLE intelligence.tabela_do_cliente (id bigserial PRIMARY KEY, x text);
+INSERT INTO intelligence.tabela_do_cliente (x) VALUES ('linha 1'), ('linha 2');
+ALTER TABLE intelligence.jd_results ADD COLUMN coluna_so_no_destino text DEFAULT 'default-ok';
+UPDATE intelligence.alembic_version SET version_num = '107_cliente';
+ALTER TABLE intelligence.tabela_do_cliente OWNER TO intelligence_user;
+SQL
+  SRC_HOST=localhost SRC_PORT=$PORT SRC_DB=$INTEL_DB SRC_USER=postgres SRC_PASSWORD=etl-local \
+  DST_HOST=localhost DST_PORT=$PORT DST_DB=$MAIN_DB DST_USER=postgres DST_PASSWORD=etl-local \
+  APP_SCHEMA=public DST_OBJECT_OWNER=intelligence_user \
+  python3 "$DIR/etl.py" --merge | tee /tmp/etl-rerun-d1.txt
+  grep -q '== ZERO DIVERGÊNCIAS ==' /tmp/etl-rerun-d1.txt || { echo "FALHA: etl.py divergiu"; exit 1; }
+  psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 -At <<'SQL' | tee /tmp/etl-rerun-d1-check.txt
+SELECT 'view chiefs_todos preservada: '||(SELECT count(*) FROM pg_views WHERE schemaname='intelligence' AND viewname='chiefs_todos');
+SELECT 'tabela do cliente preservada (linhas): '||(SELECT count(*) FROM intelligence.tabela_do_cliente);
+SELECT 'coluna só no destino preservada: '||(SELECT count(*) FROM information_schema.columns WHERE table_schema='intelligence' AND table_name='jd_results' AND column_name='coluna_so_no_destino');
+SELECT 'alembic_version preservada: '||(SELECT string_agg(version_num, ',') FROM intelligence.alembic_version);
+SELECT 'owner intelligence_user (tabelas/seqs/views): '||(SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='intelligence' AND c.relkind IN ('r','S','v') AND c.relowner='intelligence_user'::regrole)||' de '||(SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='intelligence' AND c.relkind IN ('r','S','v'));
+SELECT 'grant SELECT intelligence_user em jd_results: '||has_table_privilege('intelligence_user','intelligence.jd_results','SELECT');
+SELECT 'default privileges no schema: '||(SELECT count(*) FROM pg_default_acl WHERE defaclnamespace='intelligence'::regnamespace);
+SELECT 'chief_perfil_perguntas carregada: '||(SELECT count(*) FROM intelligence.chief_perfil_perguntas);
+SELECT 'job_descriptions.is_test/outcome carregados: '||(SELECT count(*) FROM intelligence.job_descriptions WHERE is_test AND outcome='contratado');
+SQL
+  psql_c -d $MAIN_DB -At -c "SELECT CASE WHEN (SELECT count(*) FROM intelligence.tabela_do_cliente)=2 AND (SELECT string_agg(version_num,',') FROM intelligence.alembic_version)='107_cliente' AND EXISTS (SELECT 1 FROM pg_views WHERE schemaname='intelligence' AND viewname='chiefs_todos') AND NOT EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='intelligence' AND c.relkind IN ('r','S','v') AND c.relowner<>'intelligence_user'::regrole) THEN 'CENÁRIO D-1: OK' ELSE 'CENÁRIO D-1: FALHOU' END" | tee -a /tmp/etl-rerun-d1-check.txt
+else
+  echo "   (psycopg2 ausente — passo 9 pulado; pip3 install psycopg2-binary)"
+fi
 
 echo
 echo "Relatórios: /tmp/etl-validation-report.txt e /tmp/etl-merge-report.txt"

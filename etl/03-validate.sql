@@ -1,7 +1,9 @@
--- P2 ETL · 03 — Validação: contagem origem × destino para as 48 tabelas
+-- P2 ETL · 03 — Validação: contagem origem × destino para as 49 tabelas
 -- (a validação do merge das híbridas está no próprio 02-merge-main.sql)
+-- alembic_version fica FORA da contagem: é reportada à parte (versão origem × destino),
+-- porque o destino pode legitimamente estar à frente (migrations do Intelligence).
 CREATE TEMP TABLE r(item text, origem bigint, destino bigint, ok text);
-INSERT INTO r SELECT 'alembic_version', (SELECT count(*) FROM intel_src.alembic_version), (SELECT count(*) FROM intelligence.alembic_version), CASE WHEN (SELECT count(*) FROM intel_src.alembic_version) = (SELECT count(*) FROM intelligence.alembic_version) THEN 'OK' ELSE 'DIVERGE' END;
+INSERT INTO r SELECT 'chief_perfil_perguntas', (SELECT count(*) FROM intel_src.chief_perfil_perguntas), (SELECT count(*) FROM intelligence.chief_perfil_perguntas), CASE WHEN (SELECT count(*) FROM intel_src.chief_perfil_perguntas) = (SELECT count(*) FROM intelligence.chief_perfil_perguntas) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'allocation_history', (SELECT count(*) FROM intel_src.allocation_history), (SELECT count(*) FROM intelligence.allocation_history), CASE WHEN (SELECT count(*) FROM intel_src.allocation_history) = (SELECT count(*) FROM intelligence.allocation_history) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'allocation_history_shortlist', (SELECT count(*) FROM intel_src.allocation_history_shortlist), (SELECT count(*) FROM intelligence.allocation_history_shortlist), CASE WHEN (SELECT count(*) FROM intel_src.allocation_history_shortlist) = (SELECT count(*) FROM intelligence.allocation_history_shortlist) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'attractiveness_snapshots', (SELECT count(*) FROM intel_src.attractiveness_snapshots), (SELECT count(*) FROM intelligence.attractiveness_snapshots), CASE WHEN (SELECT count(*) FROM intel_src.attractiveness_snapshots) = (SELECT count(*) FROM intelligence.attractiveness_snapshots) THEN 'OK' ELSE 'DIVERGE' END;
@@ -50,4 +52,11 @@ INSERT INTO r SELECT 'jd_briefing_embeddings', (SELECT count(*) FROM intel_src.j
 INSERT INTO r SELECT 'jd_extracted_metadata', (SELECT count(*) FROM intel_src.jd_extracted_metadata), (SELECT count(*) FROM intelligence.jd_extracted_metadata), CASE WHEN (SELECT count(*) FROM intel_src.jd_extracted_metadata) = (SELECT count(*) FROM intelligence.jd_extracted_metadata) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'jd_results', (SELECT count(*) FROM intel_src.jd_results), (SELECT count(*) FROM intelligence.jd_results), CASE WHEN (SELECT count(*) FROM intel_src.jd_results) = (SELECT count(*) FROM intelligence.jd_results) THEN 'OK' ELSE 'DIVERGE' END;
 SELECT * FROM r ORDER BY (ok='DIVERGE') DESC, item;
-SELECT CASE WHEN EXISTS (SELECT 1 FROM r WHERE ok='DIVERGE') THEN 'RESULTADO: HÁ DIVERGÊNCIAS' ELSE 'RESULTADO: ZERO DIVERGÊNCIAS — 48/48 TABELAS OK' END;
+SELECT 'alembic_version' AS item,
+       (SELECT string_agg(version_num, ',') FROM intel_src.alembic_version)    AS origem,
+       (SELECT string_agg(version_num, ',') FROM intelligence.alembic_version) AS destino,
+       CASE WHEN (SELECT string_agg(version_num, ',') FROM intel_src.alembic_version)
+               = (SELECT string_agg(version_num, ',') FROM intelligence.alembic_version)
+            THEN 'OK' ELSE 'INFO: destino gerido pelo Alembic do Intelligence (não é divergência de dados)' END AS ok;
+SELECT CASE WHEN EXISTS (SELECT 1 FROM r WHERE ok='DIVERGE') THEN 'RESULTADO: HÁ DIVERGÊNCIAS'
+            ELSE 'RESULTADO: ZERO DIVERGÊNCIAS — '||(SELECT count(*) FROM r)||'/'||(SELECT count(*) FROM r)||' TABELAS OK' END;

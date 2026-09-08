@@ -1,0 +1,48 @@
+# Origem (Railway chiefs_intelligence) — leitura, 08/09/2026 (sessão READ ONLY)
+
+SET
+alembic origem: 106_job_descriptions_outcome
+tabelas em public: 72
+novas desde o snapshot de 20/08 (70 tabelas): chief_perfil_perguntas (1 linha), chiefs_reenrich_backup_20260831 (backup — descartado)
+job_descriptions cols novas: is_test,outcome_chief_id,outcome_at,outcome,outcome_note
+chiefs_ativos: tipos das 10 colunas dos GIN: industries_experience:ARRAY, sectors_experience:ARRAY, work_model:ARRAY, business_model:ARRAY, business_moment:ARRAY, main_companies:ARRAY, hard_skills:ARRAY, others_language:ARRAY, availability_status:ARRAY, company_profiles:ARRAY
+
+# diff do snapshot schema-only (ddl/intelligence-origin-schema.sql) 20/08 → 08/09, sem comentários:
+> CREATE TABLE public.chief_perfil_perguntas (
+>     id bigint NOT NULL,
+>     chief_id bigint NOT NULL,
+>     perguntas jsonb NOT NULL,
+>     answers jsonb,
+>     answers_at timestamp with time zone,
+>     answers_enriched_at timestamp with time zone,
+>     created_at timestamp with time zone DEFAULT now() NOT NULL
+> );
+> CREATE SEQUENCE public.chief_perfil_perguntas_id_seq
+>     START WITH 1
+>     INCREMENT BY 1
+>     NO MINVALUE
+>     NO MAXVALUE
+>     CACHE 1;
+> ALTER SEQUENCE public.chief_perfil_perguntas_id_seq OWNED BY public.chief_perfil_perguntas.id;
+> CREATE TABLE public.chiefs_reenrich_backup_20260831 (
+>     id character varying,
+>     enrichment_status character varying(20),
+>     enrichment_claimed_at timestamp with time zone,
+>     needs_re_enrichment boolean,
+>     vectorization_status character varying(20)
+> );
+<     created_by character varying
+>     created_by character varying,
+>     is_test boolean DEFAULT false NOT NULL,
+>     outcome character varying(30),
+>     outcome_chief_id bigint,
+>     outcome_note text,
+>     outcome_at timestamp with time zone
+> ALTER TABLE ONLY public.chief_perfil_perguntas ALTER COLUMN id SET DEFAULT nextval('public.chief_perfil_perguntas_id_seq'::regclass);
+> ALTER TABLE ONLY public.chief_perfil_perguntas
+>     ADD CONSTRAINT chief_perfil_perguntas_chief_id_key UNIQUE (chief_id);
+> ALTER TABLE ONLY public.chief_perfil_perguntas
+>     ADD CONSTRAINT chief_perfil_perguntas_pkey PRIMARY KEY (id);
+> CREATE INDEX ix_chief_perfil_perguntas_pending ON public.chief_perfil_perguntas USING btree (answers_at) WHERE ((answers IS NOT NULL) AND (answers_enriched_at IS NULL));
+> CREATE INDEX ix_job_descriptions_is_test ON public.job_descriptions USING btree (is_test) WHERE (is_test = true);
+> CREATE INDEX ix_job_descriptions_outcome ON public.job_descriptions USING btree (outcome) WHERE (outcome IS NOT NULL);

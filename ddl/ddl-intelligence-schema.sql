@@ -18,9 +18,17 @@
 --
 -- Gerado do dump-chiefs_intelligence-202608111618.sql (schema-only);
 -- cortado para os vereditos em 18/08.
--- Inclui: 48 tabelas, sequences, defaults, constraints, índices (3 HNSW) e a view.
+-- Inclui: 49 tabelas, 43 sequences, defaults, constraints, índices (3 HNSW) e a view.
 -- Nota (19/08): linhas "OWNER TO postgres" do pg_dump removidas — no Heroku
 -- não há role postgres; o owner é quem executa o DDL (credencial default).
+-- Nota (08/09): re-diff contra a origem viva (alembic 106_job_descriptions_outcome):
+--   +tabela chief_perfil_perguntas (nasce no Intelligence → migra, 49ª);
+--   +5 colunas em job_descriptions (is_test, outcome, outcome_chief_id,
+--   outcome_note, outcome_at) e 2 índices parciais. O backup
+--   chiefs_reenrich_backup_20260831 da origem é descartado (mesma regra do
+--   chief_embeddings_bak). Owner final dos objetos: intelligence_user
+--   (etl/05-owner-intelligence.sql / passo final do etl.py) — as migrations
+--   Alembic do Intelligence fazem ALTER TABLE e exigem ownership.
 -- Pré-requisitos: extensão pgvector (vector 1536 + vector_cosine_ops);
 -- a view exige app.pipedrive_deals já com as colunas de ddl-main-enrichment.sql.
 --
@@ -346,6 +354,28 @@ CREATE TABLE intelligence.chief_laudo_modal_state (
     dismiss_count integer DEFAULT 0 NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
+
+
+CREATE TABLE intelligence.chief_perfil_perguntas (
+    id bigint NOT NULL,
+    chief_id bigint NOT NULL,
+    perguntas jsonb NOT NULL,
+    answers jsonb,
+    answers_at timestamp with time zone,
+    answers_enriched_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+CREATE SEQUENCE intelligence.chief_perfil_perguntas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE intelligence.chief_perfil_perguntas_id_seq OWNED BY intelligence.chief_perfil_perguntas.id;
 
 
 CREATE TABLE intelligence.chief_platform_history (
@@ -961,7 +991,12 @@ CREATE TABLE intelligence.job_descriptions (
     rails_synced_at timestamp with time zone,
     rails_viewer_company_ids integer[] DEFAULT '{}'::integer[],
     jd_variants jsonb,
-    created_by character varying
+    created_by character varying,
+    is_test boolean DEFAULT false NOT NULL,
+    outcome character varying(30),
+    outcome_chief_id bigint,
+    outcome_note text,
+    outcome_at timestamp with time zone
 );
 
 
@@ -1342,6 +1377,8 @@ ALTER TABLE ONLY intelligence.chief_improvement_event ALTER COLUMN id SET DEFAUL
 
 ALTER TABLE ONLY intelligence.chief_laudo ALTER COLUMN id SET DEFAULT nextval('intelligence.chief_laudo_id_seq'::regclass);
 
+ALTER TABLE ONLY intelligence.chief_perfil_perguntas ALTER COLUMN id SET DEFAULT nextval('intelligence.chief_perfil_perguntas_id_seq'::regclass);
+
 ALTER TABLE ONLY intelligence.chief_platform_history ALTER COLUMN id SET DEFAULT nextval('intelligence.chief_platform_history_id_seq'::regclass);
 
 ALTER TABLE ONLY intelligence.chief_rerank_cache ALTER COLUMN id SET DEFAULT nextval('intelligence.chief_rerank_cache_id_seq'::regclass);
@@ -1449,6 +1486,12 @@ ALTER TABLE ONLY intelligence.chief_laudo_modal_state
 
 ALTER TABLE ONLY intelligence.chief_laudo
     ADD CONSTRAINT chief_laudo_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY intelligence.chief_perfil_perguntas
+    ADD CONSTRAINT chief_perfil_perguntas_chief_id_key UNIQUE (chief_id);
+
+ALTER TABLE ONLY intelligence.chief_perfil_perguntas
+    ADD CONSTRAINT chief_perfil_perguntas_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY intelligence.chief_platform_history
     ADD CONSTRAINT chief_platform_history_pkey PRIMARY KEY (id);
@@ -1758,7 +1801,13 @@ CREATE INDEX ix_jd_results_job_description_id ON intelligence.jd_results USING b
 
 CREATE INDEX ix_jd_results_pipeline_run_id ON intelligence.jd_results USING btree (pipeline_run_id);
 
+CREATE INDEX ix_chief_perfil_perguntas_pending ON intelligence.chief_perfil_perguntas USING btree (answers_at) WHERE ((answers IS NOT NULL) AND (answers_enriched_at IS NULL));
+
 CREATE INDEX ix_job_descriptions_created_at ON intelligence.job_descriptions USING btree (created_at);
+
+CREATE INDEX ix_job_descriptions_is_test ON intelligence.job_descriptions USING btree (is_test) WHERE (is_test = true);
+
+CREATE INDEX ix_job_descriptions_outcome ON intelligence.job_descriptions USING btree (outcome) WHERE (outcome IS NOT NULL);
 
 CREATE INDEX ix_job_descriptions_jd_status ON intelligence.job_descriptions USING btree (jd_status);
 

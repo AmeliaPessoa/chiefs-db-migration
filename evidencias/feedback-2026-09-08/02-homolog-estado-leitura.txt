@@ -1,0 +1,26 @@
+# Estado da homolog (postgresql-fluffy-10310 / chiefsgroup-homolog) — leitura, 08/09/2026
+# heroku pg:psql ... (credencial default) — nenhuma escrita
+
+--> Connecting to postgresql-fluffy-10310
+ k | v 
+---------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ alembic destino | 107_compat_views_shared_db
+ owners intelligence.* (owner:tipo=n) | intelligence_user:S=43 intelligence_user:r=49 intelligence_user:v=3
+ schema intelligence owner | u8tu26o4qg0v85
+ search_path por role (pg_db_role_setting) | app_user=search_path=app, public, heroku_ext
+ default é membro de intelligence_user | true
+ default pode TRUNCATE intelligence.job_descriptions | true
+ views intelligence | deal_quality_scores(intelligence_user),chiefs_todos(intelligence_user),chiefs_ativos(intelligence_user)
+ funcoes intelligence (volatilidade) | compat_csv_split:i,compat_strip_html:i
+ tabelas intelligence fora das 48 de 19/08 | chief_perfil_perguntas(intelligence_user)
+ job_descriptions cols novas (104-106) | is_test,outcome_chief_id,outcome_at,outcome,outcome_note
+ FKs em intelligence | intelligence.allocation_history_shortlist->intelligence.allocation_history, intelligence.jd_briefing_embeddings->intelligence.job_descriptions, intelligence.jd_extracted_metadata->intelligence.job_descriptions, intelligence.jd_results->intelligence.job_descriptions, intelligence.job_descriptions->intelligence.uploaded_files, intelligence.job_embeddings->intelligence.job_descriptions
+ indices app.chiefs | chiefs_pkey,idx_chiefs_provider_uid_unique,index_chiefs_on_email,index_chiefs_on_reset_password_token,index_chiefs_on_slug
+ intelligence_user: colunas com UPDATE em app.chiefs (item 1, ANTES) | 0
+ intelligence_user: grants de tabela em app.chiefs | SELECT
+ app.chiefs owner | u8tu26o4qg0v85
+ app.chiefs: tipos das 10 colunas dos GIN (item 3) | company_profiles:character varying, industries_experience:character varying, sectors_experience:character varying, main_companies:character varying, hard_skills:text, work_model:character varying, business_model:character varying, business_moment:character varying, others_language:character varying, availability_status:character varying
+ extensoes | plpgsql@pg_catalog, pg_stat_statements@public, pg_trgm@public, unaccent@heroku_ext, vector@public
+ pg_default_acl | u8tu26o4qg0v85/app/S={app_user=rU/u8tu26o4qg0v85} | u8tu26o4qg0v85/intelligence/r={intelligence_user=arwd/u8tu26o4qg0v85} | u8tu26o4qg0v85/intelligence/S={intelligence_user=rU/u8tu26o4qg0v85} | u8tu26o4qg0v85/app/r={intelligence_user=r/u8tu26o4qg0v85,app_user=arwd/u8tu26o4qg0v85} | app_user/app/r={intelligence_user=r/app_user} | u8tu26o4qg0v85/analytical/r={looker_reader=r/u8tu26o4qg0v85,analytical_reader=r/u8tu26o4qg0v85} | u8tu26o4qg0v85/lab/r={intelligence_user=arwd/u8tu26o4qg0v85}
+(18 rows)
+
