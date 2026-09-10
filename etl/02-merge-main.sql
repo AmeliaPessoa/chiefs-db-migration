@@ -146,4 +146,7 @@ SELECT * FROM r;
 SELECT CASE WHEN EXISTS (SELECT 1 FROM r WHERE ok = 'DIVERGE')
        THEN 'MERGE: HÁ DIVERGÊNCIAS' ELSE 'MERGE: ZERO DIVERGÊNCIAS' END;
 
+-- ANALYZE nas híbridas após o UPDATE em massa (feedback 10/09, item 8)
+ANALYZE :"app_schema".chiefs;
+ANALYZE :"app_schema".pipedrive_deals;
 COMMIT;

@@ -1,0 +1,9 @@
+--> Connecting to postgresql-fluffy-10310
+SET
+SET
+ current_user |          schemas_efetivos          | similarity_sem_prefixo | unaccent_sem_prefixo | le_chiefs | owner_chiefs 
+--------------+------------------------------------+------------------------+----------------------+-----------+--------------
+ app_user     | {pg_catalog,app,public,heroku_ext} |                  0.625 | acao                 | t         | app_user
+(1 row)
+
+RESET

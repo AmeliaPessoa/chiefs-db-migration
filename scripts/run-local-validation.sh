@@ -137,6 +137,7 @@ SQL
   APP_SCHEMA=public DST_OBJECT_OWNER=intelligence_user \
   python3 "$DIR/etl.py" --merge | tee /tmp/etl-rerun-d1.txt
   grep -q '== ZERO DIVERGÊNCIAS ==' /tmp/etl-rerun-d1.txt || { echo "FALHA: etl.py divergiu"; exit 1; }
+  grep -q 'ANALYZE em 50 tabela(s)' /tmp/etl-rerun-d1.txt || { echo "FALHA: etl.py não fez ANALYZE (48 + 2 híbridas)"; exit 1; }
   psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 -At <<'SQL' | tee /tmp/etl-rerun-d1-check.txt
 SELECT 'view chiefs_todos preservada: '||(SELECT count(*) FROM pg_views WHERE schemaname='intelligence' AND viewname='chiefs_todos');
 SELECT 'tabela do cliente preservada (linhas): '||(SELECT count(*) FROM intelligence.tabela_do_cliente);

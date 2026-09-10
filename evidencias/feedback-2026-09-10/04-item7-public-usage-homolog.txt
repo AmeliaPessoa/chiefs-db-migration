@@ -1,0 +1,16 @@
+--> Connecting to postgresql-fluffy-10310
+GRANT
+GRANT
+       role        | public_usage | public_create | heroku_ext_usage 
+-------------------+--------------+---------------+------------------
+ app_user          | t            | f             | t
+ intelligence_user | t            | f             | t
+ looker_reader     | t            | f             | t
+ analytical_reader | t            | f             | t
+(4 rows)
+
+ similarity_ok | unaccent_ok 
+---------------+-------------
+         0.625 | acao
+(1 row)
+

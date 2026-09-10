@@ -1,0 +1,25 @@
+# Estado da homolog (postgresql-fluffy-10310 / chiefsgroup-homolog) — leitura, 10/09/2026, antes de qualquer ação
+# Contexto: feedback Chiefs de 10/09 (Parte 2: Rails homolog no mesmo banco; release v251/v252 falhou no db:migrate com 'must be owner of table chiefs')
+# heroku pg:psql ... (credencial default) — nenhuma escrita. DATABASE_URL do app = app_user (heroku config, conferido)
+
+--> Connecting to postgresql-fluffy-10310
+                           k                           |                                                                                                                                                                                                                                                                                           v                                                                                                                                                                                                                                                                                           
+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ versao                                                | 18.6
+ extensoes                                             | pg_stat_statements@public 1.12, pg_trgm@public 1.6, plpgsql@pg_catalog 1.0, unaccent@heroku_ext 1.1, vector@public 0.8.6
+ owners app.* (owner:tipo=n)                           | u8tu26o4qg0v85:i=302 u8tu26o4qg0v85:r=97 u8tu26o4qg0v85:S=92
+ owners intelligence.* (owner:tipo=n)                  | intelligence_user:r=49 intelligence_user:S=43 intelligence_user:v=3
+ app_user e membro de quem / default e membro de quem  | u8tu26o4qg0v85->pg_monitor, u8tu26o4qg0v85->pg_read_all_settings, u8tu26o4qg0v85->pg_read_all_stats, u8tu26o4qg0v85->pg_signal_backend, u8tu26o4qg0v85->looker_reader, u8tu26o4qg0v85->analytical_reader, u8tu26o4qg0v85->intelligence_user, u8tu26o4qg0v85->app_user
+ acl schema public                                     | u8tu26o4qg0v85=UC/u8tu26o4qg0v85,intelligence_user=U/u8tu26o4qg0v85
+ USAGE em public por role                              | app_user=false, intelligence_user=true, looker_reader=false, analytical_reader=false
+ USAGE em heroku_ext por role                          | app_user=true, intelligence_user=true, looker_reader=false, analytical_reader=false
+ search_path por role                                  | app_user=search_path=app, public, heroku_ext | intelligence_user=search_path=intelligence, public, heroku_ext
+ schema analytical: objetos                            | 0
+ tabelas com dado e sem estatistica (app/intelligence) | app=31, intelligence=4
+ ultimo autoanalyze / analyze manual                   | app: auto=2026-09-10 16:00:27.742112+00 manual=- | intelligence: auto=2026-09-08 14:06:50.201576+00 manual=-
+ random_page_cost / effective_cache_size               | effective_cache_size=393216 (configuration file), random_page_cost=2 (configuration file)
+ views fora de app dependentes de app.*                | intelligence.chiefs_ativos(intelligence_user), intelligence.chiefs_todos(intelligence_user), intelligence.deal_quality_scores(intelligence_user), public.vw_ca_categorias_classificadas(u8tu26o4qg0v85), public.vw_ca_clientes_ouro(u8tu26o4qg0v85), public.vw_ca_comissao_mensal(u8tu26o4qg0v85), public.vw_ca_contratos_ltv(u8tu26o4qg0v85), public.vw_ca_inadimplencia(u8tu26o4qg0v85), public.vw_ca_mrr_ativo(u8tu26o4qg0v85), public.vw_ca_repasse_chiefs_mensal(u8tu26o4qg0v85), public.vw_ca_top_clientes_receita_12m(u8tu26o4qg0v85), public.vw_ca_tpv_mensal(u8tu26o4qg0v85)
+ intelligence_user: colunas com UPDATE em app.chiefs   | 53
+ alembic destino                                       | 107_compat_views_shared_db
+(16 rows)
+

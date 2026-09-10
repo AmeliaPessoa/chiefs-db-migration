@@ -20,6 +20,10 @@
 
 \set ON_ERROR_STOP on
 
+-- Sequences ligadas a coluna (serial/identity, pg_depend deptype 'a'/'i')
+-- NÃO aceitam ALTER ... OWNER direto ("cannot change owner of sequence ...
+-- linked to table") — elas mudam junto com o ALTER TABLE da tabela dona.
+-- Por isso: tabelas primeiro, e só sequences avulsas na lista.
 DO $$
 DECLARE r record; n int := 0;
 BEGIN
@@ -29,6 +33,11 @@ BEGIN
      WHERE n.nspname = 'intelligence'
        AND c.relkind IN ('r', 'p', 'S', 'v', 'm')
        AND c.relowner <> 'intelligence_user'::regrole
+       AND NOT (c.relkind = 'S' AND EXISTS (              -- sequence ligada a coluna: segue a tabela
+             SELECT 1 FROM pg_depend d
+              WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid
+                AND d.refclassid = 'pg_class'::regclass AND d.deptype IN ('a', 'i')))
+     ORDER BY (c.relkind = 'S'), c.relname                 -- tabelas/views antes das sequences avulsas
   LOOP
     EXECUTE format('ALTER TABLE intelligence.%I OWNER TO intelligence_user', r.relname);
     n := n + 1;

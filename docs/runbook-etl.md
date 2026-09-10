@@ -11,7 +11,8 @@ linhas, zero divergências, origem viva).
    schema `intelligence` do Postgres principal: **48 recarregadas** (TRUNCATE
    sem CASCADE + INSERT, transação única, `setval` das 43 sequences) +
    `alembic_version` semeada só na 1ª carga; passo final: owner de
-   `intelligence.*` → `intelligence_user` (feedback 08/09, itens 4 e 5);
+   `intelligence.*` → `intelligence_user` (feedback 08/09, itens 4 e 5) e
+   ANALYZE nas tabelas tocadas (feedback 10/09, item 8);
 2. **Merge das híbridas** no main (`--merge`): `app.chiefs` +53 colunas
    (fonte `chiefs_ativos` ∪ `chiefs_todos`, ativos vence conflito) e
    `app.pipedrive_deals` +4 colunas (`notes`, `files`,
@@ -46,7 +47,11 @@ escreve). Duração de referência (homolog): **~3 min** (o gargalo é
 | Carga das 48 (TRUNCATE+INSERT) | **default** | TRUNCATE exige ser owner **ou membro do owner**: após o passo de owner, a default opera por ser membro de `intelligence_user` (`rolinherit`; conferido na homolog 08/09) — o `etl.py` checa isso antes de truncar |
 | Merge (UPDATE em `app.*`) | **default/admin** | `intelligence_user` só tem SELECT em `app` + UPDATE nas 53 colunas de enriquecimento (item 1) |
 | Owner de `intelligence.*` → `intelligence_user` (item 5) | **default** | ALTER OWNER exige ser owner atual e membro da role destino; passo final do `etl.py` / `05-owner-intelligence.sql` |
-| `GRANT UPDATE` por coluna em `app.chiefs` (item 1) e índices (item 3) | **default** (owner de `app.chiefs`) | `ddl/p2-grants-enrichment-update.sql`, `ddl/ddl-main-enrichment-indexes.sql` |
+| `GRANT UPDATE` por coluna em `app.chiefs` (item 1) e índices (item 3) | **default** (membro de `app_user`, owner de `app.*` desde 10/09) | `ddl/p2-grants-enrichment-update.sql`, `ddl/ddl-main-enrichment-indexes.sql` |
+| Owner de `app.*` → `app_user` (item 6 de 10/09; one-off por ambiente) | **default** | o `db:migrate` do release phase roda como `app_user` e ALTER TABLE exige owner; `ddl/p2-owner-app.sql`. Nenhum passo do ETL reatribui owner em `app` |
+| USAGE em `public`/`heroku_ext` para as 4 roles (item 7 de 10/09) | **default** | `ddl/p2-grants-public-usage.sql` — sem USAGE o search_path descarta o schema em silêncio |
+| ANALYZE pós-carga (item 8 de 10/09) | **default** | `etl.py` faz ao fim; avulso: `etl/06-analyze.sql` |
+| Migrations Rails (release phase, `ALTER TABLE` em `app.*`) | `app_user` | precisa ser OWNER dos objetos — por isso o item 6 (mesmo desenho do item 5) |
 | `search_path` da role (item 2) | **o próprio `intelligence_user`** | a default não tem CREATEROLE no Heroku ("permission denied to alter role", P1 19/08) |
 | Migrations Alembic do Intelligence (ALTER TABLE, CREATE INDEX no schema) | `intelligence_user` | precisa ser OWNER dos objetos — por isso o item 5 |
 | Leitura/escrita pós-carga (serviço de IA) | `intelligence_user` | grants + default privileges do P1 |
@@ -124,6 +129,8 @@ Garantias do `etl.py` (≥ 08/09), provadas no passo 9 da validação local:
 | Views/tabelas/funções/colunas novas do Intelligence intactas | não estão na lista → não são tocadas; coluna nova só no destino é tolerada (INFO) e fica com o DEFAULT; `reset_sequences` só olha as 48 |
 | Grants e default privileges preservados | nada é dropado/recriado; `ALTER OWNER` mantém ACLs |
 | Owner final `intelligence_user` | `ensure_owner` (idempotente) no fim da transação; SQL equivalente em `05-owner-intelligence.sql` |
+| Estatísticas atualizadas | `analyze_tables` (48 + híbridas no `--merge`) no fim da transação; SQL equivalente em `06-analyze.sql`; `ETL_SKIP_ANALYZE=1` desliga |
+| Owner de `app.*` intocado | `ensure_owner` só olha `DST_SCHEMA`; merge é UPDATE; enrichment é ADD COLUMN — `app_user` continua owner após qualquer re-run |
 | Falha alto quando precisa | tabela nova na origem sem veredito; coluna só na origem (drift); FK de tabela do cliente para uma das 48 |
 
 ⚠ O que a re-execução **substitui**: o conteúdo das 48 tabelas no destino
@@ -142,10 +149,19 @@ python3 etl/etl.py --validate-only            # DRIFT = parar e aplicar ALTER/DD
 python3 etl/etl.py --merge 2>&1 | tee evidencia-rerun-D-1.txt
 #    esperado: "alembic_version: preservada", "owner → intelligence_user: 0 objeto(s)"
 #    (já eram), "== ZERO DIVERGÊNCIAS =="
+#    (já eram), "ANALYZE em 50 tabela(s)", "== ZERO DIVERGÊNCIAS =="
+# 2b) passo FIXO (feedback 10/09, item 1): re-aplicar o GRANT por coluna — cobre coluna
+#     nova de enrichment que tenha entrado desde a última vez (idempotente):
+psql "$DST_URL" -v ON_ERROR_STOP=1 -f ddl/p2-grants-enrichment-update.sql
 # 3) integridade:
 psql "$DST_URL" -v app_schema=app -f etl/04-integridade.sql
 # 4) o Intelligence roda `alembic upgrade head` (no-op se nada pendente) e faz smoke test
 ```
+
+Regra combinada em 10/09: **o re-run D-1 é o último passo antes do
+cutover**, com data casada com ele; edição de `users`, `ui_access_grant`
+e `system_prompts` pela UI de Admin do Intelligence só depois dele (o
+re-run devolve essas tabelas ao estado da origem).
 
 ## O que quebra se ninguém cuidar
 
@@ -184,6 +200,8 @@ psql "$DST_URL" -v app_schema=app -f etl/04-integridade.sql
 | Validação diverge por poucas linhas com origem ativa | snapshot único exige o `src.commit()` pós-SET (já no etl.py ≥19/08) |
 | `permission denied` no merge | credencial sem UPDATE em `app.*` — usar default/admin |
 | `must be owner of table ...` no deploy do Intelligence | objetos de `intelligence.*` com owner da default — `etl/05-owner-intelligence.sql` (o `etl.py` ≥ 08/09 já faz) |
+| `must be owner of table chiefs` no release phase do Rails | `app.*` com owner da default (tabelas movidas no P1) e `DATABASE_URL = app_user` — `ddl/p2-owner-app.sql` (10/09) |
+| `function similarity(...) does not exist` no Rails/BI | role sem USAGE em `public` (pg_trgm/vector) — `ddl/p2-grants-public-usage.sql` (10/09); mesma armadilha do `heroku_ext` (20/08) |
 | `sem TRUNCATE em intelligence...` no início da carga | credencial não é owner nem membro de `intelligence_user` — usar a default (membro) ou `GRANT intelligence_user TO <credencial>` |
 | `cannot truncate a table referenced in a foreign key constraint` | tabela do Intelligence com FK para uma das 48: ela nasce lá → entra em `TABLES`; nunca voltar o CASCADE |
 | `tabelas NOVAS na origem sem veredito` | decidir: `TABLES` (+DDL) ou `ORIGIN_EXCLUDED`; backups `_bak_/_backup_YYYYMMDD` só avisam |

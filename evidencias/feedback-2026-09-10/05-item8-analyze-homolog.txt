@@ -1,0 +1,9 @@
+--> Connecting to postgresql-fluffy-10310
+psql:etl/06-analyze.sql:31: NOTICE:  ANALYZE: 146 tabela(s)
+DO
+  schemaname  | tabelas | com_dado_sem_stats |        ultimo_analyze         
+--------------+---------+--------------------+-------------------------------
+ app          |      97 |                  0 | 2026-09-10 21:21:00.773342+00
+ intelligence |      49 |                  0 | 2026-09-10 21:21:02.585001+00
+(2 rows)
+

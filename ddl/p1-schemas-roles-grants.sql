@@ -28,7 +28,9 @@ END $$;
 
 -- ============================================================
 -- 3 · app_user — CRUD restrito a app (itens 4, 5, 6)
---     CREATE no schema é necessário para migrações Rails.
+--     CREATE no schema é necessário para migrações Rails; e as tabelas
+--     existentes precisam ter app_user como OWNER (§7.7) — migration com
+--     ALTER TABLE exige ownership.
 -- ============================================================
 GRANT USAGE, CREATE ON SCHEMA app TO app_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA app TO app_user;
@@ -120,7 +122,45 @@ GRANT SELECT ON ALL TABLES IN SCHEMA app TO intelligence_user;
 --       least-privilege não enxergam funções como unaccent() (quebrou o
 --       duplicate_chief_alert_job na homolog). Conferir SEMPRE:
 --       pg_extension × search_path × USAGE de todos os roles novos.
-GRANT USAGE ON SCHEMA heroku_ext TO app_user, intelligence_user;
+GRANT USAGE ON SCHEMA heroku_ext TO app_user, intelligence_user, looker_reader, analytical_reader;
+--       Idem para `public` (feedback 10/09, item 7): pg_trgm e vector ficam
+--       em public e o item 16 revogou tudo de PUBLIC — sem USAGE o
+--       search_path descarta o schema em silêncio ("function similarity(...)
+--       does not exist" no Rails). USAGE apenas; CREATE segue revogado.
+GRANT USAGE ON SCHEMA public TO app_user, intelligence_user, looker_reader, analytical_reader;
+
+-- 7.7 · OWNER das tabelas movidas → app_user (feedback 10/09, item 6 —
+--       decisão (A)). O `rails db:migrate` do release phase roda como
+--       app_user (DATABASE_URL) e ALTER TABLE exige ser OWNER, que não é
+--       concedível por GRANT. O move (7) mantém o owner na default → a
+--       primeira migration com add_column falha ("must be owner of table
+--       chiefs", homolog v251, 09/09). Mesmo desenho de intelligence.* =
+--       intelligence_user. ACLs (inclusive grants por coluna) são
+--       preservadas; a default segue operando por ser membro de app_user.
+--       Sequences ligadas a coluna (serial/identity, pg_depend deptype 'a'/'i')
+--       NÃO aceitam ALTER ... OWNER direto ("cannot change owner of sequence ...
+--       linked to table") — elas mudam junto com o ALTER TABLE da tabela dona.
+--       Por isso: tabelas primeiro, e só sequences avulsas na lista.
+DO $$
+DECLARE r record; n int := 0;
+BEGIN
+  FOR r IN
+    SELECT c.relname, c.relkind
+      FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+     WHERE n.nspname = 'app'
+       AND c.relkind IN ('r', 'p', 'S', 'v', 'm')
+       AND c.relowner <> 'app_user'::regrole
+       AND NOT (c.relkind = 'S' AND EXISTS (              -- sequence ligada a coluna: segue a tabela
+             SELECT 1 FROM pg_depend d
+              WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid
+                AND d.refclassid = 'pg_class'::regclass AND d.deptype IN ('a', 'i')))
+     ORDER BY (c.relkind = 'S'), c.relname                 -- tabelas/views antes das sequences avulsas
+  LOOP
+    EXECUTE format('ALTER TABLE app.%I OWNER TO app_user', r.relname);
+    n := n + 1;
+  END LOOP;
+  RAISE NOTICE 'owner app.* → app_user: % objeto(s)', n;
+END $$;
 COMMIT;
 
 -- ============================================================

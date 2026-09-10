@@ -16,7 +16,7 @@ Vereditos de 13/08 (Renan): espelho NÃO migra. Este ETL faz:
      18/08) e apenas contabilizados.
 
 Idempotente: TRUNCATE ... RESTART IDENTITY (SEM CASCADE) antes da carga, e a
-execução inteira (truncate + 48 tabelas + merge + setval + owner) roda em UMA
+execução inteira (truncate + 48 tabelas + merge + setval + owner + analyze) roda em UMA
 transação no destino — ou entra tudo, ou nada; re-executar nunca duplica.
 
 Garantias da re-execução (feedback Chiefs 08/09, item 4 — o Intelligence
@@ -36,7 +36,10 @@ passa a criar objetos no schema `intelligence` via Alembic):
   · grants e default privileges não mudam (nada é dropado/recriado);
   · passo final: owner dos objetos de `intelligence` → DST_OBJECT_OWNER
     (default intelligence_user; vazio desliga) — as migrations Alembic
-    exigem ownership para ALTER TABLE (item 5 do feedback).
+    exigem ownership para ALTER TABLE (item 5 do feedback);
+  · ANALYZE das 48 (+ app.chiefs/app.pipedrive_deals no --merge) ao fim
+    da carga (feedback 10/09, item 8): TRUNCATE+COPY deixa o planner sem
+    estatística até o autovacuum passar. ETL_SKIP_ANALYZE=1 desliga.
 
 Uso: trocar apenas as variáveis de conexão (env vars ou o bloco CONFIG
 abaixo) e rodar:
@@ -413,11 +416,19 @@ def ensure_owner(dst) -> int:
         if cur.fetchone() is None:
             print(f"  !! WARN role {owner} não existe neste banco — owner não alterado")
             return 0
+        # Sequence ligada a coluna (serial/identity) não aceita ALTER OWNER
+        # direto ("cannot change owner of sequence ... linked to table"): ela
+        # muda junto com a tabela dona. Tabelas primeiro; só sequences avulsas.
         cur.execute(
             """SELECT c.relname FROM pg_class c
                JOIN pg_namespace n ON n.oid = c.relnamespace
                WHERE n.nspname = %s AND c.relkind IN ('r','p','S','v','m')
-                 AND c.relowner <> (SELECT oid FROM pg_roles WHERE rolname = %s)""",
+                 AND c.relowner <> (SELECT oid FROM pg_roles WHERE rolname = %s)
+                 AND NOT (c.relkind = 'S' AND EXISTS (
+                       SELECT 1 FROM pg_depend d
+                        WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid
+                          AND d.refclassid = 'pg_class'::regclass AND d.deptype IN ('a','i')))
+               ORDER BY (c.relkind = 'S'), c.relname""",
             (dst_schema, owner),
         )
         rels = [r[0] for r in cur.fetchall()]
@@ -425,6 +436,23 @@ def ensure_owner(dst) -> int:
             cur.execute(f"ALTER TABLE {quote_ident(dst_schema, dst)}.{quote_ident(rel, dst)} "
                         f"OWNER TO {quote_ident(owner, dst)}")
     return len(rels)
+
+
+def analyze_tables(dst, with_merge: bool) -> int:
+    """Passo final: ANALYZE nas tabelas que a carga/merge tocou (feedback
+    10/09, item 8). ANALYZE pode rodar dentro da transação e só pede
+    ShareUpdateExclusiveLock (não bloqueia leitura/escrita). Exige owner,
+    membro do owner ou MAINTAIN — a default cumpre em ambos os schemas."""
+    if os.environ.get("ETL_SKIP_ANALYZE") == "1":
+        return 0
+    dst_schema, app = cfg("DST_SCHEMA"), cfg("APP_SCHEMA")
+    targets = [(dst_schema, t) for t in TABLES]
+    if with_merge:
+        targets += [(app, "chiefs"), (app, "pipedrive_deals")]
+    with dst.cursor() as cur:
+        for schema, table in targets:
+            cur.execute(f"ANALYZE {quote_ident(schema, dst)}.{quote_ident(table, dst)}")
+    return len(targets)
 
 
 def validate(src, dst) -> bool:
@@ -559,9 +587,11 @@ def main() -> int:
                 merge_ok = merge_main(src, dst)
             n_seq = reset_sequences(dst)
             n_own = ensure_owner(dst)
+            n_an = analyze_tables(dst, with_merge=bool(args.merge))
             dst.commit()
             print(f"Commit OK — {n_seq} sequences reposicionadas; "
-                  f"owner → {cfg('DST_OBJECT_OWNER') or '(inalterado)'}: {n_own} objeto(s) alterado(s).")
+                  f"owner → {cfg('DST_OBJECT_OWNER') or '(inalterado)'}: {n_own} objeto(s) alterado(s); "
+                  f"ANALYZE em {n_an} tabela(s).")
         return 0 if (validate(src, dst) and merge_ok) else 1
     except Exception:
         dst.rollback()

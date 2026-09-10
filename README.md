@@ -140,6 +140,30 @@ psql "$DST_URL" -v ON_ERROR_STOP=1 -f ddl/ddl-main-enrichment-indexes.sql
 O item 5 (owner de `intelligence.*` = `intelligence_user`) é passo final
 automático do `etl.py`; no caminho 100% SQL, rodar `etl/05-owner-intelligence.sql`.
 
+### 1c · Lado Rails no mesmo banco (uma vez por ambiente — feedback 10/09)
+
+O `rails db:migrate` do release phase roda como `app_user` (DATABASE_URL) e
+exige ser OWNER para `ALTER TABLE` — as 97 tabelas movidas no P1 ficaram
+com a credencial default (v251/v252 na homolog: `must be owner of table
+chiefs`). Mesmo desenho do item 5, do outro lado (decisão (A), 10/09):
+
+```bash
+# item 6 — owner de app.* → app_user (BLOQUEANTE do deploy Rails; credencial DEFAULT)
+psql "$DST_URL" -v ON_ERROR_STOP=1 -f ddl/p2-owner-app.sql
+
+# item 7 — USAGE em public/heroku_ext para as 4 roles (pg_trgm/vector estão em public;
+#          sem USAGE o search_path descarta o schema em silêncio: "function similarity(...) does not exist")
+psql "$DST_URL" -v ON_ERROR_STOP=1 -f ddl/p2-grants-public-usage.sql
+
+# item 8 — ANALYZE em app + intelligence (o etl.py já faz ao fim da carga; este é o avulso)
+psql "$DST_URL" -v ON_ERROR_STOP=1 -f etl/06-analyze.sql
+```
+
+Nenhum passo do ETL toca owner de `app.*` (o `ensure_owner` só olha o
+schema `intelligence`; o merge é UPDATE; o DDL do enrichment é ADD COLUMN)
+— o bloco do item 6 é one-off por ambiente, e a default continua operando
+`app.*` por ser membro de `app_user`.
+
 ### 2 · Carga + merge + validação
 
 ```bash
@@ -149,8 +173,10 @@ python3 etl/etl.py --merge
 Saída esperada: 48 tabelas carregadas, `alembic_version: semeada da origem`
 (1ª carga) ou `preservada` (re-execução), linhas de merge com
 `divergentes=0`, `Commit OK — 43 sequences reposicionadas; owner →
-intelligence_user: N objeto(s)` e `== ZERO DIVERGÊNCIAS ==`. Duração de referência: **~3 min** (gargalo:
-`chief_embeddings`, vetores 1536).
+intelligence_user: N objeto(s) alterado(s); ANALYZE em 50 tabela(s)` e
+`== ZERO DIVERGÊNCIAS ==`. Duração de referência: **~3 min** (gargalo:
+`chief_embeddings`, vetores 1536). `ETL_SKIP_ANALYZE=1` pula o ANALYZE
+(não recomendado — feedback 10/09, item 8).
 
 Flags:
 
@@ -182,7 +208,10 @@ psql "$DST_URL" -v ON_ERROR_STOP=1 -f etl/01-load-intelligence.sql
 psql "$DST_URL" -v ON_ERROR_STOP=1 -v app_schema=$APP_SCHEMA -f etl/02-merge-main.sql
 psql "$DST_URL" -f etl/03-validate.sql
 psql "$DST_URL" -v ON_ERROR_STOP=1 -f etl/05-owner-intelligence.sql   # passo final (item 5)
+psql "$DST_URL" -v ON_ERROR_STOP=1 -f etl/06-analyze.sql               # estatísticas (item 8, 10/09)
 ```
+(o `01-load` e o `02-merge` já fazem ANALYZE nas tabelas que tocam; o `06`
+cobre os dois schemas inteiros)
 
 ### Validação local em Docker (não toca bases reais — §5.1)
 
@@ -215,7 +244,7 @@ migrations no schema `intelligence` do destino) **toca** e o que **preserva**
 | **Nunca sobrescreve** | `intelligence.alembic_version` (só semeia se vazia); colunas que existem só no destino (ficam com o DEFAULT) |
 | **Não toca** | views (`chiefs_todos`, `chiefs_ativos`, `deal_quality_scores`), funções, tabelas fora da lista (ex.: `mcp_refresh_tokens`), grants, default privileges, o schema em si — não há `DROP`/`CREATE` no ETL; o DDL é passo separado e só da 1ª vez |
 | **Falha alto** | tabela nova na origem sem veredito; coluna nova na origem ausente no destino (drift, Achado #1); tabela do cliente com FK para uma das 48 (TRUNCATE sem CASCADE recusa) |
-| **Passo final** | owner de tabelas/sequences/views de `intelligence` → `intelligence_user` (idempotente) |
+| **Passo final** | owner de tabelas/sequences/views de `intelligence` → `intelligence_user` (idempotente) + ANALYZE nas tabelas tocadas (10/09) |
 
 Detalhes operacionais (monitoração, o que quebra se ninguém cuidar,
 troubleshooting): **`docs/runbook-etl.md`**.
@@ -241,5 +270,8 @@ troubleshooting): **`docs/runbook-etl.md`**.
 | `DRIFT DE SCHEMA` na carga | coluna nova na origem (migration recente) ausente no destino — aplicar o ALTER/DDL e re-rodar; `--validate-only` é o re-diff do D-1 (Achado #1, 20/08); `ETL_ALLOW_SCHEMA_DRIFT=1` só em emergência consciente |
 | `tabelas NOVAS na origem sem veredito` | migration do Intelligence criou tabela nova — decidir: entra em `TABLES` (+ DDL) ou em `ORIGIN_EXCLUDED` |
 | `must be owner of table ...` no deploy do Intelligence | objetos de `intelligence.*` ainda com owner da credencial default — rodar `etl/05-owner-intelligence.sql` (o `etl.py` já faz ao fim da carga) |
+| `must be owner of table chiefs` no release phase do **Rails** (`db:migrate`) | `app.*` com owner da default e `DATABASE_URL = app_user` — rodar `ddl/p2-owner-app.sql` (item 6, 10/09); one-off por ambiente, inclusive produção após o P1 |
+| `function similarity(...) does not exist` / `unaccent(...)` no Rails ou BI | role sem USAGE em `public`/`heroku_ext` (o search_path descarta o schema sem erro) — `ddl/p2-grants-public-usage.sql` (item 7, 10/09) |
+| Planos ruins logo após a carga (seq scan em tudo) | estatísticas zeradas por TRUNCATE+COPY — `etl/06-analyze.sql` (o `etl.py` ≥ 10/09 já faz) |
 | `cannot truncate a table referenced in a foreign key constraint` | tabela do Intelligence com FK para uma das 48 — sinal de que ela nasce lá e precisa entrar em `TABLES`; nunca usar CASCADE |
 | `heroku pg:psql < arquivo` não executa nada | CLI v11.9 engole stdin → usar `psql "$DST_URL" -f` |

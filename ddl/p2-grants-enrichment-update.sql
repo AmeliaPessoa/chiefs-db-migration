@@ -8,7 +8,8 @@
 -- avatar_blob_key/avatar_url ficam: são colunas de chiefs_ativos (origem
 -- Intelligence), não do ETL.
 --
--- Executar conectado como a credencial DEFAULT (owner de app.chiefs):
+-- Executar conectado como a credencial DEFAULT (membro de app_user, owner de
+-- app.chiefs desde o item 6 de 10/09 — GRANT por membro do owner é permitido):
 --   psql "$(heroku pg:credentials:url DATABASE_URL --name default -a <app> | grep -oE 'postgres://[^ ]+')" \
 --        -v ON_ERROR_STOP=1 -f ddl/p2-grants-enrichment-update.sql
 --

@@ -1,0 +1,23 @@
+--> Connecting to postgresql-fluffy-10310
+psql:ddl/p2-owner-app.sql:74: NOTICE:  owner → app_user: 97 objeto(s) alterado(s)
+DO
+DO
+  owner   | tipo | count 
+----------+------+-------
+ app_user | i    |   302
+ app_user | r    |    97
+ app_user | S    |    92
+(3 rows)
+
+ sequence | tabela | owner_seq | owner_tabela 
+----------+--------+-----------+--------------
+(0 rows)
+
+                               k                               |  v   
+---------------------------------------------------------------+------
+ intelligence_user: colunas com UPDATE em app.chiefs           | 53
+ intelligence_user: SELECT em app.chiefs                       | true
+ app_user: SELECT em app.schema_migrations                     | true
+ default (u8tu26o4qg0v85): UPDATE em app.chiefs via membership | true
+(4 rows)
+
