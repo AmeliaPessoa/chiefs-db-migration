@@ -1,0 +1,59 @@
+BEGIN
+GRANT
+GRANT
+GRANT
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+GRANT
+GRANT
+REVOKE
+DO
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+COMMIT
+       grupo       | usuario  | inherit_option | set_option 
+-------------------+----------+----------------+------------
+ analytical_reader | ametista | t              | f
+ analytical_reader | oslo     | t              | f
+ tl                | roma     | t              | f
+ tl                | rubi     | t              | f
+ worker            | bogota   | t              | f
+ worker            | jade     | t              | f
+ worker            | safira   | t              | f
+ worker            | tokyo    | t              | f
+(8 rows)
+
+ grupo  |                tabela                |     privs      
+--------+--------------------------------------+----------------
+ worker | intelligence.chief_improvement_event | INSERT, UPDATE
+ worker | intelligence.chief_laudo             | INSERT, UPDATE
+ worker | intelligence.chief_laudo_modal_state | INSERT, UPDATE
+ worker | intelligence.chief_stimulus_event    | INSERT, UPDATE
+ worker | intelligence.jd_chief_stages         | INSERT, UPDATE
+ worker | intelligence.jd_list_quality         | INSERT, UPDATE
+ worker | intelligence.jd_results              | INSERT, UPDATE
+ worker | intelligence.job_descriptions        | INSERT, UPDATE
+ worker | intelligence.pipeline_runs           | INSERT
+ worker | intelligence.system_prompts          | INSERT, UPDATE
+ worker | intelligence.ui_access_grant         | INSERT, UPDATE
+ tl     | intelligence.chief_laudo             | INSERT, UPDATE
+ tl     | intelligence.chief_laudo_modal_state | INSERT, UPDATE
+ tl     | intelligence.jd_chief_stages         | INSERT, UPDATE
+ tl     | intelligence.jd_results              | INSERT, UPDATE
+ tl     | intelligence.platform_sync_state     | INSERT, UPDATE
+ tl     | intelligence.system_prompts          | INSERT, UPDATE
+ tl     | intelligence.ui_access_grant         | INSERT, UPDATE
+(18 rows)
+
+ role | schema | create 
+------+--------+--------
+(0 rows)
+

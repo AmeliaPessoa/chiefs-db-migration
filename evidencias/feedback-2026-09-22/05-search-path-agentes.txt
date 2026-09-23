@@ -1,0 +1,48 @@
+DO
+ rolname |                    setconfig                     
+---------+--------------------------------------------------
+ rubi    | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+
+DO
+ rolname |                    setconfig                     
+---------+--------------------------------------------------
+ jade    | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+
+DO
+ rolname |                    setconfig                     
+---------+--------------------------------------------------
+ safira  | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+
+DO
+ rolname  |                    setconfig                     
+----------+--------------------------------------------------
+ ametista | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+
+DO
+ rolname |                    setconfig                     
+---------+--------------------------------------------------
+ roma    | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+
+DO
+ rolname |                    setconfig                     
+---------+--------------------------------------------------
+ tokyo   | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+
+DO
+ rolname |                    setconfig                     
+---------+--------------------------------------------------
+ bogota  | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+
+DO
+ rolname |                    setconfig                     
+---------+--------------------------------------------------
+ oslo    | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+

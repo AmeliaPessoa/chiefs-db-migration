@@ -1,0 +1,154 @@
+== Permissões dos agentes — APP=chiefsgroup-homolog AMBIENTE=homolog — 2026-09-23T22:52:06Z
+PASS  rubi      ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  rubi      ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  rubi      ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  rubi      ok      SELECT similarity('a', 'b')
+FAIL  rubi      esperado=ok obtido=ERRO: ERROR:  division by zero  SELECT current_setting('search_path') ~ '^intelligence'::text OR (1/0)::bool
+PASS  rubi      negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  rubi      negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  rubi      negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  rubi      negado  TRUNCATE intelligence.jd_results
+PASS  rubi      negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  rubi      negado  CREATE TABLE app._t_perm (id int)
+PASS  rubi      negado  CREATE TABLE public._t_perm (id int)
+PASS  rubi      negado  CREATE TABLE lab._t_perm (id int)
+PASS  rubi      negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  roma      ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  roma      ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  roma      ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  roma      ok      SELECT similarity('a', 'b')
+FAIL  roma      esperado=ok obtido=ERRO: ERROR:  division by zero  SELECT current_setting('search_path') ~ '^intelligence'::text OR (1/0)::bool
+PASS  roma      negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  roma      negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  roma      negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  roma      negado  TRUNCATE intelligence.jd_results
+PASS  roma      negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  roma      negado  CREATE TABLE app._t_perm (id int)
+PASS  roma      negado  CREATE TABLE public._t_perm (id int)
+PASS  roma      negado  CREATE TABLE lab._t_perm (id int)
+PASS  roma      negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  jade      ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  jade      ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  jade      ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  jade      ok      SELECT similarity('a', 'b')
+FAIL  jade      esperado=ok obtido=ERRO: ERROR:  division by zero  SELECT current_setting('search_path') ~ '^intelligence'::text OR (1/0)::bool
+PASS  jade      negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  jade      negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  jade      negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  jade      negado  TRUNCATE intelligence.jd_results
+PASS  jade      negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  jade      negado  CREATE TABLE app._t_perm (id int)
+PASS  jade      negado  CREATE TABLE public._t_perm (id int)
+PASS  jade      negado  CREATE TABLE lab._t_perm (id int)
+PASS  jade      negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  safira    ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  safira    ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  safira    ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  safira    ok      SELECT similarity('a', 'b')
+FAIL  safira    esperado=ok obtido=ERRO: ERROR:  division by zero  SELECT current_setting('search_path') ~ '^intelligence'::text OR (1/0)::bool
+PASS  safira    negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  safira    negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  safira    negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  safira    negado  TRUNCATE intelligence.jd_results
+PASS  safira    negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  safira    negado  CREATE TABLE app._t_perm (id int)
+PASS  safira    negado  CREATE TABLE public._t_perm (id int)
+PASS  safira    negado  CREATE TABLE lab._t_perm (id int)
+PASS  safira    negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  tokyo     ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  tokyo     ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  tokyo     ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  tokyo     ok      SELECT similarity('a', 'b')
+FAIL  tokyo     esperado=ok obtido=ERRO: ERROR:  division by zero  SELECT current_setting('search_path') ~ '^intelligence'::text OR (1/0)::bool
+PASS  tokyo     negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  tokyo     negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  tokyo     negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  tokyo     negado  TRUNCATE intelligence.jd_results
+PASS  tokyo     negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  tokyo     negado  CREATE TABLE app._t_perm (id int)
+PASS  tokyo     negado  CREATE TABLE public._t_perm (id int)
+PASS  tokyo     negado  CREATE TABLE lab._t_perm (id int)
+PASS  tokyo     negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  bogota    ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  bogota    ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  bogota    ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  bogota    ok      SELECT similarity('a', 'b')
+FAIL  bogota    esperado=ok obtido=ERRO: ERROR:  division by zero  SELECT current_setting('search_path') ~ '^intelligence'::text OR (1/0)::bool
+PASS  bogota    negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  bogota    negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  bogota    negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  bogota    negado  TRUNCATE intelligence.jd_results
+PASS  bogota    negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  bogota    negado  CREATE TABLE app._t_perm (id int)
+PASS  bogota    negado  CREATE TABLE public._t_perm (id int)
+PASS  bogota    negado  CREATE TABLE lab._t_perm (id int)
+PASS  bogota    negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  ametista  ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  ametista  ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  ametista  ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  ametista  ok      SELECT similarity('a', 'b')
+FAIL  ametista  esperado=ok obtido=ERRO: ERROR:  division by zero  SELECT current_setting('search_path') ~ '^intelligence'::text OR (1/0)::bool
+PASS  ametista  negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  ametista  negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  ametista  negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  ametista  negado  TRUNCATE intelligence.jd_results
+PASS  ametista  negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  ametista  negado  CREATE TABLE app._t_perm (id int)
+PASS  ametista  negado  CREATE TABLE public._t_perm (id int)
+PASS  ametista  negado  CREATE TABLE lab._t_perm (id int)
+PASS  ametista  negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  oslo      ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  oslo      ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  oslo      ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  oslo      ok      SELECT similarity('a', 'b')
+FAIL  oslo      esperado=ok obtido=ERRO: ERROR:  division by zero  SELECT current_setting('search_path') ~ '^intelligence'::text OR (1/0)::bool
+PASS  oslo      negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  oslo      negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  oslo      negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  oslo      negado  TRUNCATE intelligence.jd_results
+PASS  oslo      negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  oslo      negado  CREATE TABLE app._t_perm (id int)
+PASS  oslo      negado  CREATE TABLE public._t_perm (id int)
+PASS  oslo      negado  CREATE TABLE lab._t_perm (id int)
+PASS  oslo      negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  rubi      ok      DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  rubi      ok      INSERT INTO intelligence.jd_results SELECT * FROM intelligence.jd_results WHERE false
+PASS  rubi      ok      UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  rubi      ok      UPDATE intelligence.platform_sync_state SET last_sync_at = last_sync_at WHERE false
+PASS  rubi      negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  roma      ok      DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  roma      ok      INSERT INTO intelligence.jd_results SELECT * FROM intelligence.jd_results WHERE false
+PASS  roma      ok      UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  roma      ok      UPDATE intelligence.platform_sync_state SET last_sync_at = last_sync_at WHERE false
+PASS  roma      negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  jade      negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  jade      ok      INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  jade      ok      UPDATE intelligence.job_descriptions SET id = id WHERE false
+PASS  jade      ok      INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  jade      negado  UPDATE intelligence.pipeline_runs SET id = id WHERE false
+PASS  jade      negado  INSERT INTO intelligence.platform_sync_state SELECT * FROM intelligence.platform_sync_state WHERE false
+PASS  safira    negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  safira    ok      INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  safira    ok      UPDATE intelligence.job_descriptions SET id = id WHERE false
+PASS  safira    ok      INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  safira    negado  UPDATE intelligence.pipeline_runs SET id = id WHERE false
+PASS  safira    negado  INSERT INTO intelligence.platform_sync_state SELECT * FROM intelligence.platform_sync_state WHERE false
+PASS  tokyo     negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  tokyo     ok      INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  tokyo     ok      UPDATE intelligence.job_descriptions SET id = id WHERE false
+PASS  tokyo     ok      INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  tokyo     negado  UPDATE intelligence.pipeline_runs SET id = id WHERE false
+PASS  tokyo     negado  INSERT INTO intelligence.platform_sync_state SELECT * FROM intelligence.platform_sync_state WHERE false
+PASS  bogota    negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  bogota    ok      INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  bogota    ok      UPDATE intelligence.job_descriptions SET id = id WHERE false
+PASS  bogota    ok      INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  bogota    negado  UPDATE intelligence.pipeline_runs SET id = id WHERE false
+PASS  bogota    negado  INSERT INTO intelligence.platform_sync_state SELECT * FROM intelligence.platform_sync_state WHERE false
+PASS  ametista  ok      DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  ametista  negado  INSERT INTO intelligence.jd_results SELECT * FROM intelligence.jd_results WHERE false
+PASS  ametista  negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  oslo      ok      DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  oslo      negado  INSERT INTO intelligence.jd_results SELECT * FROM intelligence.jd_results WHERE false
+PASS  oslo      negado  UPDATE intelligence.jd_results SET id = id WHERE false
+== Resultado: 144 PASS, 8 FAIL

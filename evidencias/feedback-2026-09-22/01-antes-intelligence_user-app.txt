@@ -1,0 +1,11 @@
+ table_name | privilege_type 
+------------+----------------
+(0 rows)
+
+ pg_get_userbyid | defaclobjtype |                           defaclacl                            
+-----------------+---------------+----------------------------------------------------------------
+ u8tu26o4qg0v85  | S             | {app_user=rU/u8tu26o4qg0v85}
+ u8tu26o4qg0v85  | r             | {app_user=arwd/u8tu26o4qg0v85}
+ app_user        | r             | {analytical_reader=r/app_user,worker=r/app_user,tl=r/app_user}
+(3 rows)
+

@@ -1,0 +1,7 @@
+       grupo       | admin_option 
+-------------------+--------------
+ analytical_reader | t
+ worker            | t
+ tl                | t
+(3 rows)
+
