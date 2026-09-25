@@ -2061,6 +2061,44 @@ ALTER SEQUENCE public.jd_chief_stages_id_seq OWNED BY public.jd_chief_stages.id;
 
 
 --
+-- Name: jd_external_candidates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.jd_external_candidates (
+    id bigint NOT NULL,
+    jd_id bigint NOT NULL,
+    candidate_name text NOT NULL,
+    candidate_email text NOT NULL,
+    candidate_linkedin text,
+    added_by text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    is_deleted boolean DEFAULT false NOT NULL,
+    deleted_at timestamp with time zone,
+    removed_by text,
+    removal_reason text
+);
+
+
+--
+-- Name: jd_external_candidates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.jd_external_candidates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: jd_external_candidates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.jd_external_candidates_id_seq OWNED BY public.jd_external_candidates.id;
+
+
+--
 -- Name: jd_extracted_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2259,7 +2297,8 @@ CREATE TABLE public.job_descriptions (
     outcome character varying(30),
     outcome_chief_id bigint,
     outcome_note text,
-    outcome_at timestamp with time zone
+    outcome_at timestamp with time zone,
+    dados_base_extraidos jsonb
 );
 
 
@@ -3030,6 +3069,13 @@ ALTER TABLE ONLY public.jd_chief_stages ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
+-- Name: jd_external_candidates id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.jd_external_candidates ALTER COLUMN id SET DEFAULT nextval('public.jd_external_candidates_id_seq'::regclass);
+
+
+--
 -- Name: jd_extracted_metadata id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3580,6 +3626,14 @@ ALTER TABLE ONLY public.jd_chief_match_comments
 
 ALTER TABLE ONLY public.jd_chief_stages
     ADD CONSTRAINT jd_chief_stages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: jd_external_candidates jd_external_candidates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.jd_external_candidates
+    ADD CONSTRAINT jd_external_candidates_pkey PRIMARY KEY (id);
 
 
 --
@@ -4988,6 +5042,13 @@ CREATE UNIQUE INDEX ix_jd_chief_stages_one_chosen ON public.jd_chief_stages USIN
 --
 
 CREATE INDEX ix_jd_chief_stages_stage ON public.jd_chief_stages USING btree (stage);
+
+
+--
+-- Name: ix_jd_external_candidates_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_jd_external_candidates_active ON public.jd_external_candidates USING btree (jd_id) WHERE (is_deleted = false);
 
 
 --

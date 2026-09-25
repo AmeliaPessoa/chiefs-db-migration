@@ -1,24 +1,29 @@
 -- P2 ETL · 01 — Carga integral das 49 tabelas da intelligence no schema intelligence
 -- (vereditos 13/08: espelhos ficam de fora; as híbridas entram via 02-merge-main.sql;
---  08/09: +chief_perfil_perguntas, +5 colunas em job_descriptions)
+--  08/09: +chief_perfil_perguntas, +5 colunas em job_descriptions;
+--  25/09: +jd_external_candidates (mig 112), +job_descriptions.dados_base_extraidos (mig 111))
 -- Fonte: intel_src (postgres_fdw, read-only). Idempotente (TRUNCATE + reload).
 --
 -- Garantias da re-execução (feedback Chiefs 08/09, item 4):
 --   · TRUNCATE SEM CASCADE: só as tabelas listadas abaixo são esvaziadas; uma
 --     tabela nova do cliente com FK para uma delas faz o TRUNCATE FALHAR
 --     (alto) em vez de ser esvaziada em silêncio;
---   · intelligence.alembic_version NÃO é sobrescrita: só é semeada da origem
---     se estiver vazia (primeira carga); depois é do Alembic do Intelligence;
+--   · intelligence.alembic_version NÃO é sobrescrita: só é semeada se estiver
+--     vazia (primeira carga), com 106_job_descriptions_outcome e NÃO com a
+--     versão da origem (feedback do Renan 24/09, item 6, opção b): o
+--     `alembic upgrade head` do deploy roda 107+ e cria as views/funções de
+--     compatibilidade, que não estão no DDL. Depois é do Alembic;
 --   · views, tabelas e colunas criadas pelas migrations do Intelligence
 --     (chiefs_todos/chiefs_ativos, etc.) não são tocadas; grants e default
 --     privileges também não (não há DROP/CREATE aqui);
 --   · owner dos objetos: ver 05-owner-intelligence.sql (passo final).
 \set ON_ERROR_STOP on
 BEGIN;
-TRUNCATE intelligence.allocation_history, intelligence.allocation_history_shortlist, intelligence.attractiveness_snapshots, intelligence.backtest_jobs, intelligence.benchmark_market_cache, intelligence.benchmark_qa, intelligence.chief_career_history, intelligence.chief_contextual_qa, intelligence.chief_enrichment_history, intelligence.chief_improvement_event, intelligence.chief_laudo, intelligence.chief_laudo_modal_state, intelligence.chief_perfil_perguntas, intelligence.chief_platform_history, intelligence.chief_rerank_cache, intelligence.chief_reverse_matches, intelligence.chief_reverse_profile, intelligence.chief_snapshot_before_op, intelligence.chief_stimulus_event, intelligence.deal_enrichment_jobs, intelligence.deal_enrichments, intelligence.deal_sales_ops, intelligence.governance_conflicts, intelligence.ingestion_logs, intelligence.iqp_snapshots, intelligence.jd_chief_alerts, intelligence.jd_chief_match_comments, intelligence.jd_chief_stages, intelligence.jd_list_quality, intelligence.mcp_query_log, intelligence.mql_candidates, intelligence.novo_funil_pipedrive, intelligence.pipedrive_write_log, intelligence.pipeline_runs, intelligence.platform_sync_state, intelligence.system_prompts, intelligence.ui_access_grant, intelligence.uploaded_files, intelligence.user_activity_log, intelligence.user_favorites, intelligence.users, intelligence.chief_embeddings, intelligence.chief_field_history, intelligence.job_descriptions, intelligence.job_embeddings, intelligence.jd_briefing_embeddings, intelligence.jd_extracted_metadata, intelligence.jd_results RESTART IDENTITY;
--- alembic_version: semeia da origem SÓ se o destino estiver vazio (nunca sobrescreve)
+TRUNCATE intelligence.allocation_history, intelligence.allocation_history_shortlist, intelligence.attractiveness_snapshots, intelligence.backtest_jobs, intelligence.benchmark_market_cache, intelligence.benchmark_qa, intelligence.chief_career_history, intelligence.chief_contextual_qa, intelligence.chief_enrichment_history, intelligence.chief_improvement_event, intelligence.chief_laudo, intelligence.chief_laudo_modal_state, intelligence.chief_perfil_perguntas, intelligence.chief_platform_history, intelligence.chief_rerank_cache, intelligence.chief_reverse_matches, intelligence.chief_reverse_profile, intelligence.chief_snapshot_before_op, intelligence.chief_stimulus_event, intelligence.deal_enrichment_jobs, intelligence.deal_enrichments, intelligence.deal_sales_ops, intelligence.governance_conflicts, intelligence.ingestion_logs, intelligence.iqp_snapshots, intelligence.jd_chief_alerts, intelligence.jd_chief_match_comments, intelligence.jd_chief_stages, intelligence.jd_external_candidates, intelligence.jd_list_quality, intelligence.mcp_query_log, intelligence.mql_candidates, intelligence.novo_funil_pipedrive, intelligence.pipedrive_write_log, intelligence.pipeline_runs, intelligence.platform_sync_state, intelligence.system_prompts, intelligence.ui_access_grant, intelligence.uploaded_files, intelligence.user_activity_log, intelligence.user_favorites, intelligence.users, intelligence.chief_embeddings, intelligence.chief_field_history, intelligence.job_descriptions, intelligence.job_embeddings, intelligence.jd_briefing_embeddings, intelligence.jd_extracted_metadata, intelligence.jd_results RESTART IDENTITY;
+-- alembic_version: semeia 106 SÓ se o destino estiver vazio (nunca sobrescreve)
+-- (mesmo valor de ALEMBIC_SEED_VERSION no etl.py)
 INSERT INTO intelligence.alembic_version (version_num)
-SELECT version_num FROM intel_src.alembic_version
+SELECT '106_job_descriptions_outcome'
  WHERE NOT EXISTS (SELECT 1 FROM intelligence.alembic_version);
 INSERT INTO intelligence.allocation_history (startup_ad_id, title, ad_status, chief_id, chief_selected_at, outcome_at, outcome_source, startup_id, company_id, ad_created_at, jd_chars, jd_degenerate, excluded, excluded_reason, snapshot_at, raw)
 SELECT startup_ad_id, title, ad_status, chief_id, chief_selected_at, outcome_at, outcome_source, startup_id, company_id, ad_created_at, jd_chars, jd_degenerate, excluded, excluded_reason, snapshot_at, raw FROM intel_src.allocation_history;
@@ -76,6 +81,8 @@ INSERT INTO intelligence.jd_chief_match_comments (id, jd_id, run_id, chief_id, r
 SELECT id, jd_id, run_id, chief_id, rails_comment_id, author_chief_id, author_name, content, visible_to_chief, commented_at, received_at FROM intel_src.jd_chief_match_comments;
 INSERT INTO intelligence.jd_chief_stages (id, jd_id, run_id, chief_id, chief_name, stage, source, moved_at, moved_by, triagem_notes, transcription_text, transcription_filename, elsa_output, matching_report, feedback_notes, chief_review_text, chief_review_video_url, client_decision, client_feedback, client_rating, client_stage, client_verdict_at, is_chosen, manual_add_reason, manual_add_reason_note, delivery_position, is_deprioritized, is_deprioritized_reason, manual_add_by, manual_add_at)
 SELECT id, jd_id, run_id, chief_id, chief_name, stage, source, moved_at, moved_by, triagem_notes, transcription_text, transcription_filename, elsa_output, matching_report, feedback_notes, chief_review_text, chief_review_video_url, client_decision, client_feedback, client_rating, client_stage, client_verdict_at, is_chosen, manual_add_reason, manual_add_reason_note, delivery_position, is_deprioritized, is_deprioritized_reason, manual_add_by, manual_add_at FROM intel_src.jd_chief_stages;
+INSERT INTO intelligence.jd_external_candidates (id, jd_id, candidate_name, candidate_email, candidate_linkedin, added_by, created_at, is_deleted, deleted_at, removed_by, removal_reason)
+SELECT id, jd_id, candidate_name, candidate_email, candidate_linkedin, added_by, created_at, is_deleted, deleted_at, removed_by, removal_reason FROM intel_src.jd_external_candidates;
 INSERT INTO intelligence.jd_list_quality (id, job_description_id, pipeline_run_id, consultor_responsavel, n_chiefs, iqt_mean, iqt_median, iqt_p25, pct_apto, pct_parcial, delivery_top_n, computed_at)
 SELECT id, job_description_id, pipeline_run_id, consultor_responsavel, n_chiefs, iqt_mean, iqt_median, iqt_p25, pct_apto, pct_parcial, delivery_top_n, computed_at FROM intel_src.jd_list_quality;
 INSERT INTO intelligence.mcp_query_log (id, service_name, tool_name, user_email, access_level, input_summary, result_count, execution_ms, created_at)
@@ -106,8 +113,8 @@ INSERT INTO intelligence.chief_embeddings (id, chief_id, field_name, embedding, 
 SELECT id, chief_id, field_name, embedding, model_version, content_hash, created_at, updated_at, chunk_index FROM intel_src.chief_embeddings;
 INSERT INTO intelligence.chief_field_history (id, chief_id, field_name, old_value, new_value, source, source_file, changed_at, run_id)
 SELECT id, chief_id, field_name, old_value, new_value, source, source_file, changed_at, run_id FROM intel_src.chief_field_history;
-INSERT INTO intelligence.job_descriptions (id, title, jd_status, description, challenge, chief_profile, contract_conditions, requirements, responsibilities, benefits, culture, company_id, empresa_nome, raw_briefing, cargo_extraido, remuneracao_extraida, work_model_extraido, pipeline_status, pipeline_run_id, pipeline_error, pipeline_run_count, pipeline_started_at, pipeline_completed_at, consultor_responsavel, ingested_at, is_deleted, deleted_at, created_at, uploaded_file_id, is_favorited, raw_briefing_edited_by, raw_briefing_edited_at, raw_briefing_ai, jd_source, escopo_extraido, vaga_review_text, vaga_review_video_url, rails_vaga_id, rails_synced_hash, rails_synced_at, rails_viewer_company_ids, jd_variants, created_by, is_test, outcome, outcome_chief_id, outcome_note, outcome_at)
-SELECT id, title, jd_status, description, challenge, chief_profile, contract_conditions, requirements, responsibilities, benefits, culture, company_id, empresa_nome, raw_briefing, cargo_extraido, remuneracao_extraida, work_model_extraido, pipeline_status, pipeline_run_id, pipeline_error, pipeline_run_count, pipeline_started_at, pipeline_completed_at, consultor_responsavel, ingested_at, is_deleted, deleted_at, created_at, uploaded_file_id, is_favorited, raw_briefing_edited_by, raw_briefing_edited_at, raw_briefing_ai, jd_source, escopo_extraido, vaga_review_text, vaga_review_video_url, rails_vaga_id, rails_synced_hash, rails_synced_at, rails_viewer_company_ids, jd_variants, created_by, is_test, outcome, outcome_chief_id, outcome_note, outcome_at FROM intel_src.job_descriptions;
+INSERT INTO intelligence.job_descriptions (id, title, jd_status, description, challenge, chief_profile, contract_conditions, requirements, responsibilities, benefits, culture, company_id, empresa_nome, raw_briefing, cargo_extraido, remuneracao_extraida, work_model_extraido, pipeline_status, pipeline_run_id, pipeline_error, pipeline_run_count, pipeline_started_at, pipeline_completed_at, consultor_responsavel, ingested_at, is_deleted, deleted_at, created_at, uploaded_file_id, is_favorited, raw_briefing_edited_by, raw_briefing_edited_at, raw_briefing_ai, jd_source, escopo_extraido, vaga_review_text, vaga_review_video_url, rails_vaga_id, rails_synced_hash, rails_synced_at, rails_viewer_company_ids, jd_variants, created_by, is_test, outcome, outcome_chief_id, outcome_note, outcome_at, dados_base_extraidos)
+SELECT id, title, jd_status, description, challenge, chief_profile, contract_conditions, requirements, responsibilities, benefits, culture, company_id, empresa_nome, raw_briefing, cargo_extraido, remuneracao_extraida, work_model_extraido, pipeline_status, pipeline_run_id, pipeline_error, pipeline_run_count, pipeline_started_at, pipeline_completed_at, consultor_responsavel, ingested_at, is_deleted, deleted_at, created_at, uploaded_file_id, is_favorited, raw_briefing_edited_by, raw_briefing_edited_at, raw_briefing_ai, jd_source, escopo_extraido, vaga_review_text, vaga_review_video_url, rails_vaga_id, rails_synced_hash, rails_synced_at, rails_viewer_company_ids, jd_variants, created_by, is_test, outcome, outcome_chief_id, outcome_note, outcome_at, dados_base_extraidos FROM intel_src.job_descriptions;
 INSERT INTO intelligence.job_embeddings (id, job_id, field_name, embedding, model_version, content_hash, created_at, updated_at)
 SELECT id, job_id, field_name, embedding, model_version, content_hash, created_at, updated_at FROM intel_src.job_embeddings;
 INSERT INTO intelligence.jd_briefing_embeddings (id, jd_id, field_name, embedding, model_version, content_hash, created_at, updated_at)
@@ -147,6 +154,7 @@ SELECT setval('intelligence.jd_chief_alerts_id_seq', COALESCE((SELECT MAX(id) FR
 SELECT setval('intelligence.jd_chief_match_comments_id_seq', COALESCE((SELECT MAX(id) FROM intelligence.jd_chief_match_comments), 0) + 1, false);
 SELECT setval('intelligence.jd_chief_stages_id_seq', COALESCE((SELECT MAX(id) FROM intelligence.jd_chief_stages), 0) + 1, false);
 SELECT setval('intelligence.jd_extracted_metadata_id_seq', COALESCE((SELECT MAX(id) FROM intelligence.jd_extracted_metadata), 0) + 1, false);
+SELECT setval('intelligence.jd_external_candidates_id_seq', COALESCE((SELECT MAX(id) FROM intelligence.jd_external_candidates), 0) + 1, false);
 SELECT setval('intelligence.jd_list_quality_id_seq', COALESCE((SELECT MAX(id) FROM intelligence.jd_list_quality), 0) + 1, false);
 SELECT setval('intelligence.jd_results_id_seq', COALESCE((SELECT MAX(id) FROM intelligence.jd_results), 0) + 1, false);
 SELECT setval('intelligence.job_descriptions_id_seq', COALESCE((SELECT MAX(id) FROM intelligence.job_descriptions), 0) + 1, false);
@@ -162,7 +170,7 @@ SELECT setval('intelligence.user_favorites_id_seq', COALESCE((SELECT MAX(id) FRO
 SELECT setval('intelligence.users_id_seq', COALESCE((SELECT MAX(id) FROM intelligence.users), 0) + 1, false);
 
 -- ANALYZE pós-carga (feedback 10/09, item 8): TRUNCATE+INSERT deixa o planner
--- sem estatística até o autovacuum passar. Mesma lista das 48 acima.
+-- sem estatística até o autovacuum passar. Mesma lista das 49 acima.
 ANALYZE intelligence.allocation_history;
 ANALYZE intelligence.allocation_history_shortlist;
 ANALYZE intelligence.attractiveness_snapshots;
@@ -191,6 +199,7 @@ ANALYZE intelligence.iqp_snapshots;
 ANALYZE intelligence.jd_chief_alerts;
 ANALYZE intelligence.jd_chief_match_comments;
 ANALYZE intelligence.jd_chief_stages;
+ANALYZE intelligence.jd_external_candidates;
 ANALYZE intelligence.jd_list_quality;
 ANALYZE intelligence.mcp_query_log;
 ANALYZE intelligence.mql_candidates;

@@ -42,6 +42,18 @@ echo "== Permissões dos agentes — APP=$APP AMBIENTE=$AMBIENTE — $(date -u +
 # Comum a todos os usuários
 for u in rubi roma jade safira tokyo bogota ametista oslo; do
   t "$u" ok     "SELECT 1 FROM app.chiefs LIMIT 1"
+  t "$u" ok     "SELECT id, name, email FROM app.chiefs LIMIT 1"               # allowlist (24/09)
+  t "$u" ok     "SELECT 1 FROM app.active_campaign_contacts LIMIT 1"
+  t "$u" ok     "SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1"             # view (checa como a dona)
+  t "$u" ok     "SELECT 1 FROM intelligence.ac_contacts LIMIT 1"
+  t "$u" negado "SELECT encrypted_password FROM app.chiefs LIMIT 1"            # PII fora da allowlist
+  t "$u" negado "SELECT document FROM app.chiefs LIMIT 1"
+  t "$u" negado "SELECT reset_password_token FROM app.startups LIMIT 1"
+  t "$u" negado "SELECT 1 FROM app.credit_cards LIMIT 1"
+  t "$u" negado "SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1"
+  t "$u" negado "SELECT 1 FROM app.api_tokens LIMIT 1"
+  t "$u" negado "SELECT 1 FROM app.oauth_accounts LIMIT 1"
+  t "$u" negado "SELECT 1 FROM app.schema_migrations LIMIT 1"
   t "$u" ok     "SELECT 1 FROM intelligence.job_descriptions LIMIT 1"
   t "$u" ok     "SELECT 1 FROM intelligence.chief_embeddings LIMIT 1"
   t "$u" ok     "SELECT similarity('a', 'b')"                                   # USAGE public + search_path

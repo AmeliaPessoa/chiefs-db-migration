@@ -1,5 +1,5 @@
 --
--- P2/P3 · DDL — schema `intelligence` no Postgres principal (48 tabelas)
+-- P2/P3 · DDL — schema `intelligence` no Postgres principal (49 tabelas + alembic_version)
 -- Vereditos de 13/08 (Renan, doc "Feedback do Inventário & Janela P1",
 -- recebido 18/08): espelho NÃO migra — só migra o que nasce no Intelligence.
 --
@@ -18,7 +18,7 @@
 --
 -- Gerado do dump-chiefs_intelligence-202608111618.sql (schema-only);
 -- cortado para os vereditos em 18/08.
--- Inclui: 49 tabelas, 43 sequences, defaults, constraints, índices (3 HNSW) e a view.
+-- Inclui: 50 tabelas (49 + alembic_version), 44 sequences, defaults, constraints, índices (3 HNSW) e a view.
 -- Nota (19/08): linhas "OWNER TO postgres" do pg_dump removidas — no Heroku
 -- não há role postgres; o owner é quem executa o DDL (credencial default).
 -- Nota (08/09): re-diff contra a origem viva (alembic 106_job_descriptions_outcome):
@@ -29,6 +29,17 @@
 --   chief_embeddings_bak). Owner final dos objetos: intelligence_user
 --   (etl/05-owner-intelligence.sql / passo final do etl.py) — as migrations
 --   Alembic do Intelligence fazem ALTER TABLE e exigem ownership.
+-- Nota (25/09): re-diff contra a origem viva (alembic 114_ac_compat_views_shared_db,
+--   feedback do Renan 24/09, item 6): +tabela jd_external_candidates (mig 112,
+--   sem FK; PII de candidato: nome, e-mail, LinkedIn — migra, decisão Amelia
+--   25/09) e +coluna job_descriptions.dados_base_extraidos jsonb (mig 111).
+--   As views/funções de compatibilidade (chiefs_todos/chiefs_ativos,
+--   pipedrive_deals, chiefs_platform, companies, accounts, ca_*, ac_*,
+--   compat_csv_split/compat_strip_html) NÃO estão aqui de propósito: são
+--   criadas pelas migrations 107–114 do Intelligence, que rodam no deploy
+--   porque o etl.py semeia alembic_version em 106 (ALEMBIC_SEED_VERSION).
+--   Nenhum desses nomes pode existir como TABELA antes do alembic upgrade
+--   (a 107 pula a criação da view e a 108 renomeia para _legacy).
 -- Pré-requisitos: extensão pgvector (vector 1536 + vector_cosine_ops);
 -- a view exige app.pipedrive_deals já com as colunas de ddl-main-enrichment.sql.
 --
@@ -840,6 +851,31 @@ CREATE SEQUENCE intelligence.jd_chief_stages_id_seq
 
 ALTER SEQUENCE intelligence.jd_chief_stages_id_seq OWNED BY intelligence.jd_chief_stages.id;
 
+CREATE TABLE intelligence.jd_external_candidates (
+    id bigint NOT NULL,
+    jd_id bigint NOT NULL,
+    candidate_name text NOT NULL,
+    candidate_email text NOT NULL,
+    candidate_linkedin text,
+    added_by text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    is_deleted boolean DEFAULT false NOT NULL,
+    deleted_at timestamp with time zone,
+    removed_by text,
+    removal_reason text
+);
+
+
+CREATE SEQUENCE intelligence.jd_external_candidates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE intelligence.jd_external_candidates_id_seq OWNED BY intelligence.jd_external_candidates.id;
+
 CREATE TABLE intelligence.jd_extracted_metadata (
     id bigint NOT NULL,
     jd_id bigint NOT NULL,
@@ -996,7 +1032,8 @@ CREATE TABLE intelligence.job_descriptions (
     outcome character varying(30),
     outcome_chief_id bigint,
     outcome_note text,
-    outcome_at timestamp with time zone
+    outcome_at timestamp with time zone,
+    dados_base_extraidos jsonb
 );
 
 
@@ -1411,6 +1448,8 @@ ALTER TABLE ONLY intelligence.jd_chief_match_comments ALTER COLUMN id SET DEFAUL
 
 ALTER TABLE ONLY intelligence.jd_chief_stages ALTER COLUMN id SET DEFAULT nextval('intelligence.jd_chief_stages_id_seq'::regclass);
 
+ALTER TABLE ONLY intelligence.jd_external_candidates ALTER COLUMN id SET DEFAULT nextval('intelligence.jd_external_candidates_id_seq'::regclass);
+
 ALTER TABLE ONLY intelligence.jd_extracted_metadata ALTER COLUMN id SET DEFAULT nextval('intelligence.jd_extracted_metadata_id_seq'::regclass);
 
 ALTER TABLE ONLY intelligence.jd_list_quality ALTER COLUMN id SET DEFAULT nextval('intelligence.jd_list_quality_id_seq'::regclass);
@@ -1549,6 +1588,9 @@ ALTER TABLE ONLY intelligence.jd_chief_match_comments
 
 ALTER TABLE ONLY intelligence.jd_chief_stages
     ADD CONSTRAINT jd_chief_stages_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY intelligence.jd_external_candidates
+    ADD CONSTRAINT jd_external_candidates_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY intelligence.jd_extracted_metadata
     ADD CONSTRAINT jd_extracted_metadata_jd_id_key UNIQUE (jd_id);
@@ -1800,6 +1842,8 @@ CREATE INDEX ix_jd_results_chief_id ON intelligence.jd_results USING btree (chie
 CREATE INDEX ix_jd_results_job_description_id ON intelligence.jd_results USING btree (job_description_id);
 
 CREATE INDEX ix_jd_results_pipeline_run_id ON intelligence.jd_results USING btree (pipeline_run_id);
+
+CREATE INDEX ix_jd_external_candidates_active ON intelligence.jd_external_candidates USING btree (jd_id) WHERE (is_deleted = false);
 
 CREATE INDEX ix_chief_perfil_perguntas_pending ON intelligence.chief_perfil_perguntas USING btree (answers_at) WHERE ((answers IS NOT NULL) AND (answers_enriched_at IS NULL));
 

@@ -14,8 +14,17 @@
 --   2. REVOKE também nos DEFAULT PRIVILEGES do P1 (seção 4): sem isso, a
 --      próxima tabela criada por db:migrate (owner app_user) volta a nascer
 --      com SELECT table-level para o intelligence_user e a sonda regride.
---   3. Consultas de verificação no fim (esperado: zero SELECT table-level,
---      zero default ACL de app para intelligence_user, 53 UPDATE).
+--   3. Consultas de verificação no fim (esperado: SELECT table-level só nas
+--      3 active_campaign_*, zero default ACL de app para intelligence_user,
+--      53 UPDATE).
+--
+-- 24/09 (pedido do Renan, aceito pela Amelia): + SELECT table-level em
+-- app.active_campaign_contacts / _campaigns / _contact_messages (22, 23 e 24
+-- da allowlist). A migration 114 do Intelligence transformou
+-- intelligence.ac_contacts / ac_campaigns / ac_contact_messages em views
+-- (owner intelligence_user) sobre essas 3 tabelas; sem o grant o SELECT nas
+-- views dá 42501. Tabela inteira: a única PII é o e-mail do contato, que a
+-- ferramenta do MCP mascara, e o query_sql bloqueia as 3.
 --
 -- Executar conectado como a credencial DEFAULT (membro de app_user, owner
 -- de app.* desde o item 6 de 10/09 — o REVOKE é feito "como" o owner):
@@ -82,6 +91,12 @@ GRANT SELECT (company_id, startup_id) ON app.startup_companies TO intelligence_u
 -- startups: 31 colunas (views: ['companies'])
 GRANT SELECT (city, cnpj, company_stage, contact_email, contact_job_title, contact_linkedin, contact_name, contact_phone, created_at, customers, description, email, founders, fulltime_team, fundation_year, id, investment_stage, linkedin, linkedin_founders, market, monetization, name, revenue, revenue_last_month, sector, service_type, site, slug, status, target, updated_at) ON app.startups TO intelligence_user;
 
+-- 22–24 · ActiveCampaign (24/09): tabela inteira — views ac_* da migration 114
+GRANT SELECT ON app.active_campaign_contacts,
+                app.active_campaign_campaigns,
+                app.active_campaign_contact_messages
+  TO intelligence_user;
+
 -- UPDATE por coluna nas 53 colunas de enriquecimento (= p2-grants-enrichment-update.sql)
 GRANT UPDATE ("BP_verification_notes", all_job_titles, attractiveness_classification, attractiveness_score, avatar_blob_key, avatar_url, avg_tenure_months, capacidade_mentoria, career_start_date, chair_inferred, current_roles_count, deleted_at, deletion_reason, english_level_inferred, enrichment_claimed_at, enrichment_error, enrichment_meta, enrichment_status, exec_level_months, executive_competency, ferramentas_dominadas, field_confidence, iqp_classification, iqp_score, is_deleted, is_potential_apt_tier1, job_title_normalized, linkedin_enriched_at, longest_tenure_months, momento_empresa_ideal, natureza_atuacao, needs_re_enrichment, perfil_atuacao, perfil_cultural, porte_empresa_ideal, prazo_disponivel, profile_completeness_score, regiao_influencia_secundaria, registered_at, resume_combined, resume_experience_synthetic, sector_experience_detail, stakeholder_mgmt, state_inferred, state_inferred_confidence, tolerancia_ambiguidade, total_career_months, unique_companies_count, vectorization_status, work_model_inferred, years_career_inferred, years_executive_inferred, years_experience) ON app.chiefs TO intelligence_user;
 -- #911 (a decidir, cliente): updated_at fora da lista de UPDATE — começar restrito.
@@ -93,8 +108,8 @@ COMMIT;
 -- Verificação (evidência em evidencias/feedback-2026-09-22/)
 -- ============================================================
 
--- 1. SELECT table-level em app: esperado 0 linhas
---    (se sobrar alguma, o grantor não é app_user — revogar como o grantor)
+-- 1. SELECT table-level em app: esperado 3 linhas (as active_campaign_*)
+--    (se sobrar outra, o grantor não é app_user — revogar como o grantor)
 SELECT table_name, grantor
   FROM information_schema.role_table_grants
  WHERE grantee = 'intelligence_user' AND table_schema = 'app'
@@ -106,7 +121,9 @@ SELECT pg_get_userbyid(d.defaclrole) AS criador, d.defaclobjtype, d.defaclacl
  WHERE d.defaclnamespace = 'app'::regnamespace
    AND d.defaclacl::text LIKE '%intelligence_user=%';
 
--- 3. Tabelas de app com SELECT por coluna: esperado 21 tabelas
+-- 3. Tabelas de app com SELECT por coluna: esperado 24 tabelas
+--    (21 da allowlist, 340 colunas, + as 3 active_campaign_* com todas as
+--    colunas: o information_schema lista grant table-level em cada coluna)
 SELECT count(DISTINCT table_name) AS tabelas_com_select_coluna,
        count(*)                   AS colunas_com_select
   FROM information_schema.column_privileges

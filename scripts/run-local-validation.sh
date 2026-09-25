@@ -3,7 +3,7 @@
 #
 # MODO PADRÃO (sintético): schema-only + dados sintéticos gerados aqui —
 # NENHUM dado real toca a máquina local (alinhado ao feedback de 20/08,
-# pendência 6). Exercita: carga das 48, merge das híbridas (conflito
+# pendência 6). Exercita: carga das 49, merge das híbridas (conflito
 # ativos×todos, ids sem match), sequences, view e validações — e, no passo 9,
 # a RE-EXECUÇÃO D-1 com o etl.py no cenário do feedback de 08/09: objetos
 # criados pelo Intelligence no schema (view, tabela, coluna, alembic_version)
@@ -69,12 +69,15 @@ INSERT INTO public.pipedrive_deals (id, title, notes, files, origem_oportunidade
 VALUES (9001,'Deal Sintético A','[{"nota":"a"}]'::jsonb,'[]'::jsonb,'{"origem":"evento"}'::jsonb,'linkedin'),
        (9002,'Deal Sintético B','[]'::jsonb,'[]'::jsonb,NULL,NULL),
        (9999,'Deal Sem Match','[{"nota":"x"}]'::jsonb,'[]'::jsonb,NULL,'ads');
--- carga das 48: algumas tabelas simples com linhas
+-- carga das 49: algumas tabelas simples com linhas
 INSERT INTO public.alembic_version (version_num) VALUES ('sintetico_0001');
 INSERT INTO public.platform_sync_state ("key", last_sync_at, last_full_sync_at)
 VALUES ('sintetico', now(), now());
 INSERT INTO public.chief_perfil_perguntas (chief_id, perguntas) VALUES (101, '["pergunta sintética"]'::jsonb);
-INSERT INTO public.job_descriptions (id, title, is_test, outcome) VALUES (7001, 'JD sintética', true, 'contratado');
+INSERT INTO public.job_descriptions (id, title, is_test, outcome, dados_base_extraidos)
+VALUES (7001, 'JD sintética', true, 'contratado', '{"cargo":"CFO sintético"}'::jsonb);
+INSERT INTO public.jd_external_candidates (jd_id, candidate_name, candidate_email)
+VALUES (7001, 'Candidato Sintético', 'cand@teste.local');
 -- (o snapshot da origem já traz os backups chief_embeddings_bak_20260803 e
 --  chiefs_reenrich_backup_20260831 — o ETL deve só AVISAR e descartá-los)
 SQL
@@ -96,7 +99,7 @@ echo "==> [3/8] Enriquecimento do main (chiefs +53, pipedrive_deals +4) — sche
 sed 's/SET search_path = app;/SET search_path = public;/' "$DIR/../ddl/ddl-main-enrichment.sql" \
   | psql_c -d $MAIN_DB -v ON_ERROR_STOP=1
 
-echo "==> [4/8] DDL do schema intelligence (49 tabelas + view) — view repontada para public local"
+echo "==> [4/8] DDL do schema intelligence (49 tabelas + alembic_version + view) — view repontada para public local"
 sed 's/app\.pipedrive_deals/public.pipedrive_deals/' "$DIR/../ddl/ddl-intelligence-schema.sql" \
   | psql_c -d $MAIN_DB -v ON_ERROR_STOP=1
 # grants + default privileges como no P1 (para provar no passo 9 que sobrevivem)
@@ -104,18 +107,22 @@ psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 -c "GRANT USAGE, CREATE ON SCHEMA intellig
   -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA intelligence TO intelligence_user;" \
   -c "ALTER DEFAULT PRIVILEGES IN SCHEMA intelligence GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO intelligence_user;"
 
-echo "==> [5/8] FDW → carga das 48"
+echo "==> [5/8] FDW → carga das 49"
 docker exec -i -e PGPASSWORD=etl-local $CT psql -U postgres -q -d $MAIN_DB \
   -v src_host=localhost -v src_port=5432 -v src_db=$INTEL_DB \
   -v src_user=postgres -v src_pass=etl-local \
   -f - < "$DIR/00-fdw-setup.sql"
 psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 < "$DIR/01-load-intelligence.sql"
+# 1ª carga semeia a versão fixa 106 (24/09, opção b), não a da origem ('sintetico_0001')
+[ "$(psql_c -d $MAIN_DB -At -c "SELECT string_agg(version_num, ',') FROM intelligence.alembic_version")" = "106_job_descriptions_outcome" ] \
+  || { echo "FALHA: alembic_version não foi semeada com 106_job_descriptions_outcome"; exit 1; }
+echo "   alembic_version semeada: 106_job_descriptions_outcome"
 
 echo "==> [6/8] Merge das híbridas"
 psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 -v app_schema=public < "$DIR/02-merge-main.sql" \
   | tee /tmp/etl-merge-report.txt
 
-echo "==> [7/8] Validação das contagens (48 tabelas)"
+echo "==> [7/8] Validação das contagens (49 tabelas)"
 psql_c -d $MAIN_DB < "$DIR/03-validate.sql" | tee /tmp/etl-validation-report.txt
 
 echo "==> [8/8] Integridade (sequences + FKs lógicas)"
@@ -132,12 +139,25 @@ ALTER TABLE intelligence.jd_results ADD COLUMN coluna_so_no_destino text DEFAULT
 UPDATE intelligence.alembic_version SET version_num = '107_cliente';
 ALTER TABLE intelligence.tabela_do_cliente OWNER TO intelligence_user;
 SQL
+  # guarda (24/09): nome de view de compat existindo como TABELA tem de barrar a carga
+  psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 -c "CREATE TABLE intelligence.ac_contacts (id bigint);"
+  if SRC_HOST=localhost SRC_PORT=$PORT SRC_DB=$INTEL_DB SRC_USER=postgres SRC_PASSWORD=etl-local \
+     DST_HOST=localhost DST_PORT=$PORT DST_DB=$MAIN_DB DST_USER=postgres DST_PASSWORD=etl-local \
+     APP_SCHEMA=public DST_OBJECT_OWNER=intelligence_user \
+     python3 "$DIR/etl.py" --merge > /tmp/etl-guard-compat.txt 2>&1; then
+    echo "FALHA: etl.py não barrou intelligence.ac_contacts como tabela"; exit 1
+  fi
+  grep -q "existem como TABELA: \['ac_contacts'\]" /tmp/etl-guard-compat.txt \
+    || { echo "FALHA: etl.py falhou por outro motivo:"; tail -5 /tmp/etl-guard-compat.txt; exit 1; }
+  psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 -c "DROP TABLE intelligence.ac_contacts;"
+  echo "   guarda das views de compat: OK (carga barrada, nada escrito)"
+
   SRC_HOST=localhost SRC_PORT=$PORT SRC_DB=$INTEL_DB SRC_USER=postgres SRC_PASSWORD=etl-local \
   DST_HOST=localhost DST_PORT=$PORT DST_DB=$MAIN_DB DST_USER=postgres DST_PASSWORD=etl-local \
   APP_SCHEMA=public DST_OBJECT_OWNER=intelligence_user \
   python3 "$DIR/etl.py" --merge | tee /tmp/etl-rerun-d1.txt
   grep -q '== ZERO DIVERGÊNCIAS ==' /tmp/etl-rerun-d1.txt || { echo "FALHA: etl.py divergiu"; exit 1; }
-  grep -q 'ANALYZE em 50 tabela(s)' /tmp/etl-rerun-d1.txt || { echo "FALHA: etl.py não fez ANALYZE (48 + 2 híbridas)"; exit 1; }
+  grep -q 'ANALYZE em 51 tabela(s)' /tmp/etl-rerun-d1.txt || { echo "FALHA: etl.py não fez ANALYZE (49 + 2 híbridas)"; exit 1; }
   psql_c -d $MAIN_DB -v ON_ERROR_STOP=1 -At <<'SQL' | tee /tmp/etl-rerun-d1-check.txt
 SELECT 'view chiefs_todos preservada: '||(SELECT count(*) FROM pg_views WHERE schemaname='intelligence' AND viewname='chiefs_todos');
 SELECT 'tabela do cliente preservada (linhas): '||(SELECT count(*) FROM intelligence.tabela_do_cliente);
@@ -148,6 +168,8 @@ SELECT 'grant SELECT intelligence_user em jd_results: '||has_table_privilege('in
 SELECT 'default privileges no schema: '||(SELECT count(*) FROM pg_default_acl WHERE defaclnamespace='intelligence'::regnamespace);
 SELECT 'chief_perfil_perguntas carregada: '||(SELECT count(*) FROM intelligence.chief_perfil_perguntas);
 SELECT 'job_descriptions.is_test/outcome carregados: '||(SELECT count(*) FROM intelligence.job_descriptions WHERE is_test AND outcome='contratado');
+SELECT 'job_descriptions.dados_base_extraidos carregado: '||(SELECT count(*) FROM intelligence.job_descriptions WHERE dados_base_extraidos->>'cargo' = 'CFO sintético');
+SELECT 'jd_external_candidates carregada: '||(SELECT count(*) FROM intelligence.jd_external_candidates);
 SQL
   psql_c -d $MAIN_DB -At -c "SELECT CASE WHEN (SELECT count(*) FROM intelligence.tabela_do_cliente)=2 AND (SELECT string_agg(version_num,',') FROM intelligence.alembic_version)='107_cliente' AND EXISTS (SELECT 1 FROM pg_views WHERE schemaname='intelligence' AND viewname='chiefs_todos') AND NOT EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='intelligence' AND c.relkind IN ('r','S','v') AND c.relowner<>'intelligence_user'::regrole) THEN 'CENÁRIO D-1: OK' ELSE 'CENÁRIO D-1: FALHOU' END" | tee -a /tmp/etl-rerun-d1-check.txt
 else

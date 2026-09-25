@@ -140,6 +140,15 @@ psql "$DST_URL" -v ON_ERROR_STOP=1 -f ddl/ddl-main-enrichment-indexes.sql
 O item 5 (owner de `intelligence.*` = `intelligence_user`) é passo final
 automático do `etl.py`; no caminho 100% SQL, rodar `etl/05-owner-intelligence.sql`.
 
+### 1b' · Permissões finais — #912 e usuários por agente (23/09)
+
+O SELECT do `intelligence_user` em `app.*` passa a ser por coluna
+(`ddl/p2-grants-intelligence-user-minimo.sql`, que substitui o
+`p2-grants-enrichment-update.sql`) e os agentes ganham grupos/usuários
+próprios (`ddl/p2-roles-agentes.sql`). Passo a passo completo, com os
+números esperados em cada verificação e o rollback:
+**[`docs/runbook-producao-permissoes.md`](docs/runbook-producao-permissoes.md)**.
+
 ### 1c · Lado Rails no mesmo banco (uma vez por ambiente — feedback 10/09)
 
 O `rails db:migrate` do release phase roda como `app_user` (DATABASE_URL) e

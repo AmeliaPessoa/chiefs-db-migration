@@ -4,7 +4,7 @@
 Vereditos de 13/08 (Renan): espelho NÃO migra. Este ETL faz:
 
   1. Carga integral (full load) das tabelas que nascem no Intelligence
-     (49 no schema: 48 recarregadas + alembic_version preservada), espelho
+     (50 no schema: 49 recarregadas + alembic_version semeada/preservada), espelho
      1:1 no schema `intelligence`: SELECT na origem e INSERT no destino por
      streaming COPY→COPY, direto de conexão a conexão — nenhum dado toca
      disco, repositório ou arquivo intermediário (§5.1).
@@ -16,7 +16,7 @@ Vereditos de 13/08 (Renan): espelho NÃO migra. Este ETL faz:
      18/08) e apenas contabilizados.
 
 Idempotente: TRUNCATE ... RESTART IDENTITY (SEM CASCADE) antes da carga, e a
-execução inteira (truncate + 48 tabelas + merge + setval + owner + analyze) roda em UMA
+execução inteira (truncate + 49 tabelas + merge + setval + owner + analyze) roda em UMA
 transação no destino — ou entra tudo, ou nada; re-executar nunca duplica.
 
 Garantias da re-execução (feedback Chiefs 08/09, item 4 — o Intelligence
@@ -24,10 +24,18 @@ passa a criar objetos no schema `intelligence` via Alembic):
   · só as tabelas de TABLES são esvaziadas/recarregadas; tabelas, views,
     funções e colunas criadas pelas migrations do Intelligence NÃO são
     tocadas (não há DROP/CREATE; o DDL é passo separado, só na 1ª vez);
-  · TRUNCATE sem CASCADE: tabela nova do cliente com FK para uma das 48
+  · TRUNCATE sem CASCADE: tabela nova do cliente com FK para uma das 49
     faz a carga FALHAR (alto) em vez de ser esvaziada em silêncio;
-  · intelligence.alembic_version NUNCA é sobrescrita — só semeada da origem
-    se estiver vazia (1ª carga); depois pertence ao Alembic do Intelligence;
+  · intelligence.alembic_version NUNCA é sobrescrita — só semeada se estiver
+    vazia (1ª carga), com ALEMBIC_SEED_VERSION (106) e NÃO com a versão da
+    origem (feedback do Renan 24/09, item 6, opção b): o `alembic upgrade
+    head` do deploy roda as migrations 107+ e cria as views/funções de
+    compatibilidade (chiefs_todos/chiefs_ativos, pipedrive_deals, ca_*, ac_*,
+    compat_csv_split...), que NÃO estão no DDL. Depois da 1ª carga a tabela
+    pertence ao Alembic do Intelligence;
+  · nenhum nome das views de compatibilidade pode existir como TABELA no
+    destino (check_compat_not_tables): a 107 pularia a criação da view e a
+    108 renomearia para _legacy;
   · coluna que existe só no DESTINO (migration à frente da origem) é
     tolerada com WARN e fica com o DEFAULT; coluna só na ORIGEM continua
     sendo DRIFT (erro — Achado #1, perderia dado);
@@ -37,7 +45,7 @@ passa a criar objetos no schema `intelligence` via Alembic):
   · passo final: owner dos objetos de `intelligence` → DST_OBJECT_OWNER
     (default intelligence_user; vazio desliga) — as migrations Alembic
     exigem ownership para ALTER TABLE (item 5 do feedback);
-  · ANALYZE das 48 (+ app.chiefs/app.pipedrive_deals no --merge) ao fim
+  · ANALYZE das 49 (+ app.chiefs/app.pipedrive_deals no --merge) ao fim
     da carga (feedback 10/09, item 8): TRUNCATE+COPY deixa o planner sem
     estatística até o autovacuum passar. ETL_SKIP_ANALYZE=1 desliga.
 
@@ -93,6 +101,9 @@ CONFIG = {
     "DST_SCHEMA": "intelligence",
     "APP_SCHEMA": "app",          # schema do monolito no destino (merge); local: public
     "DST_OBJECT_OWNER": "intelligence_user",  # owner final de intelligence.* ("" = não alterar)
+    # versão semeada em intelligence.alembic_version na 1ª carga (24/09, opção b):
+    # a última migration SEM views de compat; o deploy roda 107+ por cima
+    "ALEMBIC_SEED_VERSION": "106_job_descriptions_outcome",
 }
 
 
@@ -100,7 +111,8 @@ def cfg(key: str) -> str:
     return os.environ.get(key, CONFIG[key])
 
 
-# As tabelas que migram (vereditos 13/08 + chief_perfil_perguntas, 08/09), em
+# As tabelas que migram (vereditos 13/08 + chief_perfil_perguntas, 08/09 +
+# jd_external_candidates, mig 112, 25/09 — PII de candidato, migra), em
 # ordem de FK (mesma ordem do 01-load-intelligence.sql): pais primeiro,
 # filhas depois. alembic_version fica FORA desta lista: é semeada uma vez e
 # depois pertence ao Alembic do Intelligence (ver seed_alembic_version).
@@ -117,7 +129,7 @@ TABLES = [
     "deal_enrichment_jobs", "deal_enrichments", "deal_sales_ops",
     "governance_conflicts", "ingestion_logs", "iqp_snapshots",
     "jd_chief_alerts", "jd_chief_match_comments", "jd_chief_stages",
-    "jd_list_quality", "mcp_query_log", "mql_candidates",
+    "jd_external_candidates", "jd_list_quality", "mcp_query_log", "mql_candidates",
     "novo_funil_pipedrive", "pipedrive_write_log", "pipeline_runs",
     "platform_sync_state", "system_prompts", "ui_access_grant",
     "uploaded_files", "user_activity_log", "user_favorites", "users",
@@ -135,6 +147,10 @@ ORIGIN_EXCLUDED = {
     "mcp_refresh_tokens",                                  # tokens efêmeros
 }
 ORIGIN_EXCLUDED_PREFIXES = ("ca_", "ac_")                  # Conta Azul / ActiveCampaign
+# Nomes que as migrations 107–114 do Intelligence criam como VIEW no destino
+# (sobre app.*): não podem existir como tabela antes do alembic upgrade.
+COMPAT_VIEWS = {"accounts", "companies", "chiefs_platform", "pipedrive_deals",
+                "chiefs_ativos", "chiefs_todos"}
 BACKUP_TABLE_RE = re.compile(r"(_bak|_backup)_\d{8}$")   # ex.: chief_embeddings_bak_20260803
 
 # Merge das híbridas (vereditos 13/08) — colunas NOVAS escritas no main.
@@ -388,18 +404,46 @@ def check_truncate_privilege(dst) -> None:
             f"usar a credencial default (owner ou membro de {cfg('DST_OBJECT_OWNER') or 'owner'})")
 
 
-def seed_alembic_version(src, dst) -> str:
-    """intelligence.alembic_version: semeia da origem SÓ se o destino estiver
-    vazio (1ª carga). Nunca sobrescreve — depois da 1ª carga a tabela é do
-    Alembic do Intelligence (item 4 do feedback de 08/09)."""
-    src_schema, dst_schema = cfg("SRC_SCHEMA"), cfg("DST_SCHEMA")
+def seed_alembic_version(dst) -> str:
+    """intelligence.alembic_version: semeia ALEMBIC_SEED_VERSION SÓ se o
+    destino estiver vazio (1ª carga). Nunca sobrescreve — depois da 1ª carga
+    a tabela é do Alembic do Intelligence (item 4 do feedback de 08/09).
+    Não copia a versão da origem (24/09, opção b): com a origem no head, o
+    `alembic upgrade head` do deploy não faria nada e as views/funções de
+    compatibilidade (migrations 107–114) nunca seriam criadas."""
+    dst_schema, seed = cfg("DST_SCHEMA"), cfg("ALEMBIC_SEED_VERSION")
     qd = lambda n: quote_ident(n, dst)
     with dst.cursor() as cur:
-        cur.execute(f"SELECT count(*) FROM {qd(dst_schema)}.{qd(ALEMBIC_TABLE)}")
-        if cur.fetchone()[0] > 0:
-            return "preservada (destino já versionado pelo Alembic)"
-    stream_table(src, dst, ALEMBIC_TABLE, columns_of(dst, dst_schema, ALEMBIC_TABLE))
-    return "semeada da origem (1ª carga)"
+        cur.execute(f"SELECT string_agg(version_num, ',') FROM {qd(dst_schema)}.{qd(ALEMBIC_TABLE)}")
+        atual = cur.fetchone()[0]
+        if atual:
+            return f"preservada ({atual} — destino já versionado pelo Alembic)"
+        cur.execute(f"INSERT INTO {qd(dst_schema)}.{qd(ALEMBIC_TABLE)} (version_num) VALUES (%s)", (seed,))
+    return f"semeada com {seed} (1ª carga) — rodar `alembic upgrade head` no deploy"
+
+
+def check_compat_not_tables(dst) -> None:
+    """Os nomes das views de compatibilidade (COMPAT_VIEWS + ca_*/ac_*) não
+    podem existir como TABELA em DST_SCHEMA: a migration 107 pula a criação
+    da view se o nome existir e a 108 renomeia a tabela para _legacy
+    (feedback do Renan 24/09, item 6). Como view (depois do alembic) é o
+    esperado e passa."""
+    dst_schema = cfg("DST_SCHEMA")
+    with dst.cursor() as cur:
+        cur.execute(
+            """SELECT c.relname FROM pg_class c
+               WHERE c.relnamespace = to_regnamespace(%s)
+                 AND c.relkind IN ('r', 'p')
+                 AND (c.relname = ANY(%s) OR c.relname LIKE 'ca\\_%%' OR c.relname LIKE 'ac\\_%%')
+               ORDER BY 1""",
+            (dst_schema, sorted(COMPAT_VIEWS)),
+        )
+        bad = [r[0] for r in cur.fetchall()]
+    if bad:
+        raise RuntimeError(
+            f"{dst_schema}: nomes de view de compatibilidade existem como TABELA: {bad} — "
+            f"o alembic não criaria as views (107 pula, 108 renomeia para _legacy). "
+            f"Remover/renomear antes da carga (combinar com o cliente).")
 
 
 def ensure_owner(dst) -> int:
@@ -490,8 +534,9 @@ def validate(src, dst) -> bool:
         cur.execute(f"SELECT string_agg(version_num, ',') FROM "
                     f"{quote_ident(dst_schema, dst)}.{quote_ident(ALEMBIC_TABLE, dst)}")
         v_dst = cur.fetchone()[0]
-    print(f"{ALEMBIC_TABLE}: origem={v_src} destino={v_dst}"
-          + ("" if v_src == v_dst else "  (INFO: destino gerido pelo Alembic do Intelligence)"))
+    print(f"{ALEMBIC_TABLE}: origem={v_src} destino={v_dst} semente={cfg('ALEMBIC_SEED_VERSION')}"
+          + ("" if v_src == v_dst else "  (INFO: destino gerido pelo Alembic do Intelligence — "
+             "depois do `alembic upgrade head` deve igualar a origem)"))
     if ahead_report:
         print("\n!! INFO destino à frente da origem (migration do Intelligence; coluna fica com DEFAULT):")
         for line in ahead_report:
@@ -545,12 +590,13 @@ def main() -> int:
                   f"{cfg('DST_HOST')}/{cfg('DST_DB')}.{dst_schema} "
                   f"({len(TABLES)} tabelas, transação única)")
             check_origin_tables(src)
+            check_compat_not_tables(dst)
             check_truncate_privilege(dst)
             all_tables = ", ".join(
                 f"{quote_ident(dst_schema, dst)}.{quote_ident(t, dst)}" for t in TABLES
             )
             with dst.cursor() as cur:
-                # SEM CASCADE: tabela do cliente com FK para uma das 48 faz
+                # SEM CASCADE: tabela do cliente com FK para uma das 49 faz
                 # falhar aqui, em vez de ser esvaziada em silêncio (item 4).
                 cur.execute(f"TRUNCATE {all_tables} RESTART IDENTITY")
             for i, table in enumerate(TABLES, 1):
@@ -582,7 +628,7 @@ def main() -> int:
                 t0 = time.monotonic()
                 stream_table(src, dst, table, cols)
                 print(f"  [{i:2}/{len(TABLES)}] {table} ({time.monotonic() - t0:.1f}s)")
-            print(f"  {ALEMBIC_TABLE}: {seed_alembic_version(src, dst)}")
+            print(f"  {ALEMBIC_TABLE}: {seed_alembic_version(dst)}")
             if args.merge:
                 merge_ok = merge_main(src, dst)
             n_seq = reset_sequences(dst)

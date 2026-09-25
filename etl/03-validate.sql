@@ -1,7 +1,8 @@
 -- P2 ETL · 03 — Validação: contagem origem × destino para as 49 tabelas
 -- (a validação do merge das híbridas está no próprio 02-merge-main.sql)
--- alembic_version fica FORA da contagem: é reportada à parte (versão origem × destino),
--- porque o destino pode legitimamente estar à frente (migrations do Intelligence).
+-- alembic_version fica FORA da contagem: é reportada à parte (versão origem × destino).
+-- Na 1ª carga o destino fica em 106 (semente, 24/09) até o `alembic upgrade head`
+-- do deploy; depois deve igualar a origem (ou estar à frente).
 CREATE TEMP TABLE r(item text, origem bigint, destino bigint, ok text);
 INSERT INTO r SELECT 'chief_perfil_perguntas', (SELECT count(*) FROM intel_src.chief_perfil_perguntas), (SELECT count(*) FROM intelligence.chief_perfil_perguntas), CASE WHEN (SELECT count(*) FROM intel_src.chief_perfil_perguntas) = (SELECT count(*) FROM intelligence.chief_perfil_perguntas) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'allocation_history', (SELECT count(*) FROM intel_src.allocation_history), (SELECT count(*) FROM intelligence.allocation_history), CASE WHEN (SELECT count(*) FROM intel_src.allocation_history) = (SELECT count(*) FROM intelligence.allocation_history) THEN 'OK' ELSE 'DIVERGE' END;
@@ -31,6 +32,7 @@ INSERT INTO r SELECT 'iqp_snapshots', (SELECT count(*) FROM intel_src.iqp_snapsh
 INSERT INTO r SELECT 'jd_chief_alerts', (SELECT count(*) FROM intel_src.jd_chief_alerts), (SELECT count(*) FROM intelligence.jd_chief_alerts), CASE WHEN (SELECT count(*) FROM intel_src.jd_chief_alerts) = (SELECT count(*) FROM intelligence.jd_chief_alerts) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'jd_chief_match_comments', (SELECT count(*) FROM intel_src.jd_chief_match_comments), (SELECT count(*) FROM intelligence.jd_chief_match_comments), CASE WHEN (SELECT count(*) FROM intel_src.jd_chief_match_comments) = (SELECT count(*) FROM intelligence.jd_chief_match_comments) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'jd_chief_stages', (SELECT count(*) FROM intel_src.jd_chief_stages), (SELECT count(*) FROM intelligence.jd_chief_stages), CASE WHEN (SELECT count(*) FROM intel_src.jd_chief_stages) = (SELECT count(*) FROM intelligence.jd_chief_stages) THEN 'OK' ELSE 'DIVERGE' END;
+INSERT INTO r SELECT 'jd_external_candidates', (SELECT count(*) FROM intel_src.jd_external_candidates), (SELECT count(*) FROM intelligence.jd_external_candidates), CASE WHEN (SELECT count(*) FROM intel_src.jd_external_candidates) = (SELECT count(*) FROM intelligence.jd_external_candidates) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'jd_list_quality', (SELECT count(*) FROM intel_src.jd_list_quality), (SELECT count(*) FROM intelligence.jd_list_quality), CASE WHEN (SELECT count(*) FROM intel_src.jd_list_quality) = (SELECT count(*) FROM intelligence.jd_list_quality) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'mcp_query_log', (SELECT count(*) FROM intel_src.mcp_query_log), (SELECT count(*) FROM intelligence.mcp_query_log), CASE WHEN (SELECT count(*) FROM intel_src.mcp_query_log) = (SELECT count(*) FROM intelligence.mcp_query_log) THEN 'OK' ELSE 'DIVERGE' END;
 INSERT INTO r SELECT 'mql_candidates', (SELECT count(*) FROM intel_src.mql_candidates), (SELECT count(*) FROM intelligence.mql_candidates), CASE WHEN (SELECT count(*) FROM intel_src.mql_candidates) = (SELECT count(*) FROM intelligence.mql_candidates) THEN 'OK' ELSE 'DIVERGE' END;
@@ -57,6 +59,6 @@ SELECT 'alembic_version' AS item,
        (SELECT string_agg(version_num, ',') FROM intelligence.alembic_version) AS destino,
        CASE WHEN (SELECT string_agg(version_num, ',') FROM intel_src.alembic_version)
                = (SELECT string_agg(version_num, ',') FROM intelligence.alembic_version)
-            THEN 'OK' ELSE 'INFO: destino gerido pelo Alembic do Intelligence (não é divergência de dados)' END AS ok;
+            THEN 'OK' ELSE 'INFO: destino gerido pelo Alembic do Intelligence (semente 106 até o alembic upgrade head; não é divergência de dados)' END AS ok;
 SELECT CASE WHEN EXISTS (SELECT 1 FROM r WHERE ok='DIVERGE') THEN 'RESULTADO: HÁ DIVERGÊNCIAS'
             ELSE 'RESULTADO: ZERO DIVERGÊNCIAS — '||(SELECT count(*) FROM r)||'/'||(SELECT count(*) FROM r)||' TABELAS OK' END;

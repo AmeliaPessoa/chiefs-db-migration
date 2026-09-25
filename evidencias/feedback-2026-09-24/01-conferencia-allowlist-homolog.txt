@@ -1,0 +1,35 @@
+-- Conferência pós-aplicação (leitura), 2026-09-25T22:31:01Z, fluffy/chiefsgroup-homolog
+       grupo       | tabelas_por_coluna | colunas 
+-------------------+--------------------+---------
+ analytical_reader |                 21 |     340
+ intelligence_user |                 21 |     340
+ worker            |                 21 |     340
+ tl                |                 21 |     340
+(4 rows)
+
+       grupo       |            tabela_inteira            
+-------------------+--------------------------------------
+ analytical_reader | app.active_campaign_campaigns
+ analytical_reader | app.active_campaign_contact_messages
+ analytical_reader | app.active_campaign_contacts
+ intelligence_user | app.active_campaign_campaigns
+ intelligence_user | app.active_campaign_contact_messages
+ intelligence_user | app.active_campaign_contacts
+ worker            | app.active_campaign_campaigns
+ worker            | app.active_campaign_contact_messages
+ worker            | app.active_campaign_contacts
+ tl                | app.active_campaign_campaigns
+ tl                | app.active_campaign_contact_messages
+ tl                | app.active_campaign_contacts
+(12 rows)
+
+ default_acl_app_citando_grupos 
+--------------------------------
+                              0
+(1 row)
+
+ jade_encrypted_password | ametista_document | rubi_credit_cards | intel_ac_contacts 
+-------------------------+-------------------+-------------------+-------------------
+ f                       | f                 | f                 | t
+(1 row)
+
