@@ -10,6 +10,8 @@
 #   APP=chiefsgroup-homolog AMBIENTE=homolog bash scripts/testa-permissoes-agentes.sh \
 #     | tee evidencias/feedback-2026-09-22/NN-permissoes-agentes-homolog.txt
 #   (produção: AMBIENTE=producao — o worker passa a ser só leitura)
+# Squad do Duda (06/10): raiz, grass, ocean, white — worker nos dois ambientes;
+# em homolog o raiz também é tl. Esperado: homolog 380 PASS; produção 360 PASS.
 set -uo pipefail
 
 : "${APP:?defina APP=<app-heroku>}"
@@ -40,7 +42,7 @@ ins() { echo "INSERT INTO $1 SELECT * FROM $1 WHERE false"; }
 echo "== Permissões dos agentes — APP=$APP AMBIENTE=$AMBIENTE — $(date -u +%FT%TZ)"
 
 # Comum a todos os usuários
-for u in rubi roma jade safira tokyo bogota ametista oslo; do
+for u in rubi roma jade safira tokyo bogota ametista oslo raiz grass ocean white; do
   t "$u" ok     "SELECT 1 FROM app.chiefs LIMIT 1"
   t "$u" ok     "SELECT id, name, email FROM app.chiefs LIMIT 1"               # allowlist (24/09)
   t "$u" ok     "SELECT 1 FROM app.active_campaign_contacts LIMIT 1"
@@ -69,8 +71,10 @@ for u in rubi roma jade safira tokyo bogota ametista oslo; do
   t "$u" negado "ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int"
 done
 
-# tl — correção de dado autorizada (homolog = produção)
-for u in rubi roma; do
+# tl — correção de dado autorizada (homolog = produção); raiz é tl só em homolog
+TLS="rubi roma"; WORKERS="jade safira tokyo bogota grass ocean white"
+if [[ "$AMBIENTE" == homolog ]]; then TLS="$TLS raiz"; else WORKERS="$WORKERS raiz"; fi
+for u in $TLS; do
   t "$u" ok     "$(usa_schema analytical)"
   t "$u" ok     "$(ins intelligence.jd_results)"
   t "$u" ok     "UPDATE intelligence.jd_results SET id = id WHERE false"
@@ -79,7 +83,7 @@ for u in rubi roma; do
 done
 
 # worker
-for u in jade safira tokyo bogota; do
+for u in $WORKERS; do
   t "$u" negado "$(usa_schema analytical)"
   if [[ "$AMBIENTE" == homolog ]]; then
     t "$u" ok     "$(ins intelligence.job_descriptions)"
@@ -93,6 +97,15 @@ for u in jade safira tokyo bogota; do
     t "$u" negado "$(ins intelligence.pipeline_runs)"
   fi
 done
+
+# raiz em homolog: tl + worker → escreve também nas tabelas do worker (sem a negação de analytical, que o tl tem)
+if [[ "$AMBIENTE" == homolog ]]; then
+  t raiz ok     "$(ins intelligence.job_descriptions)"
+  t raiz ok     "UPDATE intelligence.job_descriptions SET id = id WHERE false"
+  t raiz ok     "$(ins intelligence.pipeline_runs)"
+  t raiz negado "UPDATE intelligence.pipeline_runs SET id = id WHERE false"
+  t raiz negado "$(ins intelligence.platform_sync_state)"
+fi
 
 # reader (analytical_reader)
 for u in ametista oslo; do

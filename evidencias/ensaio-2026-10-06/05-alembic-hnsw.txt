@@ -1,0 +1,12 @@
+         version_num          
+------------------------------
+ 106_job_descriptions_outcome
+(1 row)
+
+               indexname               
+---------------------------------------
+ ix_chief_embeddings_hnsw_cosine
+ ix_jd_briefing_embeddings_hnsw_cosine
+ ix_job_embeddings_hnsw_cosine
+(3 rows)
+

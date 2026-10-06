@@ -1,0 +1,55 @@
+BEGIN
+REVOKE
+REVOKE
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+COMMIT
+            table_name            | grantor  
+----------------------------------+----------
+ active_campaign_contacts         | app_user
+ active_campaign_campaigns        | app_user
+ active_campaign_contact_messages | app_user
+(3 rows)
+
+ criador | defaclobjtype | defaclacl 
+---------+---------------+-----------
+(0 rows)
+
+ tabelas_com_select_coluna | colunas_com_select 
+---------------------------+--------------------
+                        24 |                414
+(1 row)
+
+ colunas_com_update 
+--------------------
+                 53
+(1 row)
+
+ schema_migrations | ar_internal_metadata | chiefs_encrypted_password | startups_encrypted_password | chief_accounts | credit_cards 
+-------------------+----------------------+---------------------------+-----------------------------+----------------+--------------
+ f                 | f                    | f                         | f                           | f              | f
+(1 row)
+

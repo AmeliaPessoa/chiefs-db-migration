@@ -1,0 +1,13 @@
+     tipo     |                         nome                          
+--------------+-------------------------------------------------------
+ grant schema | rubi usage sobrevive_teste = true
+ membership   | rubi em tl
+ membership   | u7c8m54i7a0mj6 em tl
+ role         | app_user
+ role         | intelligence_user
+ role         | rubi
+ role         | tl
+ schema       | sobrevive_teste
+ search_path  | rubi {"search_path=intelligence, public, heroku_ext"}
+(9 rows)
+

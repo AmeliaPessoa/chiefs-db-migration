@@ -1,0 +1,11 @@
+    tipo     |                         nome                          
+-------------+-------------------------------------------------------
+ membership  | rubi em tl
+ membership  | u7c8m54i7a0mj6 em tl
+ role        | app_user
+ role        | intelligence_user
+ role        | rubi
+ role        | tl
+ search_path | rubi {"search_path=intelligence, public, heroku_ext"}
+(7 rows)
+

@@ -1,0 +1,24 @@
+       rolname        | connect 
+----------------------+---------
+ ametista             | t
+ analytical_reader    | t
+ app_user             | t
+ bogota               | t
+ grass                | t
+ intelligence_user    | t
+ jade                 | t
+ looker_reader        | t
+ n8n_contexto_cliente | t
+ n8n_fila_salesops    | t
+ ocean                | t
+ oslo                 | t
+ raiz                 | t
+ roma                 | t
+ rubi                 | t
+ safira               | t
+ tl                   | t
+ tokyo                | t
+ white                | t
+ worker               | t
+(20 rows)
+

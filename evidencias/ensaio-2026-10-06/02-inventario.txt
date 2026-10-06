@@ -1,0 +1,31 @@
+ schemaname | count 
+------------+-------
+ analytics  |     2
+ public     |    97
+(2 rows)
+
+                 tablename                 
+-------------------------------------------
+ active_campaign_campaigns
+ active_campaign_contact_messages
+ active_campaign_contact_monthly_snapshots
+ active_campaign_contacts
+ active_campaign_tags
+ active_campaign_webhook_events
+ ca_acquittances
+ ca_categories
+ ca_contracts
+ ca_cost_centers
+ ca_dre_categories
+ ca_dre_category_categorias
+ ca_event_apportionments
+ ca_financial_accounts
+ ca_financial_events
+ ca_financial_installments
+ ca_people
+ ca_sale_items
+ ca_sales
+ ca_sellers
+ ca_service_invoices
+(21 rows)
+

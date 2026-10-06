@@ -34,6 +34,21 @@ SELECT r AS role,
        has_schema_privilege(r, 'heroku_ext', 'USAGE') AS heroku_ext_usage
   FROM unnest(ARRAY['app_user', 'intelligence_user', 'looker_reader', 'analytical_reader']) r;
 
--- Prova funcional (não depende de search_path): as funções resolvem
-SELECT public.similarity('chiefs', 'chief') AS similarity_ok,
-       heroku_ext.unaccent('ação') AS unaccent_ok;
+-- Prova funcional (não depende de search_path): as funções resolvem no
+-- schema em que a extensão está. Em produção pg_trgm e unaccent vivem em
+-- heroku_ext e vector em public (ensaio 06/10); na homolog pg_trgm está em
+-- public — por isso o schema é lido de pg_extension, não fixado.
+SELECT extname, extversion, extnamespace::regnamespace AS schema
+  FROM pg_extension WHERE extname IN ('pg_trgm', 'unaccent', 'vector') ORDER BY 1;
+DO $$
+DECLARE s_trgm text; s_unacc text; sim real; una text;
+BEGIN
+  SELECT n.nspname INTO s_trgm  FROM pg_extension e JOIN pg_namespace n ON n.oid = e.extnamespace WHERE e.extname = 'pg_trgm';
+  SELECT n.nspname INTO s_unacc FROM pg_extension e JOIN pg_namespace n ON n.oid = e.extnamespace WHERE e.extname = 'unaccent';
+  IF s_trgm IS NULL THEN RAISE EXCEPTION 'pg_trgm não instalada'; END IF;
+  EXECUTE format('SELECT %I.similarity(%L, %L)', s_trgm, 'chiefs', 'chief') INTO sim;
+  IF s_unacc IS NOT NULL THEN
+    EXECUTE format('SELECT %I.unaccent(%L)', s_unacc, 'ação') INTO una;
+  END IF;
+  RAISE NOTICE 'similarity ok (%.%) = %; unaccent (%) = %', s_trgm, 'similarity', sim, coalesce(s_unacc, 'ausente'), coalesce(una, '-');
+END $$;

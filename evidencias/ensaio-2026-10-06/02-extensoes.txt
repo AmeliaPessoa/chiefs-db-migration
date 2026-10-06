@@ -1,0 +1,9 @@
+      extname       | extversion | extnamespace 
+--------------------+------------+--------------
+ pg_stat_statements | 1.12       | public
+ pg_trgm            | 1.6        | heroku_ext
+ plpgsql            | 1.0        | pg_catalog
+ unaccent           | 1.1        | heroku_ext
+ vector             | 0.8.7      | public
+(5 rows)
+

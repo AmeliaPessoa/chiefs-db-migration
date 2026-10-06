@@ -1,0 +1,22 @@
+DO
+psql:ddl/p2-owner-app.sql:74: NOTICE:  owner → app_user: 0 objeto(s) alterado(s)
+DO
+  owner   | tipo | count 
+----------+------+-------
+ app_user | i    |   303
+ app_user | r    |    97
+ app_user | S    |    92
+(3 rows)
+
+ sequence | tabela | owner_seq | owner_tabela 
+----------+--------+-----------+--------------
+(0 rows)
+
+                               k                               |  v   
+---------------------------------------------------------------+------
+ intelligence_user: colunas com UPDATE em app.chiefs           | 0
+ intelligence_user: SELECT em app.chiefs                       | true
+ app_user: SELECT em app.schema_migrations                     | true
+ default (u7c8m54i7a0mj6): UPDATE em app.chiefs via membership | true
+(4 rows)
+

@@ -208,10 +208,20 @@ END $$;
 
 -- ============================================================
 -- 6 · Membership (um usuário por agente)
+--     Squad do Duda (e-mails 29/09–06/10): raiz (TL) + grass, ocean, white
+--     (devs/QA). Em produção os 4 são `worker` (só leitura); em homolog o
+--     raiz também é `tl` (escreve nas 7 tabelas do tl). Usuários criados
+--     antes por pg:credentials:create (20 credenciais em produção, 06/10).
 -- ============================================================
 GRANT tl                TO rubi, roma                  WITH INHERIT TRUE, SET FALSE;
 GRANT worker            TO jade, safira, tokyo, bogota WITH INHERIT TRUE, SET FALSE;
+GRANT worker            TO raiz, grass, ocean, white   WITH INHERIT TRUE, SET FALSE;
 GRANT analytical_reader TO ametista, oslo              WITH INHERIT TRUE, SET FALSE;
+\if :worker_escreve
+GRANT tl TO raiz WITH INHERIT TRUE, SET FALSE;          -- só homolog
+\else
+REVOKE tl FROM raiz;                                    -- produção: raiz só lê
+\endif
 
 COMMIT;
 
@@ -219,13 +229,13 @@ COMMIT;
 -- Verificação (evidência em evidencias/feedback-2026-09-22/)
 -- ============================================================
 
--- 1. Membership: esperado 8 linhas
+-- 1. Membership: esperado 12 linhas em produção (13 em homolog: raiz também em tl)
 SELECT g.rolname AS grupo, u.rolname AS usuario, m.inherit_option, m.set_option
   FROM pg_auth_members m
   JOIN pg_roles g ON g.oid = m.roleid
   JOIN pg_roles u ON u.oid = m.member
  WHERE g.rolname IN ('tl', 'worker', 'analytical_reader')
-   AND u.rolname IN ('rubi','jade','safira','ametista','roma','tokyo','bogota','oslo')
+   AND u.rolname IN ('rubi','jade','safira','ametista','roma','tokyo','bogota','oslo','raiz','grass','ocean','white')
  ORDER BY 1, 2;
 
 -- 2. Escrita por grupo (homolog: tl 7×2, worker 10×2 + 1; produção: tl 7×2, worker 0)

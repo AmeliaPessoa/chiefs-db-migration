@@ -21,6 +21,18 @@
 
 \set ON_ERROR_STOP on
 
+-- Schema da pg_trgm: em produção ela está em heroku_ext (ensaio 06/10), na
+-- homolog em public. O opclass gin_trgm_ops é referenciado pelo schema real.
+SELECT n.nspname AS trgm_schema
+  FROM pg_extension e JOIN pg_namespace n ON n.oid = e.extnamespace
+ WHERE e.extname = 'pg_trgm' \gset
+\if :{?trgm_schema}
+\echo 'pg_trgm em' :trgm_schema
+\else
+\echo 'ERRO: pg_trgm não instalada — CREATE EXTENSION pg_trgm antes'
+\quit 1
+\endif
+
 -- ===== 1 · B-tree de status (lista do cliente, 08/09) =====
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_app_chiefs_enrichment_status
   ON app.chiefs (enrichment_status);
@@ -32,12 +44,12 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_app_chiefs_needs_re_enrichment
 -- ===== 2 · GIN de trigramas para as buscas ILIKE (lista fechada 24/09) =====
 -- A busca do Intelligence escreve `<expr> ILIKE '%termo%'`; o índice só é
 -- usado se a expressão do índice for IDÊNTICA à da consulta e IMMUTABLE.
--- Pré-requisito: pg_trgm em public (CREATE EXTENSION pg_trgm WITH SCHEMA public).
+-- Pré-requisito: pg_trgm instalada (schema lido acima: public na homolog, heroku_ext em produção).
 --
 -- industries_experience é varchar em app.chiefs: o cast para text é imutável
 -- e bate com a consulta atual (industries_experience::text ILIKE).
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_app_chiefs_industries_experience_trgm
-  ON app.chiefs USING gin ((industries_experience::text) public.gin_trgm_ops);
+  ON app.chiefs USING gin ((industries_experience::text) :"trgm_schema".gin_trgm_ops);
 
 -- all_job_titles é text[]: `all_job_titles::text` (formato do #938 do
 -- cliente) NÃO indexa — o cast de array usa array_out, que é STABLE
@@ -52,7 +64,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_app_chiefs_industries_experience_trg
 SELECT to_regprocedure('intelligence.compat_array_text(text[])') IS NOT NULL AS tem_compat_array_text \gset
 \if :tem_compat_array_text
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_app_chiefs_all_job_titles_trgm
-  ON app.chiefs USING gin (intelligence.compat_array_text(all_job_titles) public.gin_trgm_ops);
+  ON app.chiefs USING gin (intelligence.compat_array_text(all_job_titles) :"trgm_schema".gin_trgm_ops);
 \else
 \echo 'AVISO: intelligence.compat_array_text(text[]) não existe — índice de all_job_titles NÃO criado (aguarda migration do Intelligence)'
 \endif

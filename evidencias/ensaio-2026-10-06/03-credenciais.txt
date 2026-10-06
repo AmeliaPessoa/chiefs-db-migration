@@ -1,0 +1,46 @@
+  Credential              State
+ ────────────────────────────────
+  default                 active
+  └─ as ENSAIO_IARANDU
+
+  ametista                active
+
+  analytical_reader       active
+
+  app_user                active
+
+  bogota                  active
+
+  grass                   active
+
+  intelligence_user       active
+
+  jade                    active
+
+  looker_reader           active
+
+  n8n_contexto_cliente    active
+
+  n8n_fila_salesops       active
+
+  ocean                   active
+
+  oslo                    active
+
+  raiz                    active
+
+  roma                    active
+
+  rubi                    active
+
+  safira                  active
+
+  tl                      active
+
+  tokyo                   active
+
+  white                   active
+
+  worker                  active
+
+

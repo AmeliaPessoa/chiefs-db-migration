@@ -1,0 +1,14 @@
+GRANT
+GRANT
+       role        | public_usage | public_create | heroku_ext_usage 
+-------------------+--------------+---------------+------------------
+ app_user          | t            | f             | t
+ intelligence_user | t            | f             | t
+ looker_reader     | t            | f             | t
+ analytical_reader | t            | f             | t
+(4 rows)
+
+psql:ddl/p2-grants-public-usage.sql:39: ERROR:  function public.similarity(unknown, unknown) does not exist
+LINE 1: SELECT public.similarity('chiefs', 'chief') AS similarity_ok...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
