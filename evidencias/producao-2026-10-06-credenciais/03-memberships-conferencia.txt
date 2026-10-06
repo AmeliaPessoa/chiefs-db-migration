@@ -1,0 +1,19 @@
+       grupo       |    usuario     
+-------------------+----------------
+ analytical_reader | uas9q88ghnhmgm
+ analytical_reader | ametista
+ analytical_reader | oslo
+ tl                | uas9q88ghnhmgm
+ tl                | roma
+ tl                | rubi
+ worker            | uas9q88ghnhmgm
+ worker            | white
+ worker            | safira
+ worker            | bogota
+ worker            | raiz
+ worker            | ocean
+ worker            | jade
+ worker            | tokyo
+ worker            | grass
+(15 rows)
+

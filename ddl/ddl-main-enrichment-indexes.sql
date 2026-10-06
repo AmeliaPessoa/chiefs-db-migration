@@ -12,7 +12,11 @@
 -- autocommit). Se um CREATE INDEX CONCURRENTLY falhar no meio, ele deixa um
 -- índice INVALID: conferir com a query do fim e dropar/recriar.
 --
--- Executar como a credencial DEFAULT (owner de app.chiefs):
+-- Executar como a credencial DEFAULT (membro de app_user, dono de app.chiefs
+-- desde 10/09, e com USAGE em intelligence). NÃO rodar como app_user: ele não
+-- tem USAGE no schema intelligence e o índice de compat_array_text falha com
+-- "permission denied for schema intelligence" (testado em Docker 28/09).
+-- Na janela, com a escrita congelada, dá para tirar o CONCURRENTLY (mais rápido).
 --   psql "<url-default>" -v ON_ERROR_STOP=1 -f ddl/ddl-main-enrichment-indexes.sql
 
 \set ON_ERROR_STOP on

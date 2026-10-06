@@ -1,0 +1,60 @@
+-- 28/09/2026 · fluffy (chiefsgroup-homolog) · somente leitura · Amelia/Claude
+-- Views de intelligence x allowlist dos agentes; compat_array_text; alembic; privilégios p/ índice
+--> Connecting to postgresql-fluffy-10310
+         view          |       owner       |                                     depende_de                                      | tl_select 
+-----------------------+-------------------+-------------------------------------------------------------------------------------+-----------
+ ac_campaigns          | intelligence_user | app.active_campaign_campaigns                                                       | t
+ ac_contact_messages   | intelligence_user | app.active_campaign_contact_messages, app.active_campaign_contacts                  | t
+ ac_contacts           | intelligence_user | app.active_campaign_contact_messages, app.active_campaign_contacts                  | t
+ accounts              | intelligence_user | app.companies, app.startup_ads, app.startup_companies                               | t
+ ca_acquittances       | intelligence_user | app.ca_acquittances                                                                 | t
+ ca_categories         | intelligence_user | app.ca_categories                                                                   | t
+ ca_contracts          | intelligence_user | app.ca_contracts                                                                    | t
+ ca_cost_centers       | intelligence_user | app.ca_cost_centers                                                                 | t
+ ca_dre_categories     | intelligence_user | app.ca_dre_categories, app.ca_dre_category_categorias                               | t
+ ca_financial_accounts | intelligence_user | app.ca_financial_accounts                                                           | t
+ ca_financial_events   | intelligence_user | app.ca_event_apportionments, app.ca_financial_events, app.ca_financial_installments | t
+ ca_people             | intelligence_user | app.ca_people                                                                       | t
+ ca_sales              | intelligence_user | app.ca_financial_installments, app.ca_sale_items, app.ca_sales                      | t
+ ca_sellers            | intelligence_user | app.ca_sellers                                                                      | t
+ ca_service_invoices   | intelligence_user | app.ca_service_invoices                                                             | t
+ chiefs_ativos         | intelligence_user | app.chiefs                                                                          | t
+ chiefs_platform       | intelligence_user | app.chiefs                                                                          | t
+ chiefs_todos          | intelligence_user | app.chiefs                                                                          | t
+ companies             | intelligence_user | app.startup_ads, app.startup_companies, app.startups                                | t
+ deal_quality_scores   | intelligence_user | app.pipedrive_deals                                                                 | t
+ pipedrive_deals       | intelligence_user | app.pipedrive_deals                                                                 | t
+(21 rows)
+
+ colunas_de_app_referenciadas_pelas_views | fora_allowlist_tl | fora_allowlist_worker | fora_allowlist_reader 
+------------------------------------------+-------------------+-----------------------+-----------------------
+                                      521 |                 0 |                     0 |                     0
+(1 row)
+
+    defaclrole     | defaclobjtype |                                         defaclacl                                         
+-------------------+---------------+-------------------------------------------------------------------------------------------
+ u8tu26o4qg0v85    | r             | {intelligence_user=arwd/u8tu26o4qg0v85}
+ u8tu26o4qg0v85    | S             | {intelligence_user=rU/u8tu26o4qg0v85}
+ intelligence_user | r             | {analytical_reader=r/intelligence_user,worker=r/intelligence_user,tl=r/intelligence_user}
+(3 rows)
+
+     version_num     
+---------------------
+ 116_p0_viability_v2
+(1 row)
+
+                        pg_get_functiondef                         
+-------------------------------------------------------------------
+ CREATE OR REPLACE FUNCTION intelligence.compat_array_text(text[])+
+  RETURNS text                                                    +
+  LANGUAGE sql                                                    +
+  IMMUTABLE PARALLEL SAFE                                         +
+ AS $function$ SELECT $1::text $function$                         +
+ 
+(1 row)
+
+ app_user_usage_intelligence | app_user_execute | default_herda_app_user | default_usage_intelligence 
+-----------------------------+------------------+------------------------+----------------------------
+ f                           | t                | t                      | t
+(1 row)
+

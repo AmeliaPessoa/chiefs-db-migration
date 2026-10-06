@@ -1,0 +1,12 @@
+DO
+       rolname        |                    setconfig                     
+----------------------+--------------------------------------------------
+ n8n_contexto_cliente | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+
+DO
+      rolname      |                    setconfig                     
+-------------------+--------------------------------------------------
+ n8n_fila_salesops | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+

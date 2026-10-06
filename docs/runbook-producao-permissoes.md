@@ -25,7 +25,7 @@ explícitas ou as views `intelligence.chiefs_ativos`/`chiefs_todos`).
 
 | | Homolog (feito) | Produção |
 |---|---|---|
-| `APP` / `DB` | `chiefsgroup-homolog` / `postgresql-fluffy-10310` | `<app-prod>` / `<addon-prod>` — **preencher antes** |
+| `APP` / `DB` | `chiefsgroup-homolog` / `postgresql-fluffy-10310` | `chiefsgroup` / `postgresql-trapezoidal-33655` (Standard-0 criado 01/10; **passos 4, 5 e 7 já feitos em 06/10** — 20 credenciais, memberships, search_path; evidências `evidencias/producao-2026-10-06-credenciais/`) |
 | `p2-roles-agentes.sql` | `-v ambiente=homolog` | `-v ambiente=producao` |
 | Escrita do `worker` | 10 tabelas INSERT/UPDATE + `pipeline_runs` INSERT | **nenhuma** (revogada explicitamente) |
 | Escrita do `tl` | 7 tabelas INSERT/UPDATE | igual |
@@ -224,9 +224,16 @@ antigo, revogar dele o SELECT em `app` e `intelligence` e os dois
 
 ## Incrementos depois (mesma receita)
 
-- **Duda** (terminais + 3 cargas do n8n): `pg:credentials:create` + membership
-  no grupo certo ou grants por carga; entra no `p2-roles-agentes.sql` e no
-  script de teste, re-rodar os passos 6–8.
+- **Duda** (e-mails de 29/09 e 05/10): 2 credenciais do n8n (`n8n_contexto_cliente`,
+  `n8n_fila_salesops`) em `ddl/p2-roles-n8n.sql` v3 (cenário B 06/10: `mql_candidates` fora; mesmos grants em homolog e
+  produção; **depois da carga** — as tabelas precisam existir; depois
+  `p2-search-path-agentes.sql` como cada uma; teste
+  `APP=... bash scripts/testa-permissoes-n8n.sh` → esperado **45 PASS, 0 FAIL**; passo a passo em `docs/aplicar-n8n-homolog.md`; `ddl/p2-roles-n8n-mql-candidates.sql` só sob pedido pós-cutover); terminais
+  `raiz` (homolog `tl`+`worker`, produção `worker`) e `grass`/`ocean`/`white`
+  (`worker`) — entram no `p2-roles-agentes.sql` e no script de teste,
+  re-rodar os passos 6–8. **A confirmar com a Amelia antes de aplicar.**
+- **Índices de `app.chiefs`** não são deste runbook: `ddl/ddl-main-enrichment-indexes.sql`
+  roda logo depois do `alembic upgrade head`, pela default, sem CONCURRENTLY na janela.
 - **Tabela nova que precise de escrita** de `tl`/`worker`: default privileges
   só dão SELECT — incluir no `p2-roles-agentes.sql` e re-rodar (idempotente).
 - **Coluna nova usada pelas views de compat**: grant por coluna não é coberto

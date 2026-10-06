@@ -1,0 +1,31 @@
+BEGIN
+GRANT
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+DO
+DO
+DO
+COMMIT
+       grantee        |    table_name    |     privs     
+----------------------+------------------+---------------
+ n8n_contexto_cliente | chiefs_ativos    | SELECT
+ n8n_contexto_cliente | deal_enrichments | INSERT,SELECT
+ n8n_contexto_cliente | pipedrive_deals  | SELECT
+ n8n_fila_salesops    | deal_sales_ops   | INSERT,SELECT
+ n8n_fila_salesops    | pipedrive_deals  | SELECT
+(5 rows)
+
+       grantee        |    table_name    |                     colunas_update                     
+----------------------+------------------+--------------------------------------------------------
+ n8n_contexto_cliente | deal_enrichments | is_active,slack_channel_id,slack_message_ts,updated_at
+ n8n_fila_salesops    | deal_sales_ops   | is_active,updated_at
+(2 rows)
+
