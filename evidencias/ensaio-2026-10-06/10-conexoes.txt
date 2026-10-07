@@ -1,0 +1,6 @@
+    usename     |                 application_name                 | count 
+----------------+--------------------------------------------------+-------
+ u7c8m54i7a0mj6 | Heroku Postgres - Automation - 52.72.79.52:48240 |     1
+ u7c8m54i7a0mj6 | psql                                             |     1
+(2 rows)
+

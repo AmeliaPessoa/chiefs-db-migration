@@ -1,0 +1,15 @@
+     version_num     
+---------------------
+ 116_p0_viability_v2
+(1 row)
+
+       relname       | relkind |  pg_get_userbyid  
+---------------------+---------+-------------------
+ ac_campaigns        | v       | intelligence_user
+ ac_contact_messages | v       | intelligence_user
+ ac_contacts         | v       | intelligence_user
+ chiefs_ativos       | v       | intelligence_user
+ chiefs_todos        | v       | intelligence_user
+ pipedrive_deals     | v       | intelligence_user
+(6 rows)
+

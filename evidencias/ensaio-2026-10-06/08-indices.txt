@@ -1,0 +1,21 @@
+pg_trgm em heroku_ext
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+                    indice                     | indisvalid 
+-----------------------------------------------+------------
+ app.chiefs_pkey                               | t
+ app.idx_chiefs_lower_contact_email            | t
+ app.idx_chiefs_provider_uid_unique            | t
+ app.index_chiefs_on_email                     | t
+ app.index_chiefs_on_reset_password_token      | t
+ app.index_chiefs_on_slug                      | t
+ app.idx_app_chiefs_enrichment_status          | t
+ app.idx_app_chiefs_vectorization_status       | t
+ app.idx_app_chiefs_needs_re_enrichment        | t
+ app.idx_app_chiefs_industries_experience_trgm | t
+ app.idx_app_chiefs_all_job_titles_trgm        | t
+(11 rows)
+

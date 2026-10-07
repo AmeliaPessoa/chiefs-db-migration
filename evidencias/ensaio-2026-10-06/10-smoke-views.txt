@@ -1,0 +1,9 @@
+          v          | count 
+---------------------+-------
+ ac_contacts         |  7091
+ ac_campaigns        |   354
+ ac_contact_messages | 36959
+ chiefs_ativos       |  2121
+ pipedrive_deals     |  3916
+(5 rows)
+
