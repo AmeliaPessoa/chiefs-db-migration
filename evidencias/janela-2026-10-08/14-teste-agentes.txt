@@ -1,0 +1,362 @@
+== Permissões dos agentes — APP=chiefsgroup AMBIENTE=producao — 2026-10-08T15:43:54Z
+PASS  rubi      ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  rubi      ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  rubi      ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  rubi      ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  rubi      ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  rubi      negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  rubi      negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  rubi      negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  rubi      negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  rubi      negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  rubi      negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  rubi      negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  rubi      negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  rubi      ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  rubi      ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  rubi      ok      SELECT similarity('a', 'b')
+PASS  rubi      ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  rubi      negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  rubi      negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  rubi      negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  rubi      negado  TRUNCATE intelligence.jd_results
+PASS  rubi      negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  rubi      negado  CREATE TABLE app._t_perm (id int)
+PASS  rubi      negado  CREATE TABLE public._t_perm (id int)
+PASS  rubi      negado  CREATE TABLE lab._t_perm (id int)
+PASS  rubi      negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  roma      ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  roma      ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  roma      ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  roma      ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  roma      ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  roma      negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  roma      negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  roma      negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  roma      negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  roma      negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  roma      negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  roma      negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  roma      negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  roma      ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  roma      ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  roma      ok      SELECT similarity('a', 'b')
+PASS  roma      ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  roma      negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  roma      negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  roma      negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  roma      negado  TRUNCATE intelligence.jd_results
+PASS  roma      negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  roma      negado  CREATE TABLE app._t_perm (id int)
+PASS  roma      negado  CREATE TABLE public._t_perm (id int)
+PASS  roma      negado  CREATE TABLE lab._t_perm (id int)
+PASS  roma      negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  jade      ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  jade      ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  jade      ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  jade      ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  jade      ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  jade      negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  jade      negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  jade      negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  jade      negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  jade      negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  jade      negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  jade      negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  jade      negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  jade      ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  jade      ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  jade      ok      SELECT similarity('a', 'b')
+PASS  jade      ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  jade      negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  jade      negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  jade      negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  jade      negado  TRUNCATE intelligence.jd_results
+PASS  jade      negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  jade      negado  CREATE TABLE app._t_perm (id int)
+PASS  jade      negado  CREATE TABLE public._t_perm (id int)
+PASS  jade      negado  CREATE TABLE lab._t_perm (id int)
+PASS  jade      negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  safira    ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  safira    ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  safira    ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  safira    ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  safira    ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  safira    negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  safira    negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  safira    negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  safira    negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  safira    negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  safira    negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  safira    negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  safira    negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  safira    ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  safira    ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  safira    ok      SELECT similarity('a', 'b')
+PASS  safira    ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  safira    negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  safira    negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  safira    negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  safira    negado  TRUNCATE intelligence.jd_results
+PASS  safira    negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  safira    negado  CREATE TABLE app._t_perm (id int)
+PASS  safira    negado  CREATE TABLE public._t_perm (id int)
+PASS  safira    negado  CREATE TABLE lab._t_perm (id int)
+PASS  safira    negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  tokyo     ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  tokyo     ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  tokyo     ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  tokyo     ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  tokyo     ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  tokyo     negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  tokyo     negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  tokyo     negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  tokyo     negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  tokyo     negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  tokyo     negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  tokyo     negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  tokyo     negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  tokyo     ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  tokyo     ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  tokyo     ok      SELECT similarity('a', 'b')
+PASS  tokyo     ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  tokyo     negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  tokyo     negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  tokyo     negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  tokyo     negado  TRUNCATE intelligence.jd_results
+PASS  tokyo     negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  tokyo     negado  CREATE TABLE app._t_perm (id int)
+PASS  tokyo     negado  CREATE TABLE public._t_perm (id int)
+PASS  tokyo     negado  CREATE TABLE lab._t_perm (id int)
+PASS  tokyo     negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  bogota    ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  bogota    ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  bogota    ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  bogota    ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  bogota    ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  bogota    negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  bogota    negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  bogota    negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  bogota    negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  bogota    negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  bogota    negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  bogota    negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  bogota    negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  bogota    ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  bogota    ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  bogota    ok      SELECT similarity('a', 'b')
+PASS  bogota    ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  bogota    negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  bogota    negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  bogota    negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  bogota    negado  TRUNCATE intelligence.jd_results
+PASS  bogota    negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  bogota    negado  CREATE TABLE app._t_perm (id int)
+PASS  bogota    negado  CREATE TABLE public._t_perm (id int)
+PASS  bogota    negado  CREATE TABLE lab._t_perm (id int)
+PASS  bogota    negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  ametista  ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  ametista  ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  ametista  ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  ametista  ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  ametista  ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  ametista  negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  ametista  negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  ametista  negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  ametista  negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  ametista  negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  ametista  negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  ametista  negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  ametista  negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  ametista  ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  ametista  ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  ametista  ok      SELECT similarity('a', 'b')
+PASS  ametista  ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  ametista  negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  ametista  negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  ametista  negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  ametista  negado  TRUNCATE intelligence.jd_results
+PASS  ametista  negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  ametista  negado  CREATE TABLE app._t_perm (id int)
+PASS  ametista  negado  CREATE TABLE public._t_perm (id int)
+PASS  ametista  negado  CREATE TABLE lab._t_perm (id int)
+PASS  ametista  negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  oslo      ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  oslo      ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  oslo      ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  oslo      ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  oslo      ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  oslo      negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  oslo      negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  oslo      negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  oslo      negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  oslo      negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  oslo      negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  oslo      negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  oslo      negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  oslo      ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  oslo      ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  oslo      ok      SELECT similarity('a', 'b')
+PASS  oslo      ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  oslo      negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  oslo      negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  oslo      negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  oslo      negado  TRUNCATE intelligence.jd_results
+PASS  oslo      negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  oslo      negado  CREATE TABLE app._t_perm (id int)
+PASS  oslo      negado  CREATE TABLE public._t_perm (id int)
+PASS  oslo      negado  CREATE TABLE lab._t_perm (id int)
+PASS  oslo      negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  raiz      ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  raiz      ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  raiz      ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  raiz      ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  raiz      ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  raiz      negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  raiz      negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  raiz      negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  raiz      negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  raiz      negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  raiz      negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  raiz      negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  raiz      negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  raiz      ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  raiz      ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  raiz      ok      SELECT similarity('a', 'b')
+PASS  raiz      ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  raiz      negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  raiz      negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  raiz      negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  raiz      negado  TRUNCATE intelligence.jd_results
+PASS  raiz      negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  raiz      negado  CREATE TABLE app._t_perm (id int)
+PASS  raiz      negado  CREATE TABLE public._t_perm (id int)
+PASS  raiz      negado  CREATE TABLE lab._t_perm (id int)
+PASS  raiz      negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  grass     ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  grass     ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  grass     ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  grass     ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  grass     ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  grass     negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  grass     negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  grass     negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  grass     negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  grass     negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  grass     negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  grass     negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  grass     negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  grass     ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  grass     ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  grass     ok      SELECT similarity('a', 'b')
+PASS  grass     ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  grass     negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  grass     negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  grass     negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  grass     negado  TRUNCATE intelligence.jd_results
+PASS  grass     negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  grass     negado  CREATE TABLE app._t_perm (id int)
+PASS  grass     negado  CREATE TABLE public._t_perm (id int)
+PASS  grass     negado  CREATE TABLE lab._t_perm (id int)
+PASS  grass     negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  ocean     ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  ocean     ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  ocean     ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  ocean     ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  ocean     ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  ocean     negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  ocean     negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  ocean     negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  ocean     negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  ocean     negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  ocean     negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  ocean     negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  ocean     negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  ocean     ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  ocean     ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  ocean     ok      SELECT similarity('a', 'b')
+PASS  ocean     ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  ocean     negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  ocean     negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  ocean     negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  ocean     negado  TRUNCATE intelligence.jd_results
+PASS  ocean     negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  ocean     negado  CREATE TABLE app._t_perm (id int)
+PASS  ocean     negado  CREATE TABLE public._t_perm (id int)
+PASS  ocean     negado  CREATE TABLE lab._t_perm (id int)
+PASS  ocean     negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  white     ok      SELECT 1 FROM app.chiefs LIMIT 1
+PASS  white     ok      SELECT id, name, email FROM app.chiefs LIMIT 1
+PASS  white     ok      SELECT 1 FROM app.active_campaign_contacts LIMIT 1
+PASS  white     ok      SELECT 1 FROM intelligence.chiefs_ativos LIMIT 1
+PASS  white     ok      SELECT 1 FROM intelligence.ac_contacts LIMIT 1
+PASS  white     negado  SELECT encrypted_password FROM app.chiefs LIMIT 1
+PASS  white     negado  SELECT document FROM app.chiefs LIMIT 1
+PASS  white     negado  SELECT reset_password_token FROM app.startups LIMIT 1
+PASS  white     negado  SELECT 1 FROM app.credit_cards LIMIT 1
+PASS  white     negado  SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1
+PASS  white     negado  SELECT 1 FROM app.api_tokens LIMIT 1
+PASS  white     negado  SELECT 1 FROM app.oauth_accounts LIMIT 1
+PASS  white     negado  SELECT 1 FROM app.schema_migrations LIMIT 1
+PASS  white     ok      SELECT 1 FROM intelligence.job_descriptions LIMIT 1
+PASS  white     ok      SELECT 1 FROM intelligence.chief_embeddings LIMIT 1
+PASS  white     ok      SELECT similarity('a', 'b')
+PASS  white     ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_setting('search_path'); END IF; END $$
+PASS  white     negado  UPDATE app.chiefs SET name = name WHERE false
+PASS  white     negado  INSERT INTO app.chiefs SELECT * FROM app.chiefs WHERE false
+PASS  white     negado  DELETE FROM intelligence.jd_results WHERE false
+PASS  white     negado  TRUNCATE intelligence.jd_results
+PASS  white     negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  white     negado  CREATE TABLE app._t_perm (id int)
+PASS  white     negado  CREATE TABLE public._t_perm (id int)
+PASS  white     negado  CREATE TABLE lab._t_perm (id int)
+PASS  white     negado  ALTER TABLE intelligence.jd_results ADD COLUMN _t_perm int
+PASS  rubi      ok      DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  rubi      ok      INSERT INTO intelligence.jd_results SELECT * FROM intelligence.jd_results WHERE false
+PASS  rubi      ok      UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  rubi      ok      UPDATE intelligence.platform_sync_state SET last_sync_at = last_sync_at WHERE false
+PASS  rubi      negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  roma      ok      DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  roma      ok      INSERT INTO intelligence.jd_results SELECT * FROM intelligence.jd_results WHERE false
+PASS  roma      ok      UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  roma      ok      UPDATE intelligence.platform_sync_state SET last_sync_at = last_sync_at WHERE false
+PASS  roma      negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  jade      negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  jade      negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  jade      negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  jade      negado  INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  safira    negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  safira    negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  safira    negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  safira    negado  INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  tokyo     negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  tokyo     negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  tokyo     negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  tokyo     negado  INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  bogota    negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  bogota    negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  bogota    negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  bogota    negado  INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  grass     negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  grass     negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  grass     negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  grass     negado  INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  ocean     negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  ocean     negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  ocean     negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  ocean     negado  INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  white     negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  white     negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  white     negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  white     negado  INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  raiz      negado  DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  raiz      negado  INSERT INTO intelligence.job_descriptions SELECT * FROM intelligence.job_descriptions WHERE false
+PASS  raiz      negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  raiz      negado  INSERT INTO intelligence.pipeline_runs SELECT * FROM intelligence.pipeline_runs WHERE false
+PASS  ametista  ok      DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  ametista  negado  INSERT INTO intelligence.jd_results SELECT * FROM intelligence.jd_results WHERE false
+PASS  ametista  negado  UPDATE intelligence.jd_results SET id = id WHERE false
+PASS  oslo      ok      DO $$ BEGIN IF NOT has_schema_privilege('analytical','USAGE') THEN RAISE 'permission denied for schema analytical'; END IF; END $$
+PASS  oslo      negado  INSERT INTO intelligence.jd_results SELECT * FROM intelligence.jd_results WHERE false
+PASS  oslo      negado  UPDATE intelligence.jd_results SET id = id WHERE false
+== Resultado: 360 PASS, 0 FAIL

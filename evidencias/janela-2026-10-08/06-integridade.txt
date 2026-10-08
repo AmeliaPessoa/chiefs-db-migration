@@ -1,0 +1,52 @@
+CREATE TABLE
+DO
+INSERT 0 1
+ set_config 
+------------
+ app
+(1 row)
+
+DO
+  classe   |                                item                                |            valor             |  ok  
+-----------+--------------------------------------------------------------------+------------------------------+------
+ DURO      | sequences verificadas                                              | 44 sequences, 0 atrás do MAX | OK
+ AUDITORIA | attractiveness_snapshots.chief_id → app.chiefs                     | 0 órfãos de 16632 (0.0%)     | OK
+ AUDITORIA | benchmark_qa.chief_id → app.chiefs                                 | 0 órfãos de 1 (0.0%)         | OK
+ AUDITORIA | chief_career_history.chief_id → app.chiefs                         | 24 órfãos de 22858 (0.1%)    | INFO
+ AUDITORIA | chief_contextual_qa.chief_id → app.chiefs                          | 0 órfãos de 165 (0.0%)       | OK
+ AUDITORIA | chief_contextual_qa.jd_id → intelligence.job_descriptions          | 0 órfãos de 165 (0.0%)       | OK
+ AUDITORIA | chief_embeddings.chief_id → app.chiefs                             | 0 órfãos de 17879 (0.0%)     | OK
+ AUDITORIA | chief_enrichment_history.chief_id → app.chiefs                     | 0 órfãos de 9928 (0.0%)      | OK
+ AUDITORIA | chief_field_history.chief_id → app.chiefs                          | 0 órfãos de 7054 (0.0%)      | OK
+ AUDITORIA | chief_improvement_event.chief_id → app.chiefs                      | 4 órfãos de 1768 (0.2%)      | INFO
+ AUDITORIA | chief_laudo.chief_id → app.chiefs                                  | 4 órfãos de 60 (6.7%)        | INFO
+ AUDITORIA | chief_laudo_modal_state.chief_id → app.chiefs                      | 0 órfãos de 80 (0.0%)        | OK
+ AUDITORIA | chief_perfil_perguntas.chief_id → app.chiefs                       | 0 órfãos de 1 (0.0%)         | OK
+ AUDITORIA | chief_platform_history.chief_id → app.chiefs                       | 0 órfãos de 1123 (0.0%)      | OK
+ AUDITORIA | chief_rerank_cache.chief_id → app.chiefs                           | 0 órfãos de 7008 (0.0%)      | OK
+ AUDITORIA | chief_reverse_matches.chief_id → app.chiefs                        | 0 órfãos de 231110 (0.0%)    | OK
+ AUDITORIA | chief_reverse_matches.jd_id → intelligence.job_descriptions        | 0 órfãos de 231110 (0.0%)    | OK
+ AUDITORIA | chief_reverse_profile.chief_id → app.chiefs                        | 0 órfãos de 102 (0.0%)       | OK
+ AUDITORIA | chief_stimulus_event.chief_id → app.chiefs                         | 0 órfãos de 653 (0.0%)       | OK
+ AUDITORIA | deal_enrichments.deal_id → app.pipedrive_deals                     | 0 órfãos de 54 (0.0%)        | OK
+ AUDITORIA | deal_sales_ops.deal_id → app.pipedrive_deals                       | 0 órfãos de 23937 (0.0%)     | OK
+ AUDITORIA | governance_conflicts.chief_id → app.chiefs                         | 50 órfãos de 208 (24.0%)     | INFO
+ AUDITORIA | iqp_snapshots.chief_id → app.chiefs                                | 0 órfãos de 46753 (0.0%)     | OK
+ AUDITORIA | jd_briefing_embeddings.jd_id → intelligence.job_descriptions       | 0 órfãos de 110 (0.0%)       | OK
+ AUDITORIA | jd_chief_stages.chief_id → app.chiefs                              | 0 órfãos de 331 (0.0%)       | OK
+ AUDITORIA | jd_chief_stages.jd_id → intelligence.job_descriptions              | 0 órfãos de 331 (0.0%)       | OK
+ AUDITORIA | jd_extracted_metadata.jd_id → intelligence.job_descriptions        | 0 órfãos de 126 (0.0%)       | OK
+ AUDITORIA | jd_list_quality.job_description_id → intelligence.job_descriptions | 0 órfãos de 397 (0.0%)       | OK
+ AUDITORIA | jd_results.chief_id → app.chiefs                                   | 0 órfãos de 17778 (0.0%)     | OK
+ AUDITORIA | jd_results.job_description_id → intelligence.job_descriptions      | 0 órfãos de 17778 (0.0%)     | OK
+ AUDITORIA | novo_funil_pipedrive.deal_id → app.pipedrive_deals                 | 0 órfãos de 3646 (0.0%)      | OK
+ AUDITORIA | pipedrive_write_log.deal_id → app.pipedrive_deals                  | 0 órfãos de 6 (0.0%)         | OK
+ INFO      | tabelas sem PK em intelligence                                     | nenhuma                      | OK
+ AUDITORIA | user_favorites.jd_id → intelligence.job_descriptions               | 0 órfãos de 21 (0.0%)        | OK
+(34 rows)
+
+                                            case                                            
+--------------------------------------------------------------------------------------------
+ INTEGRIDADE: OK — checks duros aprovados; órfãos lógicos são auditoria (refletem a origem)
+(1 row)
+

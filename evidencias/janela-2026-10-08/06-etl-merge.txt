@@ -1,0 +1,113 @@
+Carga: interchange.proxy.rlwy.net/chiefs_intelligence → ec2-100-57-203-87.compute-1.amazonaws.com/dfiit9c72iv839.intelligence (49 tabelas, transação única)
+  !! WARN backup operacional na origem, descartado por regra: chief_embeddings_bak_20260803
+  !! WARN backup operacional na origem, descartado por regra: chiefs_reenrich_backup_20260831
+  [ 1/49] allocation_history (0.2s)
+  [ 2/49] allocation_history_shortlist (0.2s)
+  [ 3/49] attractiveness_snapshots (1.0s)
+  [ 4/49] backtest_jobs (0.2s)
+  [ 5/49] benchmark_market_cache (0.2s)
+  [ 6/49] benchmark_qa (0.2s)
+  [ 7/49] chief_career_history (1.6s)
+  [ 8/49] chief_contextual_qa (0.2s)
+  [ 9/49] chief_enrichment_history (0.9s)
+  [10/49] chief_improvement_event (0.8s)
+  [11/49] chief_laudo (0.6s)
+  [12/49] chief_laudo_modal_state (0.2s)
+  [13/49] chief_perfil_perguntas (0.2s)
+  [14/49] chief_platform_history (0.6s)
+  [15/49] chief_rerank_cache (0.6s)
+  [16/49] chief_reverse_matches (10.0s)
+  [17/49] chief_reverse_profile (0.4s)
+  [18/49] chief_snapshot_before_op (0.2s)
+  [19/49] chief_stimulus_event (0.3s)
+  [20/49] deal_enrichment_jobs (0.2s)
+  [21/49] deal_enrichments (0.4s)
+  [22/49] deal_sales_ops (6.0s)
+  [23/49] governance_conflicts (0.2s)
+  [24/49] ingestion_logs (0.2s)
+  [25/49] iqp_snapshots (1.1s)
+  [26/49] jd_chief_alerts (0.2s)
+  [27/49] jd_chief_match_comments (0.2s)
+  [28/49] jd_chief_stages (0.5s)
+  [29/49] jd_external_candidates (0.2s)
+  [30/49] jd_list_quality (0.6s)
+  [31/49] mcp_query_log (0.9s)
+  [32/49] mql_candidates (0.9s)
+  [33/49] novo_funil_pipedrive (7.5s)
+  [34/49] pipedrive_write_log (0.2s)
+  [35/49] pipeline_runs (59.1s)
+  [36/49] platform_sync_state (0.2s)
+  [37/49] system_prompts (0.3s)
+  [38/49] ui_access_grant (0.2s)
+  [39/49] uploaded_files (0.7s)
+  [40/49] user_activity_log (0.4s)
+  [41/49] user_favorites (0.2s)
+  [42/49] users (0.2s)
+  [43/49] chief_embeddings (156.0s)
+  [44/49] chief_field_history (0.5s)
+  [45/49] job_descriptions (0.7s)
+  [46/49] job_embeddings (0.2s)
+  [47/49] jd_briefing_embeddings (0.6s)
+  [48/49] jd_extracted_metadata (0.3s)
+  [49/49] jd_results (2.3s)
+  alembic_version: semeada com 106_job_descriptions_outcome (1ª carga) — rodar `alembic upgrade head` no deploy
+  merge chiefs: fonte=5354 atualizados=5354 descartados(sem match)=0 divergentes=0
+  merge pipedrive_deals: fonte=3919 atualizados=3919 descartados(sem match)=0 divergentes=0
+Commit OK — 44 sequences reposicionadas; owner → intelligence_user: 51 objeto(s) alterado(s); ANALYZE em 51 tabela(s).
+
+tabela                                origem     destino  status
+------------------------------------------------------------------
+allocation_history                         0           0  OK
+allocation_history_shortlist               0           0  OK
+attractiveness_snapshots               16632       16632  OK
+backtest_jobs                             10          10  OK
+benchmark_market_cache                     0           0  OK
+benchmark_qa                               1           1  OK
+chief_career_history                   22858       22858  OK
+chief_contextual_qa                      165         165  OK
+chief_enrichment_history                9928        9928  OK
+chief_improvement_event                 1768        1768  OK
+chief_laudo                               60          60  OK
+chief_laudo_modal_state                   80          80  OK
+chief_perfil_perguntas                     1           1  OK
+chief_platform_history                  1123        1123  OK
+chief_rerank_cache                      7008        7008  OK
+chief_reverse_matches                 231110      231110  OK
+chief_reverse_profile                    102         102  OK
+chief_snapshot_before_op                   0           0  OK
+chief_stimulus_event                     653         653  OK
+deal_enrichment_jobs                       0           0  OK
+deal_enrichments                          54          54  OK
+deal_sales_ops                         23937       23937  OK
+governance_conflicts                     208         208  OK
+ingestion_logs                             8           8  OK
+iqp_snapshots                          46753       46753  OK
+jd_chief_alerts                            0           0  OK
+jd_chief_match_comments                    0           0  OK
+jd_chief_stages                          331         331  OK
+jd_external_candidates                     0           0  OK
+jd_list_quality                          397         397  OK
+mcp_query_log                           8508        8508  OK
+mql_candidates                           797         797  OK
+novo_funil_pipedrive                    3646        3646  OK
+pipedrive_write_log                        6           6  OK
+pipeline_runs                           3213        3213  OK
+platform_sync_state                       16          16  OK
+system_prompts                            54          54  OK
+ui_access_grant                           18          18  OK
+uploaded_files                           143         143  OK
+user_activity_log                       5652        5652  OK
+user_favorites                            21          21  OK
+users                                      0           0  OK
+chief_embeddings                       17879       17879  OK
+chief_field_history                     7054        7054  OK
+job_descriptions                         545         545  OK
+job_embeddings                             0           0  OK
+jd_briefing_embeddings                   110         110  OK
+jd_extracted_metadata                    126         126  OK
+jd_results                             17778       17778  OK
+------------------------------------------------------------------
+TOTAL                                 428753      428753
+alembic_version: origem=116_p0_viability_v2 destino=106_job_descriptions_outcome semente=106_job_descriptions_outcome  (INFO: destino gerido pelo Alembic do Intelligence — depois do `alembic upgrade head` deve igualar a origem)
+
+== ZERO DIVERGÊNCIAS ==

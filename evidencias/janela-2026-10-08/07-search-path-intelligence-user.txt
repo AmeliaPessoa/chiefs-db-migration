@@ -1,0 +1,6 @@
+DO
+      rolname      |                    setconfig                     
+-------------------+--------------------------------------------------
+ intelligence_user | {"search_path=intelligence, public, heroku_ext"}
+(1 row)
+

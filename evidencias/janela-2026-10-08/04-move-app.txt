@@ -1,0 +1,15 @@
+ schemaname | count 
+------------+-------
+ app        |    97
+(1 row)
+
+                 tablename                 
+-------------------------------------------
+ active_campaign_campaigns
+ active_campaign_contact_messages
+ active_campaign_contact_monthly_snapshots
+ active_campaign_contacts
+ active_campaign_tags
+ active_campaign_webhook_events
+(6 rows)
+

@@ -1,0 +1,100 @@
+BEGIN
+GRANT
+GRANT
+GRANT
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+psql:ddl/p2-roles-agentes.sql:138: NOTICE:  app: 21 tabelas por coluna + 3 tabelas inteiras para tl, worker, analytical_reader
+DO
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+REVOKE
+REVOKE
+REVOKE
+DO
+psql:ddl/p2-roles-agentes.sql:216: NOTICE:  role "rubi" has already been granted membership in role "tl" by role "uas9q88ghnhmgm"
+psql:ddl/p2-roles-agentes.sql:216: NOTICE:  role "roma" has already been granted membership in role "tl" by role "uas9q88ghnhmgm"
+GRANT ROLE
+psql:ddl/p2-roles-agentes.sql:217: NOTICE:  role "jade" has already been granted membership in role "worker" by role "uas9q88ghnhmgm"
+psql:ddl/p2-roles-agentes.sql:217: NOTICE:  role "safira" has already been granted membership in role "worker" by role "uas9q88ghnhmgm"
+psql:ddl/p2-roles-agentes.sql:217: NOTICE:  role "tokyo" has already been granted membership in role "worker" by role "uas9q88ghnhmgm"
+psql:ddl/p2-roles-agentes.sql:217: NOTICE:  role "bogota" has already been granted membership in role "worker" by role "uas9q88ghnhmgm"
+GRANT ROLE
+psql:ddl/p2-roles-agentes.sql:218: NOTICE:  role "raiz" has already been granted membership in role "worker" by role "uas9q88ghnhmgm"
+psql:ddl/p2-roles-agentes.sql:218: NOTICE:  role "grass" has already been granted membership in role "worker" by role "uas9q88ghnhmgm"
+psql:ddl/p2-roles-agentes.sql:218: NOTICE:  role "ocean" has already been granted membership in role "worker" by role "uas9q88ghnhmgm"
+psql:ddl/p2-roles-agentes.sql:218: NOTICE:  role "white" has already been granted membership in role "worker" by role "uas9q88ghnhmgm"
+GRANT ROLE
+psql:ddl/p2-roles-agentes.sql:219: NOTICE:  role "ametista" has already been granted membership in role "analytical_reader" by role "uas9q88ghnhmgm"
+psql:ddl/p2-roles-agentes.sql:219: NOTICE:  role "oslo" has already been granted membership in role "analytical_reader" by role "uas9q88ghnhmgm"
+GRANT ROLE
+psql:ddl/p2-roles-agentes.sql:223: WARNING:  role "raiz" has not been granted membership in role "tl" by role "uas9q88ghnhmgm"
+REVOKE ROLE
+COMMIT
+       grupo       | usuario  | inherit_option | set_option 
+-------------------+----------+----------------+------------
+ analytical_reader | ametista | t              | f
+ analytical_reader | oslo     | t              | f
+ tl                | roma     | t              | f
+ tl                | rubi     | t              | f
+ worker            | bogota   | t              | f
+ worker            | grass    | t              | f
+ worker            | jade     | t              | f
+ worker            | ocean    | t              | f
+ worker            | raiz     | t              | f
+ worker            | safira   | t              | f
+ worker            | tokyo    | t              | f
+ worker            | white    | t              | f
+(12 rows)
+
+ grupo |                tabela                |     privs      
+-------+--------------------------------------+----------------
+ tl    | intelligence.chief_laudo             | INSERT, UPDATE
+ tl    | intelligence.chief_laudo_modal_state | INSERT, UPDATE
+ tl    | intelligence.jd_chief_stages         | INSERT, UPDATE
+ tl    | intelligence.jd_results              | INSERT, UPDATE
+ tl    | intelligence.platform_sync_state     | INSERT, UPDATE
+ tl    | intelligence.system_prompts          | INSERT, UPDATE
+ tl    | intelligence.ui_access_grant         | INSERT, UPDATE
+(7 rows)
+
+       grupo       |                tabela                
+-------------------+--------------------------------------
+ worker            | app.active_campaign_campaigns
+ worker            | app.active_campaign_contact_messages
+ worker            | app.active_campaign_contacts
+ tl                | app.active_campaign_campaigns
+ tl                | app.active_campaign_contact_messages
+ tl                | app.active_campaign_contacts
+ analytical_reader | app.active_campaign_campaigns
+ analytical_reader | app.active_campaign_contact_messages
+ analytical_reader | app.active_campaign_contacts
+(9 rows)
+
+       grupo       | tabelas | colunas 
+-------------------+---------+---------
+ worker            |      21 |     340
+ tl                |      21 |     340
+ analytical_reader |      21 |     340
+(3 rows)
+
+ criador | defaclacl 
+---------+-----------
+(0 rows)
+
+ chiefs_encrypted_password | chiefs_document | startups_reset_token | credit_cards | conta_azul_oauth_tokens | api_tokens | oauth_accounts 
+---------------------------+-----------------+----------------------+--------------+-------------------------+------------+----------------
+ f                         | f               | f                    | f            | f                       | f          | f
+(1 row)
+
+ role | schema | create 
+------+--------+--------
+(0 rows)
+

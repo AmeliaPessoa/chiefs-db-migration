@@ -1,0 +1,19 @@
+GRANT
+GRANT
+       role        | public_usage | public_create | heroku_ext_usage 
+-------------------+--------------+---------------+------------------
+ app_user          | t            | f             | t
+ intelligence_user | t            | f             | t
+ looker_reader     | t            | f             | t
+ analytical_reader | t            | f             | t
+(4 rows)
+
+ extname  | extversion |   schema   
+----------+------------+------------
+ pg_trgm  | 1.6        | heroku_ext
+ unaccent | 1.1        | heroku_ext
+ vector   | 0.8.6      | public
+(3 rows)
+
+psql:ddl/p2-grants-public-usage.sql:54: NOTICE:  similarity ok (heroku_ext.similarity) = 0.625; unaccent (heroku_ext) = acao
+DO

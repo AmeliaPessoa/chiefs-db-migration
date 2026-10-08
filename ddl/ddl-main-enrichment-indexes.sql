@@ -42,14 +42,28 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_app_chiefs_needs_re_enrichment
   ON app.chiefs (needs_re_enrichment) WHERE needs_re_enrichment;
 
 -- ===== 2 · GIN de trigramas para as buscas ILIKE (lista fechada 24/09) =====
+-- Em PRODUÇÃO (janela 08/10) a Chiefs criou os dois GIN com nomes próprios:
+--   idx_chiefs_industries_text_trgm  ((industries_experience::text) gin_trgm_ops)
+--   idx_chiefs_all_job_titles_trgm   (intelligence.compat_array_text(all_job_titles) gin_trgm_ops)
+-- e mais idx_chiefs_fts_pt_view (to_tsvector('portuguese', ...), migration 045).
+-- Para não criar índice duplicado com a mesma expressão, cada GIN abaixo só é
+-- criado se não existir NENHUM índice em app.chiefs com aquela expressão.
+SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'app' AND tablename = 'chiefs'
+               AND indexdef ILIKE '%industries_experience%gin_trgm_ops%') AS tem_trgm_industries \gset
+SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'app' AND tablename = 'chiefs'
+               AND indexdef ILIKE '%compat_array_text(all_job_titles)%gin_trgm_ops%') AS tem_trgm_titles \gset
 -- A busca do Intelligence escreve `<expr> ILIKE '%termo%'`; o índice só é
 -- usado se a expressão do índice for IDÊNTICA à da consulta e IMMUTABLE.
 -- Pré-requisito: pg_trgm instalada (schema lido acima: public na homolog, heroku_ext em produção).
 --
 -- industries_experience é varchar em app.chiefs: o cast para text é imutável
 -- e bate com a consulta atual (industries_experience::text ILIKE).
+\if :tem_trgm_industries
+\echo 'GIN de industries_experience já existe (outro nome) — pulando'
+\else
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_app_chiefs_industries_experience_trgm
   ON app.chiefs USING gin ((industries_experience::text) :"trgm_schema".gin_trgm_ops);
+\endif
 
 -- all_job_titles é text[]: `all_job_titles::text` (formato do #938 do
 -- cliente) NÃO indexa — o cast de array usa array_out, que é STABLE
@@ -62,7 +76,9 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_app_chiefs_industries_experience_trg
 -- e a busca passa a escrever intelligence.compat_array_text(all_job_titles) ILIKE '%termo%'.
 -- Só cria o índice se a função existir (senão avisa e segue):
 SELECT to_regprocedure('intelligence.compat_array_text(text[])') IS NOT NULL AS tem_compat_array_text \gset
-\if :tem_compat_array_text
+\if :tem_trgm_titles
+\echo 'GIN de compat_array_text(all_job_titles) já existe (outro nome) — pulando'
+\elif :tem_compat_array_text
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_app_chiefs_all_job_titles_trgm
   ON app.chiefs USING gin (intelligence.compat_array_text(all_job_titles) :"trgm_schema".gin_trgm_ops);
 \else

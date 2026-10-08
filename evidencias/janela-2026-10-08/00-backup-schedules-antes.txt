@@ -1,0 +1,6 @@
+=== Backup Schedules
+
+DATABASE_URL: daily at 3:00 America/Sao_Paulo
+
+HEROKU_POSTGRESQL_PINK_URL: daily at 3:00 America/Sao_Paulo
+

@@ -1,0 +1,57 @@
+
+tabela                                origem     destino  status
+------------------------------------------------------------------
+allocation_history                         0           0  OK
+allocation_history_shortlist               0           0  OK
+attractiveness_snapshots               16632           0  DIVERGE
+backtest_jobs                             10           0  DIVERGE
+benchmark_market_cache                     0           0  OK
+benchmark_qa                               1           0  DIVERGE
+chief_career_history                   22858           0  DIVERGE
+chief_contextual_qa                      165           0  DIVERGE
+chief_enrichment_history                9928           0  DIVERGE
+chief_improvement_event                 1768           0  DIVERGE
+chief_laudo                               60           0  DIVERGE
+chief_laudo_modal_state                   80           0  DIVERGE
+chief_perfil_perguntas                     1           0  DIVERGE
+chief_platform_history                  1123           0  DIVERGE
+chief_rerank_cache                      7008           0  DIVERGE
+chief_reverse_matches                 231110           0  DIVERGE
+chief_reverse_profile                    102           0  DIVERGE
+chief_snapshot_before_op                   0           0  OK
+chief_stimulus_event                     653           0  DIVERGE
+deal_enrichment_jobs                       0           0  OK
+deal_enrichments                          54           0  DIVERGE
+deal_sales_ops                         23937           0  DIVERGE
+governance_conflicts                     208           0  DIVERGE
+ingestion_logs                             8           0  DIVERGE
+iqp_snapshots                          46753           0  DIVERGE
+jd_chief_alerts                            0           0  OK
+jd_chief_match_comments                    0           0  OK
+jd_chief_stages                          331           0  DIVERGE
+jd_external_candidates                     0           0  OK
+jd_list_quality                          397           0  DIVERGE
+mcp_query_log                           8508           0  DIVERGE
+mql_candidates                           797           0  DIVERGE
+novo_funil_pipedrive                    3646           0  DIVERGE
+pipedrive_write_log                        6           0  DIVERGE
+pipeline_runs                           3213           0  DIVERGE
+platform_sync_state                       16           0  DIVERGE
+system_prompts                            54           0  DIVERGE
+ui_access_grant                           18           0  DIVERGE
+uploaded_files                           143           0  DIVERGE
+user_activity_log                       5652           0  DIVERGE
+user_favorites                            21           0  DIVERGE
+users                                      0           0  OK
+chief_embeddings                       17879           0  DIVERGE
+chief_field_history                     7054           0  DIVERGE
+job_descriptions                         545           0  DIVERGE
+job_embeddings                             0           0  OK
+jd_briefing_embeddings                   110           0  DIVERGE
+jd_extracted_metadata                    126           0  DIVERGE
+jd_results                             17778           0  DIVERGE
+------------------------------------------------------------------
+TOTAL                                 428753           0
+alembic_version: origem=116_p0_viability_v2 destino=None semente=106_job_descriptions_outcome  (INFO: destino gerido pelo Alembic do Intelligence — depois do `alembic upgrade head` deve igualar a origem)
+
+== HÁ DIVERGÊNCIAS ==

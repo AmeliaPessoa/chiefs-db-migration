@@ -1,0 +1,47 @@
+== Permissões do n8n — APP=chiefsgroup — mql_candidates: cenário B — 2026-10-08T15:43:02Z
+PASS  n8n_contexto_cliente  ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_s
+PASS  n8n_contexto_cliente  ok      SELECT 1 FROM pipedrive_deals LIMIT 1
+PASS  n8n_contexto_cliente  ok      SELECT 1 FROM chiefs_ativos LIMIT 1
+PASS  n8n_contexto_cliente  ok      SELECT id, enrichment_version FROM deal_enrichments WHERE deal_id = 0 AND is_active = TRUE
+PASS  n8n_contexto_cliente  ok      INSERT INTO deal_enrichments (deal_id, prospect_name, company, cargo, email) SELECT 0, '', '', '', '' WHERE fa
+PASS  n8n_contexto_cliente  ok      UPDATE deal_enrichments SET is_active = FALSE, updated_at = NOW() WHERE deal_id = 0 AND is_active = TRUE
+PASS  n8n_contexto_cliente  ok      WITH u AS (UPDATE deal_enrichments SET is_active = FALSE, updated_at = NOW() WHERE deal_id = 0 AND is_active =
+PASS  n8n_contexto_cliente  ok      UPDATE deal_enrichments SET slack_message_ts = '', slack_channel_id = '' WHERE id = 0
+PASS  n8n_contexto_cliente  negado  INSERT INTO mql_candidates (cnpj, org_name, person_name, person_email, cargo, area, nivel, decisor_comercial, 
+PASS  n8n_contexto_cliente  negado  SELECT nextval(pg_get_serial_sequence('mql_candidates', 'id'))
+PASS  n8n_contexto_cliente  negado  SELECT 1 FROM mql_candidates LIMIT 1
+PASS  n8n_contexto_cliente  ok      SELECT nextval(pg_get_serial_sequence('deal_enrichments', 'id'))
+PASS  n8n_contexto_cliente  negado  UPDATE deal_enrichments SET score_total = 0 WHERE false
+PASS  n8n_contexto_cliente  negado  UPDATE mql_candidates SET cnpj = cnpj WHERE false
+PASS  n8n_contexto_cliente  negado  UPDATE mql_candidates SET source = source WHERE false
+PASS  n8n_contexto_cliente  negado  DELETE FROM deal_enrichments WHERE false
+PASS  n8n_contexto_cliente  negado  DELETE FROM mql_candidates WHERE false
+PASS  n8n_contexto_cliente  negado  TRUNCATE deal_enrichments
+PASS  n8n_contexto_cliente  negado  SELECT 1 FROM deal_sales_ops LIMIT 1
+PASS  n8n_contexto_cliente  negado  INSERT INTO deal_sales_ops (deal_id) SELECT 0 WHERE false
+PASS  n8n_contexto_cliente  negado  SELECT 1 FROM intelligence.users LIMIT 1
+PASS  n8n_contexto_cliente  negado  SELECT 1 FROM app.pipedrive_deals LIMIT 1
+PASS  n8n_contexto_cliente  negado  SELECT 1 FROM app.chiefs LIMIT 1
+PASS  n8n_contexto_cliente  negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  n8n_contexto_cliente  negado  CREATE TABLE public._t_perm (id int)
+PASS  n8n_contexto_cliente  negado  ALTER TABLE deal_enrichments ADD COLUMN _t_perm int
+PASS  n8n_fila_salesops     ok      DO $$ BEGIN IF current_setting('search_path') !~ '^intelligence' THEN RAISE 'search_path errado: %', current_s
+PASS  n8n_fila_salesops     ok      SELECT 1 FROM pipedrive_deals LIMIT 1
+PASS  n8n_fila_salesops     ok      SELECT id, version FROM deal_sales_ops WHERE deal_id = 0 AND is_active = TRUE
+PASS  n8n_fila_salesops     ok      INSERT INTO deal_sales_ops (deal_id, contact_name, cargo, area, nivel) SELECT 0, '', '', '', '' WHERE false RE
+PASS  n8n_fila_salesops     ok      UPDATE deal_sales_ops SET is_active = FALSE, updated_at = NOW() WHERE deal_id = 0 AND is_active = TRUE
+PASS  n8n_fila_salesops     ok      WITH u AS (UPDATE deal_sales_ops SET is_active = FALSE, updated_at = NOW() WHERE deal_id = 0 AND is_active = T
+PASS  n8n_fila_salesops     ok      SELECT nextval(pg_get_serial_sequence('deal_sales_ops', 'id'))
+PASS  n8n_fila_salesops     negado  UPDATE deal_sales_ops SET cargo = cargo WHERE false
+PASS  n8n_fila_salesops     negado  UPDATE deal_sales_ops SET version = version WHERE false
+PASS  n8n_fila_salesops     negado  DELETE FROM deal_sales_ops WHERE false
+PASS  n8n_fila_salesops     negado  TRUNCATE deal_sales_ops
+PASS  n8n_fila_salesops     negado  SELECT 1 FROM deal_enrichments LIMIT 1
+PASS  n8n_fila_salesops     negado  INSERT INTO deal_enrichments (deal_id, prospect_name, company) SELECT 0, '', '' WHERE false
+PASS  n8n_fila_salesops     negado  INSERT INTO mql_candidates (cnpj, org_name, person_name) SELECT '', '', '' WHERE false
+PASS  n8n_fila_salesops     negado  SELECT 1 FROM chiefs_ativos LIMIT 1
+PASS  n8n_fila_salesops     negado  SELECT 1 FROM app.pipedrive_deals LIMIT 1
+PASS  n8n_fila_salesops     negado  SELECT 1 FROM app.chiefs LIMIT 1
+PASS  n8n_fila_salesops     negado  CREATE TABLE intelligence._t_perm (id int)
+PASS  n8n_fila_salesops     negado  ALTER TABLE deal_sales_ops ADD COLUMN _t_perm int
+== Resultado: 45 PASS, 0 FAIL

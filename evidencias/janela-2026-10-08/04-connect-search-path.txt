@@ -1,0 +1,24 @@
+       rolname        | connect |                    setconfig                     
+----------------------+---------+--------------------------------------------------
+ ametista             | t       | {"search_path=intelligence, public, heroku_ext"}
+ analytical_reader    | t       | 
+ app_user             | t       | {"search_path=app, public, heroku_ext"}
+ bogota               | t       | {"search_path=intelligence, public, heroku_ext"}
+ grass                | t       | {"search_path=intelligence, public, heroku_ext"}
+ intelligence_user    | t       | {"search_path=intelligence, public, heroku_ext"}
+ jade                 | t       | {"search_path=intelligence, public, heroku_ext"}
+ looker_reader        | t       | 
+ n8n_contexto_cliente | t       | {"search_path=intelligence, public, heroku_ext"}
+ n8n_fila_salesops    | t       | {"search_path=intelligence, public, heroku_ext"}
+ ocean                | t       | {"search_path=intelligence, public, heroku_ext"}
+ oslo                 | t       | {"search_path=intelligence, public, heroku_ext"}
+ raiz                 | t       | {"search_path=intelligence, public, heroku_ext"}
+ roma                 | t       | {"search_path=intelligence, public, heroku_ext"}
+ rubi                 | t       | {"search_path=intelligence, public, heroku_ext"}
+ safira               | t       | {"search_path=intelligence, public, heroku_ext"}
+ tl                   | t       | 
+ tokyo                | t       | {"search_path=intelligence, public, heroku_ext"}
+ white                | t       | {"search_path=intelligence, public, heroku_ext"}
+ worker               | t       | 
+(20 rows)
+

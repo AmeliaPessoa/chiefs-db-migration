@@ -1,0 +1,9 @@
+      usename      |                 application_name                 | count 
+-------------------+--------------------------------------------------+-------
+ app_user          | /app/vendor/bundle/ruby/3.2.0/bin/puma           |     1
+ app_user          | /app/vendor/bundle/ruby/3.2.0/bin/sidekiq        |     1
+ intelligence_user |                                                  |     7
+ uas9q88ghnhmgm    | Heroku Postgres - Automation - 52.72.79.52:55835 |     1
+ uas9q88ghnhmgm    | psql                                             |     1
+(5 rows)
+

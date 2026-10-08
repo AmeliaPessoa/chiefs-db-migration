@@ -1,0 +1,21 @@
+Attaching app_user of postgresql-trapezoidal-33655 as DATABASE to chiefsgroup... !
+ ›   Warning: Adding DATABASE to app chiefsgroup would overwrite existing vars 
+ ›   DATABASE_URL.
+
+[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+[1A[82G[83G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ c[1A[83G[84G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ ch[1A[84G[85G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chi[1A[85G[86G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chie[1A[86G[87G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chief[1A[87G[88G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chiefs[1A[88G[89G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chiefsg[1A[89G[90G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chiefsgr[1A[90G[91G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chiefsgro[1A[91G[92G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chiefsgrou[1A[92G[93G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chiefsgroup[1A[93G[82G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ chiefsgroup[1A[93G[1B[2K[1A[2K[G[32m✔[39m [1mTo proceed, type chiefsgroup or re-run this command with --confirm chiefsgroup[22m
+ [36mchiefsgroup[39m[1A[93G[1B
+[?25hAttaching app_user of postgresql-trapezoidal-33655 as DATABASE to chiefsgroup... done
+Setting DATABASE config vars and restarting chiefsgroup... done, v1339
