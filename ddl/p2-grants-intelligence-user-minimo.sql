@@ -26,6 +26,16 @@
 -- views dá 42501. Tabela inteira: a única PII é o e-mail do contato, que a
 -- ferramenta do MCP mascara, e o query_sql bloqueia as 3.
 --
+-- 13/10 (Renan, aplicado por ele em PROD e HML, registrado aqui para o
+-- re-run não revogar): + SELECT table-level em app.page_views (25ª da
+-- allowlist; métrica "acessos dos chiefs" do Intelligence, view nova em
+-- intelligence.*) e + SELECT nas colunas role e approved_at de app.chiefs
+-- (view intelligence.chief_engajamento, "Chief ativo"; sem elas 42501).
+-- ⚠ page_views tem user_agent, facebook_cookie_id e google_cookie_id
+-- (identificadores de rastreamento). Proposta à Chiefs: trocar por SELECT por
+-- coluna (chief_id, startup_id, path, event_at, created_at) — variante
+-- comentada na seção 25, a ativar quando o Renan confirmar as colunas da view.
+--
 -- Executar conectado como a credencial DEFAULT (membro de app_user, owner
 -- de app.* desde o item 6 de 10/09 — o REVOKE é feito "como" o owner):
 --   psql "<url-default>" -v ON_ERROR_STOP=1 -f ddl/p2-grants-intelligence-user-minimo.sql
@@ -78,8 +88,8 @@ GRANT SELECT (categoria_uuid, centro_custo_uuid, cliente_nome, cliente_uuid, con
 GRANT SELECT (conta_azul_id, documento, email, nome, status, updated_at) ON app.ca_sellers TO intelligence_user;
 -- ca_service_invoices: 14 colunas (views: ['ca_service_invoices'])
 GRANT SELECT (chave_acesso, cliente_nome, cliente_uuid, conta_azul_id, contrato_uuid, data_competencia, data_emissao, numero, numero_rps, status, tipo_negociacao, updated_at, valor_total, venda_uuid) ON app.ca_service_invoices TO intelligence_user;
--- chiefs: 97 colunas (views: ['chiefs_ativos', 'chiefs_platform', 'chiefs_todos'])
-GRANT SELECT ("BP_verification_notes", all_job_titles, attractiveness_classification, attractiveness_score, availability, availability_status, avatar_blob_key, avatar_url, avg_tenure_months, biggest_problems, biggest_team_responsibility, birth_at, business_model, business_moment, c_level_experience, capacidade_mentoria, career_start_date, chair, chair_inferred, city, comment, company, company_profiles, created_at, current_roles_count, deleted_at, deletion_reason, email, english_level, english_level_inferred, enrichment_claimed_at, enrichment_error, enrichment_meta, enrichment_status, exec_level_months, executive_competency, ferramentas_dominadas, field_confidence, gender, hard_skills, id, important_cases_connecting_customers, industries_experience, info_extracted, iqp_classification, iqp_score, is_deleted, is_potential_apt_tier1, job_title, job_title_normalized, linkedin, linkedin_enriched_at, longest_tenure_months, main_companies, mentorship_fee, momento_empresa_ideal, name, natureza_atuacao, needs_re_enrichment, others_language, perfil_atuacao, perfil_cultural, phone, porte_empresa_ideal, portuguese_level, prazo_disponivel, profile_completeness_score, profile_percentage, regiao_influencia_secundaria, registered_at, relevant_problems, resume_combined, resume_experience, resume_experience_synthetic, resume_project, salary, sector_experience_detail, sectors_experience, slug, spanish_level, stakeholder_mgmt, state, state_inferred, state_inferred_confidence, status, tags, tier, tolerancia_ambiguidade, total_career_months, unique_companies_count, updated_at, vectorization_status, work_model, work_model_inferred, years_career_inferred, years_executive_inferred, years_experience) ON app.chiefs TO intelligence_user;
+-- chiefs: 99 colunas (views: ['chiefs_ativos', 'chiefs_platform', 'chiefs_todos'] + role/approved_at para intelligence.chief_engajamento, 13/10)
+GRANT SELECT ("BP_verification_notes", all_job_titles, approved_at, attractiveness_classification, attractiveness_score, availability, availability_status, avatar_blob_key, avatar_url, avg_tenure_months, biggest_problems, biggest_team_responsibility, birth_at, business_model, business_moment, c_level_experience, capacidade_mentoria, career_start_date, chair, chair_inferred, city, comment, company, company_profiles, created_at, current_roles_count, deleted_at, deletion_reason, email, english_level, english_level_inferred, enrichment_claimed_at, enrichment_error, enrichment_meta, enrichment_status, exec_level_months, executive_competency, ferramentas_dominadas, field_confidence, gender, hard_skills, id, important_cases_connecting_customers, industries_experience, info_extracted, iqp_classification, iqp_score, is_deleted, is_potential_apt_tier1, job_title, job_title_normalized, linkedin, linkedin_enriched_at, longest_tenure_months, main_companies, mentorship_fee, momento_empresa_ideal, name, natureza_atuacao, needs_re_enrichment, others_language, perfil_atuacao, perfil_cultural, phone, porte_empresa_ideal, portuguese_level, prazo_disponivel, profile_completeness_score, profile_percentage, regiao_influencia_secundaria, registered_at, relevant_problems, resume_combined, resume_experience, resume_experience_synthetic, resume_project, role, salary, sector_experience_detail, sectors_experience, slug, spanish_level, stakeholder_mgmt, state, state_inferred, state_inferred_confidence, status, tags, tier, tolerancia_ambiguidade, total_career_months, unique_companies_count, updated_at, vectorization_status, work_model, work_model_inferred, years_career_inferred, years_executive_inferred, years_experience) ON app.chiefs TO intelligence_user;
 -- companies: 5 colunas (views: ['accounts'])
 GRANT SELECT (created_at, id, name, startup_id, updated_at) ON app.companies TO intelligence_user;
 -- pipedrive_deals: 35 colunas (views: ['deal_quality_scores', 'pipedrive_deals'])
@@ -97,6 +107,12 @@ GRANT SELECT ON app.active_campaign_contacts,
                 app.active_campaign_contact_messages
   TO intelligence_user;
 
+-- 25 · page_views (13/10, Renan): tabela inteira — estado atual de PROD/HML.
+GRANT SELECT ON app.page_views TO intelligence_user;
+-- Variante recomendada (sem user_agent / cookie ids), a trocar pela linha acima
+-- quando a Chiefs confirmar que a view só lê estas colunas:
+-- GRANT SELECT (chief_id, startup_id, path, event_at, created_at) ON app.page_views TO intelligence_user;
+
 -- UPDATE por coluna nas 53 colunas de enriquecimento (= p2-grants-enrichment-update.sql)
 GRANT UPDATE ("BP_verification_notes", all_job_titles, attractiveness_classification, attractiveness_score, avatar_blob_key, avatar_url, avg_tenure_months, capacidade_mentoria, career_start_date, chair_inferred, current_roles_count, deleted_at, deletion_reason, english_level_inferred, enrichment_claimed_at, enrichment_error, enrichment_meta, enrichment_status, exec_level_months, executive_competency, ferramentas_dominadas, field_confidence, iqp_classification, iqp_score, is_deleted, is_potential_apt_tier1, job_title_normalized, linkedin_enriched_at, longest_tenure_months, momento_empresa_ideal, natureza_atuacao, needs_re_enrichment, perfil_atuacao, perfil_cultural, porte_empresa_ideal, prazo_disponivel, profile_completeness_score, regiao_influencia_secundaria, registered_at, resume_combined, resume_experience_synthetic, sector_experience_detail, stakeholder_mgmt, state_inferred, state_inferred_confidence, tolerancia_ambiguidade, total_career_months, unique_companies_count, vectorization_status, work_model_inferred, years_career_inferred, years_executive_inferred, years_experience) ON app.chiefs TO intelligence_user;
 -- #911 (a decidir, cliente): updated_at fora da lista de UPDATE — começar restrito.
@@ -108,7 +124,7 @@ COMMIT;
 -- Verificação (evidência em evidencias/feedback-2026-09-22/)
 -- ============================================================
 
--- 1. SELECT table-level em app: esperado 3 linhas (as active_campaign_*)
+-- 1. SELECT table-level em app: esperado 4 linhas (as 3 active_campaign_* + page_views, 13/10)
 --    (se sobrar outra, o grantor não é app_user — revogar como o grantor)
 SELECT table_name, grantor
   FROM information_schema.role_table_grants
@@ -121,8 +137,8 @@ SELECT pg_get_userbyid(d.defaclrole) AS criador, d.defaclobjtype, d.defaclacl
  WHERE d.defaclnamespace = 'app'::regnamespace
    AND d.defaclacl::text LIKE '%intelligence_user=%';
 
--- 3. Tabelas de app com SELECT por coluna: esperado 24 tabelas
---    (21 da allowlist, 340 colunas, + as 3 active_campaign_* com todas as
+-- 3. Tabelas de app com SELECT por coluna: esperado 25 tabelas / 426 colunas
+--    (21 da allowlist, 342 colunas desde 13/10, + as 3 active_campaign_* e page_views com todas as
 --    colunas: o information_schema lista grant table-level em cada coluna)
 SELECT count(DISTINCT table_name) AS tabelas_com_select_coluna,
        count(*)                   AS colunas_com_select

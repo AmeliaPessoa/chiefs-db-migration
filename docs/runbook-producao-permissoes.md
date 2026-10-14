@@ -6,7 +6,7 @@ em 23/09/2026. Evidências da homolog: `evidencias/feedback-2026-09-22/`.
 
 | Bloco | O que faz | Arquivo |
 |---|---|---|
-| A · #912 | SELECT do `intelligence_user` em `app.*` passa a ser por coluna (21 tabelas das views de compat) + as 3 `active_campaign_*` inteiras (24/09) + UPDATE nas 53 colunas de enriquecimento | `ddl/p2-grants-intelligence-user-minimo.sql` |
+| A · #912 | SELECT do `intelligence_user` em `app.*` passa a ser por coluna (21 tabelas das views de compat; + `chiefs.role`/`approved_at` em 13/10) + as 3 `active_campaign_*` inteiras (24/09) + `page_views` inteira (13/10, Renan) + UPDATE nas 53 colunas de enriquecimento | `ddl/p2-grants-intelligence-user-minimo.sql` |
 | B · Agentes | grupos `tl` / `worker` / `analytical_reader` + 8 usuários, `search_path` por usuário, teste permitido/negado | `ddl/p2-roles-agentes.sql`, `ddl/p2-search-path-agentes.sql`, `scripts/testa-permissoes-agentes.sh` |
 
 Decisões por trás (registradas em `p2/0. p2-entregas.md`, 23/09): acesso
@@ -118,9 +118,9 @@ Esperado (idêntico à homolog, `feedback-2026-09-22/02`):
 
 | Verificação | Esperado |
 |---|---|
-| 1 · SELECT table-level em `app` | 3 linhas (`active_campaign_campaigns`, `_contact_messages`, `_contacts`) |
+| 1 · SELECT table-level em `app` | 4 linhas desde 13/10 (3 `active_campaign_*` + `page_views`) |
 | 2 · default ACL de `app` com `intelligence_user` | 0 linhas |
-| 3 · SELECT por coluna (`information_schema`) | **24** tabelas (21 por coluna + 3 inteiras) |
+| 3 · SELECT por coluna (`information_schema`) | **25** tabelas / **426** colunas desde 13/10 (21 por coluna + 3 `active_campaign_*` + `page_views` inteiras); era 24/414 na janela |
 | 4 · UPDATE em `app.chiefs` | **53** |
 | 5 · `schema_migrations`, `ar_internal_metadata`, `encrypted_password` (chiefs, startups), `chief_accounts`, `credit_cards` | tudo `f` |
 
@@ -159,7 +159,7 @@ Esperado:
   `platform_sync_state`, `system_prompts`, `ui_access_grant`); **nenhuma
   linha do `worker`** (na homolog eram 11);
 - SELECT table-level em `app`: **9 linhas** (3 grupos × 3 `active_campaign_*`);
-- SELECT por coluna em `app`: **21 tabelas / 340 colunas** por grupo;
+- SELECT por coluna em `app`: **21 tabelas / 342 colunas** por grupo desde 13/10 (a seção 2a copia a allowlist do `intelligence_user`, inclusive `page_views` inteira — ver nota 13/10 em `p2/0. p2-entregas.md`);
 - default privileges de `app` citando os grupos: 0 linhas;
 - PII (`encrypted_password`, `document`, `reset_password_token`, `credit_cards`,
   `conta_azul_oauth_tokens`, `api_tokens`, `oauth_accounts`): tudo `f`;
