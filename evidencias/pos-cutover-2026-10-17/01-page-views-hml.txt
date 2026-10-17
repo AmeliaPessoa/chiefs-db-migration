@@ -1,0 +1,14 @@
+BEGIN
+REVOKE
+GRANT
+DO
+COMMIT
+ column_name 
+-------------
+ chief_id
+ created_at
+ event_at
+ path
+ startup_id
+(5 rows)
+

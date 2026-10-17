@@ -213,12 +213,15 @@ END $$;
 --     raiz também é `tl` (escreve nas 7 tabelas do tl). Usuários criados
 --     antes por pg:credentials:create (20 credenciais em produção, 06/10).
 -- ============================================================
-GRANT tl                TO rubi, roma                  WITH INHERIT TRUE, SET FALSE;
+-- tl com SET TRUE (17/10): o TL precisa de "SET ROLE tl" para criar objetos em
+-- analytical com owner = tl (regra (A); default privileges FOR ROLE tl só valem
+-- se o criador for tl). worker e analytical_reader seguem SET FALSE.
+GRANT tl                TO rubi, roma                  WITH INHERIT TRUE, SET TRUE;
 GRANT worker            TO jade, safira, tokyo, bogota WITH INHERIT TRUE, SET FALSE;
 GRANT worker            TO raiz, grass, ocean, white   WITH INHERIT TRUE, SET FALSE;
 GRANT analytical_reader TO ametista, oslo              WITH INHERIT TRUE, SET FALSE;
 \if :worker_escreve
-GRANT tl TO raiz WITH INHERIT TRUE, SET FALSE;          -- só homolog
+GRANT tl TO raiz WITH INHERIT TRUE, SET TRUE;           -- só homolog
 \else
 REVOKE tl FROM raiz;                                    -- produção: raiz só lê
 \endif
@@ -229,7 +232,8 @@ COMMIT;
 -- Verificação (evidência em evidencias/feedback-2026-09-22/)
 -- ============================================================
 
--- 1. Membership: esperado 12 linhas em produção (13 em homolog: raiz também em tl)
+-- 1. Membership: esperado 12 linhas em produção (13 em homolog: raiz também em tl);
+--    set_option = t só nas linhas de tl (17/10), f nas demais
 SELECT g.rolname AS grupo, u.rolname AS usuario, m.inherit_option, m.set_option
   FROM pg_auth_members m
   JOIN pg_roles g ON g.oid = m.roleid

@@ -1,0 +1,32 @@
+BEGIN
+GRANT
+GRANT
+REVOKE
+GRANT
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+DO
+COMMIT
+       role        | usage | create 
+-------------------+-------+--------
+ tl                | t     | t
+ worker            | f     | f
+ intelligence_user | t     | f
+ analytical_reader | t     | f
+ looker_reader     | t     | f
+ app_user          | f     | f
+(6 rows)
+
+    criador     | tipo |                                                          defaclacl                                                           
+----------------+------+------------------------------------------------------------------------------------------------------------------------------
+ tl             | S    | {intelligence_user=rU/tl}
+ tl             | r    | {looker_reader=r/tl,analytical_reader=r/tl,intelligence_user=arw/tl}
+ u8tu26o4qg0v85 | S    | {intelligence_user=rU/u8tu26o4qg0v85}
+ u8tu26o4qg0v85 | r    | {looker_reader=r/u8tu26o4qg0v85,analytical_reader=r/u8tu26o4qg0v85,intelligence_user=arw/u8tu26o4qg0v85,tl=r/u8tu26o4qg0v85}
+(4 rows)
+

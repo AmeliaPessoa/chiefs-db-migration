@@ -1,0 +1,10 @@
+SET
+CREATE TABLE
+RESET
+  relname  | owner | iu_insert | looker_select | iu_delete 
+-----------+-------+-----------+---------------+-----------
+ _prova_tl | tl    | t         | t             | f
+(1 row)
+
+SET
+DROP TABLE

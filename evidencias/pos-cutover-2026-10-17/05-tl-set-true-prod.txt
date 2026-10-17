@@ -1,0 +1,8 @@
+GRANT ROLE
+ grupo |    usuario     | set_option 
+-------+----------------+------------
+ tl    | roma           | t
+ tl    | rubi           | t
+ tl    | uas9q88ghnhmgm | t
+(3 rows)
+

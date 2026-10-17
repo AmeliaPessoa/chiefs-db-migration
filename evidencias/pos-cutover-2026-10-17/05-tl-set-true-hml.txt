@@ -1,0 +1,10 @@
+NOTICE:  role "raiz" has already been granted membership in role "tl" by role "u8tu26o4qg0v85"
+GRANT ROLE
+ grupo |    usuario     | set_option 
+-------+----------------+------------
+ tl    | raiz           | t
+ tl    | roma           | t
+ tl    | rubi           | t
+ tl    | u8tu26o4qg0v85 | t
+(4 rows)
+

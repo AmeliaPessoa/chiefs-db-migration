@@ -31,10 +31,10 @@
 -- allowlist; métrica "acessos dos chiefs" do Intelligence, view nova em
 -- intelligence.*) e + SELECT nas colunas role e approved_at de app.chiefs
 -- (view intelligence.chief_engajamento, "Chief ativo"; sem elas 42501).
--- ⚠ page_views tem user_agent, facebook_cookie_id e google_cookie_id
--- (identificadores de rastreamento). Proposta à Chiefs: trocar por SELECT por
--- coluna (chief_id, startup_id, path, event_at, created_at) — variante
--- comentada na seção 25, a ativar quando o Renan confirmar as colunas da view.
+-- 15/10 (Renan): a view lê só chief_id, path, event_at, created_at → 17/10
+-- page_views passa a SELECT por coluna (+ startup_id), fora user_agent e cookie
+-- ids. 17/10: + view app.chief_status_versions (seção 26), sem SELECT em
+-- app.versions.
 --
 -- Executar conectado como a credencial DEFAULT (membro de app_user, owner
 -- de app.* desde o item 6 de 10/09 — o REVOKE é feito "como" o owner):
@@ -107,11 +107,16 @@ GRANT SELECT ON app.active_campaign_contacts,
                 app.active_campaign_contact_messages
   TO intelligence_user;
 
--- 25 · page_views (13/10, Renan): tabela inteira — estado atual de PROD/HML.
-GRANT SELECT ON app.page_views TO intelligence_user;
--- Variante recomendada (sem user_agent / cookie ids), a trocar pela linha acima
--- quando a Chiefs confirmar que a view só lê estas colunas:
--- GRANT SELECT (chief_id, startup_id, path, event_at, created_at) ON app.page_views TO intelligence_user;
+-- 25 · page_views (13/10 tabela inteira pelo Renan; 15/10 confirmado que a view
+--      intelligence.chief_engajamento lê só chief_id, path, event_at, created_at
+--      → por coluna desde 17/10, startup_id para uso futuro; sem user_agent/cookies)
+GRANT SELECT (chief_id, startup_id, path, event_at, created_at) ON app.page_views TO intelligence_user;
+
+-- 26 · chief_status_versions (view sem PII sobre app.versions/PaperTrail, owner
+--      app_user — ddl/p3-view-chief-status-versions.sql; pedido Renan 15/10):
+--      marcos de status do Chief para a rotina engajamento-refresh. Só a view;
+--      NUNCA SELECT em app.versions (object_changes carrega PII).
+GRANT SELECT ON app.chief_status_versions TO intelligence_user;
 
 -- UPDATE por coluna nas 53 colunas de enriquecimento (= p2-grants-enrichment-update.sql)
 GRANT UPDATE ("BP_verification_notes", all_job_titles, attractiveness_classification, attractiveness_score, avatar_blob_key, avatar_url, avg_tenure_months, capacidade_mentoria, career_start_date, chair_inferred, current_roles_count, deleted_at, deletion_reason, english_level_inferred, enrichment_claimed_at, enrichment_error, enrichment_meta, enrichment_status, exec_level_months, executive_competency, ferramentas_dominadas, field_confidence, iqp_classification, iqp_score, is_deleted, is_potential_apt_tier1, job_title_normalized, linkedin_enriched_at, longest_tenure_months, momento_empresa_ideal, natureza_atuacao, needs_re_enrichment, perfil_atuacao, perfil_cultural, porte_empresa_ideal, prazo_disponivel, profile_completeness_score, regiao_influencia_secundaria, registered_at, resume_combined, resume_experience_synthetic, sector_experience_detail, stakeholder_mgmt, state_inferred, state_inferred_confidence, tolerancia_ambiguidade, total_career_months, unique_companies_count, vectorization_status, work_model_inferred, years_career_inferred, years_executive_inferred, years_experience) ON app.chiefs TO intelligence_user;
@@ -124,7 +129,7 @@ COMMIT;
 -- Verificação (evidência em evidencias/feedback-2026-09-22/)
 -- ============================================================
 
--- 1. SELECT table-level em app: esperado 4 linhas (as 3 active_campaign_* + page_views, 13/10)
+-- 1. SELECT table-level em app: esperado 4 linhas (as 3 active_campaign_* + a view chief_status_versions)
 --    (se sobrar outra, o grantor não é app_user — revogar como o grantor)
 SELECT table_name, grantor
   FROM information_schema.role_table_grants
@@ -137,8 +142,8 @@ SELECT pg_get_userbyid(d.defaclrole) AS criador, d.defaclobjtype, d.defaclacl
  WHERE d.defaclnamespace = 'app'::regnamespace
    AND d.defaclacl::text LIKE '%intelligence_user=%';
 
--- 3. Tabelas de app com SELECT por coluna: esperado 25 tabelas / 426 colunas
---    (21 da allowlist, 342 colunas desde 13/10, + as 3 active_campaign_* e page_views com todas as
+-- 3. Tabelas de app com SELECT por coluna: esperado 26 relações / 429 colunas
+--    (21 da allowlist = 342 colunas, page_views 5 colunas, + as 3 active_campaign_* e a view chief_status_versions (8) com todas as
 --    colunas: o information_schema lista grant table-level em cada coluna)
 SELECT count(DISTINCT table_name) AS tabelas_com_select_coluna,
        count(*)                   AS colunas_com_select

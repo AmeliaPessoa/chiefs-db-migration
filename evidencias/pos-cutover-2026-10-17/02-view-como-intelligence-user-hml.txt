@@ -1,0 +1,6 @@
+ count 
+-------
+   438
+(1 row)
+
+ERROR:  permission denied for table versions
