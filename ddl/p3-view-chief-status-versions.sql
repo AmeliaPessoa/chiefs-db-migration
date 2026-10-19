@@ -1,4 +1,5 @@
 -- P3 · Marcos de status do Chief a partir do PaperTrail (app.versions), SEM PII
+-- (+ 19/10: 2ª view app.chief_versions_meta, metadados sem diff/autor)
 -- (pedido do Renan 15/10 — rotina "engajamento-refresh" do Intelligence, KR O3KR2)
 --
 -- Por que uma view e não GRANT na tabela: app.versions.object_changes é o diff
@@ -49,6 +50,16 @@ SELECT v.id,
  WHERE v.item_type = 'Chief'
    AND v.object_changes ~ E'\\nstatus:\\n';
 
+-- 2ª view (19/10, opcional, Renan): metadados de versão do Chief sem diff nem autor
+CREATE OR REPLACE VIEW app.chief_versions_meta AS
+SELECT v.item_id, v.event, v.created_at
+  FROM app.versions v
+ WHERE v.item_type = 'Chief';
+COMMENT ON VIEW app.chief_versions_meta IS
+  'Metadados de versão do Chief (PaperTrail): só item_id, event, created_at. Sem object_changes nem whodunnit. Pedido Renan 19/10.';
+ALTER VIEW app.chief_versions_meta OWNER TO app_user;
+GRANT SELECT ON app.chief_versions_meta TO intelligence_user;
+
 COMMENT ON VIEW app.chief_status_versions IS
   'Marcos de status do Chief (PaperTrail) sem PII: só item/event/created_at/whodunnit e status de→para extraídos de object_changes. Pedido Renan 15/10; §5.1.';
 
@@ -65,12 +76,21 @@ BEGIN
   IF cols <> 'id,item_type,item_id,event,created_at,whodunnit,status_de,status_para' THEN
     RAISE EXCEPTION 'view chief_status_versions com colunas inesperadas: %', cols;
   END IF;
+  SELECT string_agg(column_name, ',' ORDER BY ordinal_position) INTO cols
+    FROM information_schema.columns
+   WHERE table_schema = 'app' AND table_name = 'chief_versions_meta';
+  IF cols <> 'item_id,event,created_at' THEN
+    RAISE EXCEPTION 'view chief_versions_meta com colunas inesperadas: %', cols;
+  END IF;
+  -- Em ambiente novo (P1 recém-aplicado, antes do #912) o intelligence_user ainda
+  -- tem SELECT table-level em app.*; o #912 revoga e checa. Aqui só avisa.
   IF has_table_privilege('intelligence_user', 'app.versions', 'SELECT') THEN
-    RAISE EXCEPTION 'intelligence_user com SELECT direto em app.versions — o desenho é só pela view';
+    RAISE WARNING 'intelligence_user ainda com SELECT direto em app.versions — rodar ddl/p2-grants-intelligence-user-minimo.sql depois deste arquivo (ele revoga e verifica)';
   END IF;
 END $$;
 
 COMMIT;
 
--- Amostra (sem PII) e contagem
+-- Amostra (sem PII) e contagens
 SELECT status_de, status_para, count(*) FROM app.chief_status_versions GROUP BY 1, 2 ORDER BY 3 DESC LIMIT 12;
+SELECT event, count(*) FROM app.chief_versions_meta GROUP BY 1 ORDER BY 2 DESC;

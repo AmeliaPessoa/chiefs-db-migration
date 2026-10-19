@@ -1,0 +1,10 @@
+SET
+CREATE TABLE
+RESET
+ relname | owner | ka_insert | ka_delete | ar_select | iu_select 
+---------+-------+-----------+-----------+-----------+-----------
+ _prova  | tl    | t         | f         | t         | f
+(1 row)
+
+SET
+DROP TABLE

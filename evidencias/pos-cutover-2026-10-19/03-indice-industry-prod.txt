@@ -1,0 +1,7 @@
+CREATE INDEX
+                  indice                   | indisvalid | tamanho 
+-------------------------------------------+------------+---------
+ app.idx_chiefs_industries_text_trgm       | t          | 5984 kB
+ app.idx_app_chiefs_industries_compat_trgm | t          | 712 kB
+(2 rows)
+

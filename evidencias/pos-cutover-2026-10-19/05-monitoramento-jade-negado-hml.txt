@@ -1,0 +1,3 @@
+ERROR:  permission denied for schema lab
+LINE 1: select * from lab.mon_conexoes()
+                      ^

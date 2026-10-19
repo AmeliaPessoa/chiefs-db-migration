@@ -1,0 +1,28 @@
+BEGIN
+psql:ddl/p3-monitoramento-tl.sql:38: NOTICE:  pg_read_all_stats NÃO concedível pela default (esperado no Heroku) — usando funções SECURITY DEFINER
+DO
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+COMMIT
+       role        | statements | activity 
+-------------------+------------+----------
+ knowledge_app     | f          | f
+ analytical_reader | f          | f
+ intelligence_user | f          | f
+ worker            | f          | f
+ tl                | t          | t
+(5 rows)
+
+    credencial     |                 application_name                 | conexoes | ativas | idle_in_tx 
+-------------------+--------------------------------------------------+----------+--------+------------
+ intelligence_user |                                                  |        1 |      0 |          0
+ u8tu26o4qg0v85    | Heroku Postgres - Automation - 52.72.79.52:43343 |        1 |      0 |          0
+ u8tu26o4qg0v85    | Heroku Postgres - Expensive Queries              |        1 |      0 |          0
+ u8tu26o4qg0v85    | psql                                             |        1 |      1 |          0
+(4 rows)
+

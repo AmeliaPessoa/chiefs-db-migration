@@ -118,6 +118,19 @@ GRANT SELECT (chief_id, startup_id, path, event_at, created_at) ON app.page_view
 --      NUNCA SELECT em app.versions (object_changes carrega PII).
 GRANT SELECT ON app.chief_status_versions TO intelligence_user;
 
+-- 27 · chief_ads (tabela de Oportunidades do Rails, 16 colunas; lida pela view
+--      intelligence.chief_ads). Grant dado pela Chiefs em 15/10 nos 2 bancos e
+--      DERRUBADO pelo re-run deste arquivo na HML em 17/10 (não estava aqui);
+--      reaplicado pelo Renan em 19/10. Lição: todo grant novo entra aqui na
+--      mesma volta.
+GRANT SELECT ON app.chief_ads TO intelligence_user;
+
+-- 28 · chief_versions_meta (2ª view sobre app.versions, só item_id/event/
+--      created_at de item_type = 'Chief', sem object_changes/whodunnit — "o chief
+--      salvou o perfil" mesmo sem mudar status; pedido opcional do Renan 19/10;
+--      mesmo arquivo da 26).
+GRANT SELECT ON app.chief_versions_meta TO intelligence_user;
+
 -- UPDATE por coluna nas 53 colunas de enriquecimento (= p2-grants-enrichment-update.sql)
 GRANT UPDATE ("BP_verification_notes", all_job_titles, attractiveness_classification, attractiveness_score, avatar_blob_key, avatar_url, avg_tenure_months, capacidade_mentoria, career_start_date, chair_inferred, current_roles_count, deleted_at, deletion_reason, english_level_inferred, enrichment_claimed_at, enrichment_error, enrichment_meta, enrichment_status, exec_level_months, executive_competency, ferramentas_dominadas, field_confidence, iqp_classification, iqp_score, is_deleted, is_potential_apt_tier1, job_title_normalized, linkedin_enriched_at, longest_tenure_months, momento_empresa_ideal, natureza_atuacao, needs_re_enrichment, perfil_atuacao, perfil_cultural, porte_empresa_ideal, prazo_disponivel, profile_completeness_score, regiao_influencia_secundaria, registered_at, resume_combined, resume_experience_synthetic, sector_experience_detail, stakeholder_mgmt, state_inferred, state_inferred_confidence, tolerancia_ambiguidade, total_career_months, unique_companies_count, vectorization_status, work_model_inferred, years_career_inferred, years_executive_inferred, years_experience) ON app.chiefs TO intelligence_user;
 -- #911 (a decidir, cliente): updated_at fora da lista de UPDATE — começar restrito.
@@ -129,7 +142,7 @@ COMMIT;
 -- Verificação (evidência em evidencias/feedback-2026-09-22/)
 -- ============================================================
 
--- 1. SELECT table-level em app: esperado 4 linhas (as 3 active_campaign_* + a view chief_status_versions)
+-- 1. SELECT table-level em app: esperado 6 linhas (3 active_campaign_* + chief_ads + views chief_status_versions e chief_versions_meta)
 --    (se sobrar outra, o grantor não é app_user — revogar como o grantor)
 SELECT table_name, grantor
   FROM information_schema.role_table_grants
@@ -142,8 +155,9 @@ SELECT pg_get_userbyid(d.defaclrole) AS criador, d.defaclobjtype, d.defaclacl
  WHERE d.defaclnamespace = 'app'::regnamespace
    AND d.defaclacl::text LIKE '%intelligence_user=%';
 
--- 3. Tabelas de app com SELECT por coluna: esperado 26 relações / 429 colunas
---    (21 da allowlist = 342 colunas, page_views 5 colunas, + as 3 active_campaign_* e a view chief_status_versions (8) com todas as
+-- 3. Tabelas de app com SELECT por coluna: esperado 28 relações / 448 colunas
+--    (21 da allowlist = 342, page_views 5, chief_ads 16, chief_status_versions 8,
+--    chief_versions_meta 3, + as 3 active_campaign_* com todas as
 --    colunas: o information_schema lista grant table-level em cada coluna)
 SELECT count(DISTINCT table_name) AS tabelas_com_select_coluna,
        count(*)                   AS colunas_com_select
@@ -164,4 +178,6 @@ SELECT has_table_privilege('intelligence_user', 'app.schema_migrations', 'SELECT
        has_column_privilege('intelligence_user', 'app.chiefs', 'encrypted_password', 'SELECT')   AS chiefs_encrypted_password,
        has_column_privilege('intelligence_user', 'app.startups', 'encrypted_password', 'SELECT') AS startups_encrypted_password,
        has_table_privilege('intelligence_user', 'app.chief_accounts', 'SELECT')      AS chief_accounts,
-       has_table_privilege('intelligence_user', 'app.credit_cards', 'SELECT')        AS credit_cards;
+       has_table_privilege('intelligence_user', 'app.credit_cards', 'SELECT')        AS credit_cards,
+       has_table_privilege('intelligence_user', 'app.versions', 'SELECT') AS versions_tabela,
+       has_table_privilege('intelligence_user', 'app.page_views', 'SELECT') AS page_views_tabela;

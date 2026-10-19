@@ -1,0 +1,26 @@
+                                                                                                          QUERY PLAN                                                                                                           
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit (actual time=1.207..8.120 rows=100.00 loops=1)
+   Buffers: shared hit=300
+   ->  Bitmap Heap Scan on chiefs c (actual time=1.205..8.096 rows=100.00 loops=1)
+         Recheck Cond: ((compat_array_text(compat_csv_split((industries_experience)::text)) ~~* '%Fintech%'::text) OR (compat_array_text(compat_csv_split((industries_experience)::text)) ~~* '%Serviços Financeiros%'::text))
+         Filter: ((NOT is_deleted) AND ((status)::text = ANY ('{active,ativo,Active,ACTIVE}'::text[])))
+         Rows Removed by Filter: 60
+         Heap Blocks: exact=134
+         Buffers: shared hit=300
+         ->  BitmapOr (actual time=0.557..0.558 rows=0.00 loops=1)
+               Buffers: shared hit=49
+               ->  Bitmap Index Scan on idx_app_chiefs_industries_compat_trgm (actual time=0.113..0.113 rows=98.00 loops=1)
+                     Index Cond: (compat_array_text(compat_csv_split((industries_experience)::text)) ~~* '%Fintech%'::text)
+                     Index Searches: 1
+                     Buffers: shared hit=11
+               ->  Bitmap Index Scan on idx_app_chiefs_industries_compat_trgm (actual time=0.443..0.443 rows=328.00 loops=1)
+                     Index Cond: (compat_array_text(compat_csv_split((industries_experience)::text)) ~~* '%Serviços Financeiros%'::text)
+                     Index Searches: 1
+                     Buffers: shared hit=38
+ Planning:
+   Buffers: shared hit=457 dirtied=1
+ Planning Time: 6.319 ms
+ Execution Time: 8.684 ms
+(22 rows)
+

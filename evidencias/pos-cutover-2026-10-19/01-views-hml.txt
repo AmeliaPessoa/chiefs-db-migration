@@ -1,0 +1,34 @@
+BEGIN
+CREATE VIEW
+CREATE VIEW
+COMMENT
+ALTER VIEW
+GRANT
+COMMENT
+ALTER VIEW
+GRANT
+DO
+COMMIT
+    status_de     |   status_para    | count 
+------------------+------------------+-------
+ waiting_approval | active           |   120
+ pending          | waiting_approval |   117
+ pending          | active           |    84
+ active           | pending          |    53
+ pending          |                  |    51
+ active           |                  |     6
+ active           | waiting_approval |     1
+ deleted          | active           |     1
+ active           | archived         |     1
+ waiting_approval | pending          |     1
+ active           | deleted          |     1
+ refused          | active           |     1
+(12 rows)
+
+  event  | count 
+---------+-------
+ update  |  7454
+ create  |   841
+ destroy |    59
+(3 rows)
+

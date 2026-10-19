@@ -1,0 +1,14 @@
+                                                                                                                                                     QUERY PLAN                                                                                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit (actual time=1.023..33.814 rows=100.00 loops=1)
+   Buffers: shared hit=2135
+   ->  Seq Scan on chiefs c (actual time=1.021..33.789 rows=100.00 loops=1)
+         Filter: ((NOT is_deleted) AND ((status)::text = ANY ('{active,ativo,Active,ACTIVE}'::text[])) AND ((compat_array_text(compat_csv_split((industries_experience)::text)) ~~* '%Fintech%'::text) OR (compat_array_text(compat_csv_split((industries_experience)::text)) ~~* '%Serviços Financeiros%'::text)))
+         Rows Removed by Filter: 3248
+         Buffers: shared hit=2135
+ Planning:
+   Buffers: shared hit=424
+ Planning Time: 1.732 ms
+ Execution Time: 34.184 ms
+(10 rows)
+

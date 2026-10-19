@@ -1,0 +1,16 @@
+    credencial     |                 application_name                 | conexoes | ativas | idle_in_tx 
+-------------------+--------------------------------------------------+----------+--------+------------
+ intelligence_user |                                                  |        1 |      0 |          0
+ rubi              | psql                                             |        1 |      1 |          0
+ u8tu26o4qg0v85    | Heroku Postgres - Automation - 52.72.79.52:43343 |        1 |      0 |          0
+(3 rows)
+
+   credencial   | calls | total_exec_ms |                              q                               
+----------------+-------+---------------+--------------------------------------------------------------
+ safira         |  1834 |     2115535.7 | SELECT ce.chief_id, max($5-(ce.embedding <=> $1::vector)) s 
+ postgres       | 88127 |      471265.3 | SELECT SUM(pg_catalog.pg_database_size(pg_database.datname))
+ u8tu26o4qg0v85 |     4 |      469834.1 | COPY "intelligence"."chief_embeddings" ("id", "chief_id", "f
+ postgres       | 88127 |      354841.2 | SELECT CASE pg_catalog.sum(idx_blks_hit + idx_blks_read) WHE
+ u8tu26o4qg0v85 | 43598 |      300262.8 | SELECT queryid AS query_id, calls, total_time, shared_blk_re
+(5 rows)
+

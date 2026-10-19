@@ -30,7 +30,7 @@ SELECT n.nspname AS trgm_schema
 \echo 'pg_trgm em' :trgm_schema
 \else
 \echo 'ERRO: pg_trgm não instalada — CREATE EXTENSION pg_trgm antes'
-\quit 1
+\q
 \endif
 
 -- ===== 1 · B-tree de status (lista do cliente, 08/09) =====
