@@ -1,0 +1,17 @@
+    credencial     |                 application_name                  | conexoes | ativas | idle_in_tx 
+-------------------+---------------------------------------------------+----------+--------+------------
+ app_user          | /app/vendor/bundle/ruby/3.2.0/bin/puma            |        2 |      0 |          0
+ intelligence_user |                                                   |       11 |      0 |          0
+ rubi              | psql                                              |        1 |      1 |          0
+ uas9q88ghnhmgm    | Heroku Postgres - Automation - 52.73.131.14:50989 |        1 |      0 |          0
+(4 rows)
+
+    credencial     | calls | total_exec_ms |                              q                               
+-------------------+-------+---------------+--------------------------------------------------------------
+ postgres          |    13 |      767396.1 | SELECT json_build_object($1, $2, $3, pg_backup_start(label =
+ intelligence_user | 90897 |      558681.5 | UPDATE chiefs_todos SET iqp_score=$1, iqp_classification=$2:
+ intelligence_user |    69 |      311863.8 | SELECT jr.*, ca.job_title, ca.industries_experience, ca.hard
+ app_user          |    12 |      273118.2 | SELECT DATE_TRUNC($1, created_at)::date AS period, CASE WHEN
+ intelligence_user | 38260 |      249310.4 | UPDATE chiefs_ativos SET iqp_score=$1, iqp_classification=$2
+(5 rows)
+

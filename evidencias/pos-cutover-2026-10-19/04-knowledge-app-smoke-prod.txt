@@ -1,0 +1,18 @@
+ statement_timeout 
+-------------------
+ 30s
+(1 row)
+
+                 search_path                 
+---------------------------------------------
+ knowledge, intelligence, public, heroku_ext
+(1 row)
+
+ERROR:  permission denied for schema app
+LINE 1: select 1 from app.chiefs limit 1
+                      ^
+ ka_create | tl_create 
+-----------+-----------
+ f         | t
+(1 row)
+

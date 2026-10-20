@@ -1,0 +1,39 @@
+BEGIN
+CREATE SCHEMA
+GRANT
+GRANT
+REVOKE
+REVOKE
+GRANT
+DO
+GRANT
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+DO
+COMMIT
+       role        | usage | create 
+-------------------+-------+--------
+ tl                | t     | t
+ knowledge_app     | t     | f
+ analytical_reader | t     | f
+ intelligence_user | f     | f
+ worker            | f     | f
+ looker_reader     | f     | f
+ app_user          | f     | f
+(7 rows)
+
+    criador     | tipo |                               defaclacl                               
+----------------+------+-----------------------------------------------------------------------
+ tl             | S    | {knowledge_app=rU/tl}
+ tl             | r    | {analytical_reader=r/tl,knowledge_app=arw/tl}
+ uas9q88ghnhmgm | S    | {knowledge_app=rU/uas9q88ghnhmgm}
+ uas9q88ghnhmgm | r    | {analytical_reader=r/uas9q88ghnhmgm,knowledge_app=arw/uas9q88ghnhmgm}
+(4 rows)
+
