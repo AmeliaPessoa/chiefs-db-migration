@@ -1,0 +1,24 @@
+    credencial     | calls | rows |                                                  q                                                   
+-------------------+-------+------+------------------------------------------------------------------------------------------------------
+ app_user          | 23755 | 3102 | SELECT "chief_accounts".* FROM "chief_accounts" WHERE "chief_accounts"."chief_id" = $1 LIMIT $2
+ intelligence_user |   485 |  485 | SELECT prompt_text FROM system_prompts WHERE prompt_key = $1 AND is_active = $2 LIMIT $3
+ app_user          |    36 |   36 | INSERT INTO "chiefs" ("name", "created_at", "updated_at", "slug", "email", "encrypted_password", "pr
+ intelligence_user |    23 |  393 | SELECT email, display_name, role FROM ui_access_grant WHERE is_active = $1
+ app_user          |    22 |   22 | SELECT COUNT(*) FILTER ( WHERE invitation_accepted_at IS NOT NULL OR (invitation_sent_at IS NULL AND
+ app_user          |     6 |    0 | UPDATE credit_cards SET chief_id = $1 WHERE chief_id = $2 RETURNING id
+ app_user          |     6 |    0 | UPDATE chief_accounts SET chief_id=$1 WHERE chief_id=$2 RETURNING id
+ app_user          |     6 |    0 | SELECT $1 FROM chief_accounts WHERE chief_id=$2 LIMIT $3
+ app_user          |     6 |    6 | SELECT COUNT(*) FROM credit_cards WHERE chief_id=$1
+ app_user          |     3 |    3 | INSERT INTO "startups" ("name", "cnpj", "site", "linkedin", "contact_name", "contact_email", "contac
+ intelligence_user |     2 |    2 | SELECT email, display_name, role FROM ui_access_grant WHERE is_active = $1 ORDER BY email
+ app_user          |     1 |    1 | UPDATE "startups" SET "invitation_token" = $1, "encrypted_password" = $2, "status" = $3, "invitation
+ intelligence_user |     1 |    1 | INSERT INTO ui_access_grant (email, display_name, role, is_active, added_by, updated_at) VALUES ($1,
+ intelligence_user |     1 | 2121 | COPY ( select * from chiefs_ativos ) TO STDOUT csv header
+ intelligence_user |     1 |    1 | SELECT $3 FROM system_prompts WHERE prompt_key = $1 AND is_active = $4 AND prompt_text = $2 LIMIT $5
+ intelligence_user |     1 |    6 | SELECT * FROM (WITH m AS ( SELECT lower(user_email) e, $2 src, service_name, min(created_at) primeir
+ intelligence_user |     1 |    4 | SELECT * FROM (SELECT role, is_active, COUNT(*) FROM ui_access_grant GROUP BY 1,2 ORDER BY 1,2) AS _
+ intelligence_user |     1 |    1 | select count(*), max(updated_at)::text, count(*) filter (where updated_at >= $1) as desde_cutover, c
+ intelligence_user |     1 | 5446 | COPY ( select * from chiefs_todos ) TO STDOUT csv header
+ intelligence_user |     1 |    2 | SELECT * FROM (SELECT * FROM ui_access_grant LIMIT $2) AS _mcp_q LIMIT $1
+(20 rows)
+

@@ -1,0 +1,16 @@
+BEGIN
+GRANT ROLE
+REVOKE
+DO
+DO
+COMMIT
+       grupo       | inherit_option | set_option 
+-------------------+----------------+------------
+ analytical_reader | t              | f
+(1 row)
+
+ le_intelligence | le_allowlist | le_senha | escreve | cria 
+-----------------+--------------+----------+---------+------
+ t               | t            | f        | f       | f
+(1 row)
+

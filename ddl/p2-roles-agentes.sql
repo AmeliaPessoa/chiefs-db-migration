@@ -75,7 +75,14 @@ GRANT USAGE ON SCHEMA public, heroku_ext TO tl, worker, analytical_reader;
 GRANT USAGE ON SCHEMA app, intelligence   TO tl, worker, analytical_reader;
 GRANT USAGE ON SCHEMA analytical          TO tl, analytical_reader;
 
-REVOKE CREATE ON SCHEMA app, intelligence, analytical, lab, public FROM tl, worker, analytical_reader;
+-- tl é quem cria em analytical (17/10), knowledge (19/10) e comercial (29/10, Chiefs):
+-- NÃO revogar CREATE do tl nesses schemas (ver p3-analytical-tl.sql / p3-knowledge.sql).
+REVOKE CREATE ON SCHEMA app, intelligence, lab, public FROM tl, worker, analytical_reader;
+REVOKE CREATE ON SCHEMA analytical FROM worker, analytical_reader;
+DO $$ BEGIN
+  IF to_regnamespace('knowledge') IS NOT NULL THEN REVOKE CREATE ON SCHEMA knowledge FROM worker, analytical_reader; END IF;
+  IF to_regnamespace('comercial') IS NOT NULL THEN REVOKE CREATE ON SCHEMA comercial FROM worker, analytical_reader; END IF;
+END $$;
 REVOKE DELETE, TRUNCATE ON ALL TABLES IN SCHEMA app, intelligence FROM tl, worker, analytical_reader;
 
 -- ============================================================
@@ -289,8 +296,8 @@ SELECT has_column_privilege('analytical_reader', 'app.chiefs', 'encrypted_passwo
        has_table_privilege('analytical_reader', 'app.api_tokens', 'SELECT')                         AS api_tokens,
        has_table_privilege('analytical_reader', 'app.oauth_accounts', 'SELECT')                     AS oauth_accounts;
 
--- 7. CREATE em schema: esperado tudo false
+-- 7. CREATE em schema: esperado só tl em analytical (+ knowledge/comercial se existirem)
 SELECT r AS role, s AS schema, has_schema_privilege(r, s, 'CREATE') AS create
   FROM unnest(ARRAY['tl','worker','analytical_reader']) r,
-       unnest(ARRAY['app','intelligence','analytical','lab','public']) s
- WHERE has_schema_privilege(r, s, 'CREATE');
+       unnest(ARRAY['app','intelligence','analytical','lab','public','knowledge','comercial']) s
+ WHERE to_regnamespace(s) IS NOT NULL AND has_schema_privilege(r, s, 'CREATE');

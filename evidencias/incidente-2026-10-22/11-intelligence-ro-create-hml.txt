@@ -1,0 +1,5 @@
+ ›   Warning: heroku update available from [92m11.9.0[39m to [92m11.12.0[39m.
+Creating credential intelligence_ro... done
+
+Please attach the credential to the apps you want to use it in by running heroku addons:attach postgresql-fluffy-10310 --credential intelligence_ro -a chiefsgroup-homolog.
+Please define the new grants for the credential within Postgres: heroku pg:psql postgresql-fluffy-10310 -a chiefsgroup-homolog.

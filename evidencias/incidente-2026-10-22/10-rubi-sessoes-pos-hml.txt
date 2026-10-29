@@ -1,0 +1,4 @@
+ usename | client_addr | count 
+---------+-------------+-------
+(0 rows)
+

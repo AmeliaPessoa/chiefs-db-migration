@@ -243,3 +243,6 @@ antigo, revogar dele o SELECT em `app` e `intelligence` e os dois
   (sem default privileges em `app` desde 24/09). Entra pela allowlist do
   bloco A, se o Intelligence também precisar, ou por GRANT à parte no
   `p2-roles-agentes.sql` (depois da seção 2a).
+
+- **29/10 (Chiefs, PR #1169):** schema `comercial` (owner default; tl USAGE+CREATE), tabela `comercial.radar_cache` (owner tl, DDL em `ddl/comercial/` do repo do Intelligence), role de serviço `radar_app` (`pg:credentials:create`, sem attach; USAGE em comercial, S/I/U na tabela, sem DELETE/CREATE, nada em app/intelligence/knowledge/analytical; default privileges FOR ROLE tl IN SCHEMA comercial; search_path=comercial e statement_timeout=30s na role). Nos 2 bancos. Uso: cache do Radar Comercial (app do Bruno). **`p2-roles-agentes.sql` ajustado 29/10:** não revoga CREATE do tl em analytical/knowledge/comercial.
+- **Incidente Railway 21/10:** rotações em `docs/incidente-railway-2026-10-21.md`; `intelligence_ro` (serviço, só leitura) substitui `rubi` em `DATABASE_URL_PROD_RO`/n8n.
