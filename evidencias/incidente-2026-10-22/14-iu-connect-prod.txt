@@ -1,0 +1,2 @@
+intelligence_user-rotating|t
+intelligence_user|t

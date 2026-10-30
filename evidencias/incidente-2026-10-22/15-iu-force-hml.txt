@@ -1,0 +1,2 @@
+ ›   Warning: heroku update available from [92m11.9.0[39m to [92m11.12.0[39m.
+Rotating intelligence_user on postgresql-fluffy-10310... done

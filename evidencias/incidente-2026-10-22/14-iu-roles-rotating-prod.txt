@@ -1,0 +1,6 @@
+          rolname           | rolcanlogin |                   search_path                    |     membro_de     | tabelas_owner 
+----------------------------+-------------+--------------------------------------------------+-------------------+---------------
+ intelligence_user          | t           | {"search_path=intelligence, public, heroku_ext"} |                   |            53
+ intelligence_user-rotating | t           |                                                  | intelligence_user |             0
+(2 rows)
+

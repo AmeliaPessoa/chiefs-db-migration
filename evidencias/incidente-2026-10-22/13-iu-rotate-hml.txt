@@ -1,0 +1,35 @@
+ ›   Warning: heroku update available from [92m11.9.0[39m to [92m11.12.0[39m.
+ ›   Warning: Destructive Action
+ ›   The password for the intelligence_user credential will rotate.
+ ›   Connections older than 30 minutes will be reset, and a temporary rotation 
+ ›   username will be used during the process.
+
+[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m[1A[98G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m[1A[98G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m
+[31m> This field is required[39m[2A[98G[2B[2K[1A[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m
+[31m> This field is required[39m[2A[98G[99G[2B[2K[1A[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m c[1A[99G[100G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m ch[1A[100G[101G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chi[1A[101G[102G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chie[1A[102G[103G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chief[1A[103G[104G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefs[1A[104G[105G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsg[1A[105G[106G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgr[1A[106G[107G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgro[1A[107G[108G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgrou[1A[108G[109G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup[1A[109G[110G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup-[1A[110G[111G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup-h[1A[111G[112G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup-ho[1A[112G[113G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup-hom[1A[113G[114G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup-homo[1A[114G[115G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup-homol[1A[115G[116G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup-homolo[1A[116G[117G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup-homolog[1A[117G[98G[1B[2K[1A[2K[G[34m?[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m chiefsgroup-homolog[1A[117G[1B[2K[1A[2K[G[32m✔[39m [1mTo proceed, type chiefsgroup-homolog or re-run this command with --confirm [22m
+[1mchiefsgroup-homolog[22m [36mchiefsgroup-homolog[39m[1A[117G[1B
+[?25hRotating intelligence_user on postgresql-fluffy-10310... done

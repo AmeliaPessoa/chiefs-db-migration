@@ -1,0 +1,5 @@
+      rolname      
+-------------------
+ intelligence_user
+(1 row)
+

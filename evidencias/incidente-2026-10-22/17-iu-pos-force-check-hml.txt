@@ -1,0 +1,1 @@
+52|{"search_path=intelligence, public, heroku_ext"}|28

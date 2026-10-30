@@ -79,11 +79,27 @@ addons (nunca em variável de app), agentes exceto rubi (URLs buscadas no Heroku
 Alembic, tem 28 grants por coluna em `app`, default privileges e search_path na role;
 trocar o nome é reconstruir tudo isso sob pressão. O nome fica; muda a senha.
 
-`heroku pg:credentials:rotate <addon> --name <cred> -a <app>` gera senha nova e **mantém a
+> **CORREÇÃO 30/10 (aprendido em produção, Dev Center do Heroku):** para credencial
+> nomeada, `pg:credentials:rotate` sem `--force` **bloqueia novas conexões com a senha
+> antiga na hora** ("the old credential expires as soon as there are no existing
+> connections using it"); só as sessões já abertas sobrevivem, e conexões com mais de
+> 30 min são resetadas pelo próprio rotate. Pool que reconecta cai com
+> `permission denied for database … CONNECT`. Se houver sessões abertas, o Heroku cria
+> um login temporário `<cred>-rotating` (membro da role original, sem search_path/owner
+> próprios) e a URL de `pg:credentials:url` passa a vir com ele; quando a última sessão
+> antiga cai, a role original volta a `active` com a **senha nova** (a URL volta a vir
+> com o nome original, senha diferente da do `-rotating`); quando o `-rotating` zera,
+> ele some. O `--force` conclui tudo na hora e derruba também quem está no `-rotating`.
+> **Consequência:** não existe "convivência" das duas senhas; a sequência sem queda é a
+> do PR #1114 da Chiefs (credencial de login separada + `SET ROLE intelligence_user`),
+> a adotar no runbook de rotação do encerramento. O parágrafo abaixo ficou como estava
+> para registro do erro.
+
+~~`heroku pg:credentials:rotate <addon> --name <cred> -a <app>` gera senha nova e **mantém a
 antiga válida até a rotação ser concluída**; `--force` conclui na hora e derruba as
 conexões abertas. Isso dá a convivência que a Chiefs pediu, sem 24 h: a janela de
 convivência é o tempo de redeploy, não um dia, porque a senha antiga está na mão de
-terceiros.
+terceiros.~~
 
 Sequência por credencial (PINK; repetir no fluffy):
 
@@ -178,4 +194,94 @@ escreve f, cria f`; search_path `intelligence, public, heroku_ext`; smoke com `c
 de `rubi` após o `--force`. A mensagem do Heroku sobre `addons:attach` é ignorada
 (credencial de agente, fora do app). O TL busca a URL nova de `rubi` no Heroku; a Chiefs
 põe a URL de `intelligence_ro` em `DATABASE_URL_PROD_RO`/n8n no deploy do passo 4.
+
+
+## 7 · Execução — passo 4: rotação de `intelligence_user` (fluffy qui 30/10 14–16h; PINK sex 31/10 14–16h, BRT)
+
+Pré-requisitos na abertura da janela (chamada com Renan): Railway com deploy liberado;
+Chiefs pronta para gravar a URL nova nos 13 slots (8 services + MCPs) e redeployar;
+`DATABASE_URL_FLUFFY` e as 5 vars órfãs saem no mesmo deploy (passos 5). Nada do
+Rails muda (`app_user` não é tocada).
+
+```bash
+cd ~/Documents/workspace/chiefs/chiefs-db-migration
+EV=evidencias/incidente-2026-10-22
+url() { heroku pg:credentials:url $DB --name $1 -a $APP | grep -oE 'postgres://[^ ]+' | head -1; }
+# qui 30/10:  APP=chiefsgroup-homolog; DB=postgresql-fluffy-10310;      AMB=hml
+# sex 31/10:  APP=chiefsgroup;         DB=postgresql-trapezoidal-33655; AMB=prod
+APP=chiefsgroup-homolog; DB=postgresql-fluffy-10310; AMB=hml
+DB_URL=$(url default); psql "$DB_URL" -Atc "select current_database(), now()"
+
+# A. foto das sessões ANTES (quem está conectado como intelligence_user e de onde)
+psql "$DB_URL" -c "select client_addr, application_name, state, min(backend_start) desde, count(*) from pg_stat_activity where usename='intelligence_user' group by 1,2,3 order by 1" | tee $EV/12-iu-sessoes-antes-$AMB.txt
+
+# B. rotate SEM --force: senha nova gerada, antiga segue válida
+heroku pg:credentials:rotate $DB --name intelligence_user -a $APP 2>&1 | tee $EV/13-iu-rotate-$AMB.txt
+heroku pg:credentials $DB -a $APP     # intelligence_user deve aparecer "rotating"/"active"
+```
+
+Avisar a Chiefs: "senha nova pronta, peguem a URL no Heroku (`pg:credentials:url
+… --name intelligence_user`), gravem nos 13 slots e redeployem". **A URL não vai por
+e-mail nem Slack.** Esperar o OK deles (/health 200 nos services).
+
+```bash
+# C. conferir que só restam conexões novas (backend_start depois do redeploy,
+#    client_addr em 152.55.176.0/20 ou no Static Outbound IP do chiefs-api)
+psql "$DB_URL" -c "select client_addr, application_name, state, backend_start from pg_stat_activity where usename='intelligence_user' order by backend_start" | tee $EV/14-iu-sessoes-pos-deploy-$AMB.txt
+```
+
+Se alguma sessão tiver `backend_start` anterior ao redeploy, é um consumidor que ainda
+está com a senha antiga: perguntar qual slot ficou para trás **antes** do force (o force
+derruba e ele não volta). Com tudo novo:
+
+```bash
+# D. --force: invalida a senha antiga e derruba o que sobrou
+heroku pg:credentials:rotate $DB --name intelligence_user -a $APP --force --confirm $APP 2>&1 | tee $EV/15-iu-force-$AMB.txt
+# E. foto DEPOIS + prova de que a role continua inteira (owner, search_path, allowlist)
+psql "$DB_URL" -c "select client_addr, application_name, state, backend_start from pg_stat_activity where usename='intelligence_user' order by backend_start" | tee $EV/16-iu-sessoes-pos-force-$AMB.txt
+psql "$DB_URL" -Atc "select (select count(*) from pg_tables where schemaname='intelligence' and tableowner='intelligence_user') tabelas_owner, (select setconfig from pg_db_role_setting s join pg_roles r on r.oid=s.setrole where rolname='intelligence_user') search_path, (select count(distinct table_name) from information_schema.column_privileges where grantee='intelligence_user' and table_schema='app' and privilege_type='SELECT') rel_allowlist" | tee $EV/17-iu-pos-force-check-$AMB.txt
+psql "$(url intelligence_user)" -Atc "select count(*) from intelligence.jd_results"   # smoke com a senha nova
+```
+
+Esperado: `rel_allowlist` 28, search_path na role, owner das 49+ tabelas; sessões após
+o force todas com `backend_start` posterior ao redeploy; Chiefs confirma /health e um
+job do Intelligence rodando. Registrar hora do rotate, do redeploy e do force em
+`p3/0. p3-entregas.md`. Só depois disso a Chiefs apaga `DATABASE_URL_FLUFFY` de PROD
+(sexta) e o Renan para o Postgres do Railway (quinta, passo 3) se ainda não parou.
+
+Rollback: não há "voltar a senha antiga" (não é recuperável). Se um service não subir com
+a nova, o caminho é corrigir o slot e redeployar; o banco não precisa de nada.
+
+### 7.1 · O que aconteceu de fato (30/10)
+
+**Fluffy (14h04–14h35 BRT):** rotate sem `--force` → 1 sessão idle do pool (>30 min)
+resetada → Chiefs trocou o único slot da homolog (`DATABASE_URL` do chiefs-api-hml,
+14h20) e redeployou (14h23) → `pg_stat_activity` só com a conexão nova → `--force`
+(~14h30) → `active`; 52 tab owner / search_path / 28 rel / count 19.356. Sem queda
+percebida (o service só reconectou depois do deploy).
+
+**PINK (14h45–16h18 BRT):** foto antes = 9 conexões idle (4 de 34.150.221.219 Google
+desde 26/10, 5 do Railway). Rotate sem `--force` 14h45 → **chiefs-api caiu ~15h50**
+(pool resetado + CONNECT negado à senha antiga) → a URL do Heroku vinha com
+`intelligence_user-rotating`; Chiefs gravou usuário+senha do `-rotating` em 11 slots de
+8 services (15h56) e voltou (/health 200, 16h01) → a última sessão antiga caiu sozinha;
+`intelligence_user` voltou a `active` com senha nova (login testado 16h10,
+`14-iu-teste-login-original-prod.txt`) → Chiefs regravou os 11 slots com a URL nova
+(usuário `intelligence_user`, senha diferente da do `-rotating`) 16h14, services 16h15–16h16
+→ `-rotating` zerou 16h18 e sumiu, **sem `--force`** → conferência 16h27: só
+`intelligence_user` em `pg_roles` e `active`; 7 sessões, todas 152.55.176.0/20, posteriores
+a 19:14 UTC; 53 tab owner / 0 outro owner / search_path / 28 rel / 53 col UPDATE; smoke
+`intelligence_user|18154`. Nenhuma migration/DDL no intervalo (Chiefs).
+chiefs-sync-ca e chiefs-sync-startups ficaram fora dos slots (não precisam mais de
+sync com o banco compartilhado).
+
+**IPs (Chiefs, RDAP):** 152.55.176.0/20 = Railway (todas as conexões atuais);
+8.228.116.20 / 8.228.103.150 = Google 8.228.0.0/14, vistos só entre o deploy das 15h56
+e a troca das 16h14 (provável host do Railway sobre GCP); **34.150.221.219 (Google) caiu
+com a senha antiga e não voltou = não é nenhum dos 8 services; provável n8n (Duda)**.
+Egress do Railway não é fixo → sem allowlist por IP para `intelligence_user`.
+
+Evidências: `12-*`, `13-*`, `14-*`, `15-*`, `16-*`, `17-*` (`-hml`/`-prod`).
+Pendente: vars órfãs + `DATABASE_URL_PROD_RO` → `intelligence_ro` (Duda/n8n); passo 2
+(n8n `--force`) na janela do Duda; passo 3 (Postgres do Railway) com o Renan.
 

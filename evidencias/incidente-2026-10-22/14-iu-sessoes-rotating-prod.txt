@@ -1,0 +1,9 @@
+          usename           |  client_addr  | application_name | state |         backend_start         | xact_start |    q     
+----------------------------+---------------+------------------+-------+-------------------------------+------------+----------
+ intelligence_user-rotating | 8.228.116.20  |                  | idle  | 2026-10-30 18:57:20.827786+00 |            | COMMIT
+ intelligence_user-rotating | 8.228.116.20  |                  | idle  | 2026-10-30 18:57:47.270196+00 |            | COMMIT
+ intelligence_user-rotating | 8.228.103.150 |                  | idle  | 2026-10-30 18:58:54.97977+00  |            | COMMIT
+ intelligence_user-rotating | 152.55.181.2  |                  | idle  | 2026-10-30 19:00:31.883566+00 |            | COMMIT
+ intelligence_user-rotating | 8.228.103.150 |                  | idle  | 2026-10-30 19:01:14.004537+00 |            | ROLLBACK
+(5 rows)
+
