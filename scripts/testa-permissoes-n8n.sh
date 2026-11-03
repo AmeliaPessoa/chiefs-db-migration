@@ -16,6 +16,7 @@
 # mql_candidates: por padrão CENÁRIO B (06/10) — nenhum privilégio para o n8n → as
 # sondas do nó "Persist MQL Candidate" esperam "negado". MQL_CANDIDATES=A inverte
 # (depois de ddl/p2-roles-n8n-mql-candidates.sql).
+# LP_LEADS=1 acrescenta as 13 sondas da n8n_lp_leads (03/11; homolog por enquanto) → 58 PASS.
 # Alternativa sem Heroku (validação local): URL_n8n_contexto_cliente=postgres://... URL_n8n_fila_salesops=postgres://...
 set -uo pipefail
 
@@ -100,6 +101,26 @@ t $C negado "SELECT 1 FROM app.pipedrive_deals LIMIT 1"
 t $C negado "SELECT 1 FROM app.chiefs LIMIT 1"
 t $C negado "CREATE TABLE intelligence._t_perm (id int)"
 t $C negado "ALTER TABLE deal_sales_ops ADD COLUMN _t_perm int"
+
+# ---------- Carga D · n8n_lp_leads (leads das landing pages, O3KR3) — só com LP_LEADS=1 ----------
+# Role criada pela Chiefs na fluffy em 03/11 (ddl/p3-n8n-lp-leads.sql); PINK sob pedido.
+# Esperado com LP_LEADS=1: 45 + 13 = 58 PASS.
+if [[ "${LP_LEADS:-0}" == 1 ]]; then
+D=n8n_lp_leads
+t $D ok     "$SEARCH_PATH_OK"
+t $D ok     "SELECT id, status FROM lp_leads WHERE dedupe_key = '' LIMIT 1"
+t $D ok     "INSERT INTO lp_leads (dedupe_key, page, name, email, company, payload, envios, is_test, status) SELECT '', '', '', '', '', '{}'::jsonb, 1, TRUE, 'novo' WHERE false ON CONFLICT (dedupe_key) DO UPDATE SET envios = lp_leads.envios + 1, payload = EXCLUDED.payload, updated_at = NOW() RETURNING id"
+t $D ok     "UPDATE lp_leads SET status = 'qualificado', status_motivo = '', triado_por = '', updated_at = NOW() WHERE false"
+t $D ok     "SELECT nextval(pg_get_serial_sequence('lp_leads', 'id'))"
+t $D negado "DELETE FROM lp_leads WHERE false"
+t $D negado "TRUNCATE lp_leads"
+t $D negado "SELECT 1 FROM chiefs_todos LIMIT 1"                                     # nada além de lp_leads
+t $D negado "SELECT 1 FROM deal_enrichments LIMIT 1"
+t $D negado "INSERT INTO deal_sales_ops (deal_id) SELECT 0 WHERE false"
+t $D negado "SELECT 1 FROM app.chiefs LIMIT 1"                                       # nada em app
+t $D negado "CREATE TABLE intelligence._t_perm (id int)"
+t $D negado "ALTER TABLE lp_leads ADD COLUMN _t_perm int"
+fi
 
 echo "== Resultado: $pass PASS, $fail FAIL"
 [[ $fail -eq 0 ]]
