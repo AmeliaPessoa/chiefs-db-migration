@@ -1,0 +1,18 @@
+BEGIN
+DO
+GRANT
+REVOKE
+DO
+DO
+DO
+COMMIT
+ le | insere | atualiza | apaga | seq | le_chiefs | usa_app | cria 
+----+--------+----------+-------+-----+-----------+---------+------
+ t  | t      | t        | f     | t   | f         | f       | f
+(1 row)
+
+                               setconfig                                
+------------------------------------------------------------------------
+ {"search_path=intelligence, public, heroku_ext",statement_timeout=30s}
+(1 row)
+
