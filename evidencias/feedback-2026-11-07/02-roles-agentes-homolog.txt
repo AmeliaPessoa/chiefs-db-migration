@@ -1,0 +1,122 @@
+BEGIN
+GRANT
+GRANT
+GRANT
+REVOKE
+REVOKE
+DO
+REVOKE
+REVOKE
+REVOKE
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+psql:ddl/p2-roles-agentes.sql:159: NOTICE:  app: 23 tabelas por coluna + 6 tabelas inteiras para tl, worker, analytical_reader
+DO
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+GRANT
+GRANT
+REVOKE
+DO
+psql:ddl/p2-roles-agentes.sql:240: NOTICE:  role "rubi" has already been granted membership in role "tl" by role "u8tu26o4qg0v85"
+psql:ddl/p2-roles-agentes.sql:240: NOTICE:  role "roma" has already been granted membership in role "tl" by role "u8tu26o4qg0v85"
+GRANT ROLE
+psql:ddl/p2-roles-agentes.sql:241: NOTICE:  role "jade" has already been granted membership in role "worker" by role "u8tu26o4qg0v85"
+psql:ddl/p2-roles-agentes.sql:241: NOTICE:  role "safira" has already been granted membership in role "worker" by role "u8tu26o4qg0v85"
+psql:ddl/p2-roles-agentes.sql:241: NOTICE:  role "tokyo" has already been granted membership in role "worker" by role "u8tu26o4qg0v85"
+psql:ddl/p2-roles-agentes.sql:241: NOTICE:  role "bogota" has already been granted membership in role "worker" by role "u8tu26o4qg0v85"
+GRANT ROLE
+GRANT ROLE
+psql:ddl/p2-roles-agentes.sql:243: NOTICE:  role "ametista" has already been granted membership in role "analytical_reader" by role "u8tu26o4qg0v85"
+psql:ddl/p2-roles-agentes.sql:243: NOTICE:  role "oslo" has already been granted membership in role "analytical_reader" by role "u8tu26o4qg0v85"
+GRANT ROLE
+psql:ddl/p2-roles-agentes.sql:245: NOTICE:  role "raiz" has already been granted membership in role "tl" by role "u8tu26o4qg0v85"
+GRANT ROLE
+COMMIT
+       grupo       | usuario  | inherit_option | set_option 
+-------------------+----------+----------------+------------
+ analytical_reader | ametista | t              | f
+ analytical_reader | oslo     | t              | f
+ tl                | raiz     | t              | t
+ tl                | roma     | t              | t
+ tl                | rubi     | t              | t
+ worker            | bogota   | t              | f
+ worker            | grass    | t              | f
+ worker            | jade     | t              | f
+ worker            | ocean    | t              | f
+ worker            | raiz     | t              | f
+ worker            | safira   | t              | f
+ worker            | tokyo    | t              | f
+ worker            | white    | t              | f
+(13 rows)
+
+ grupo  |                tabela                |     privs      
+--------+--------------------------------------+----------------
+ worker | intelligence.chief_improvement_event | INSERT, UPDATE
+ worker | intelligence.chief_laudo             | INSERT, UPDATE
+ worker | intelligence.chief_laudo_modal_state | INSERT, UPDATE
+ worker | intelligence.chief_stimulus_event    | INSERT, UPDATE
+ worker | intelligence.jd_chief_stages         | INSERT, UPDATE
+ worker | intelligence.jd_list_quality         | INSERT, UPDATE
+ worker | intelligence.jd_results              | INSERT, UPDATE
+ worker | intelligence.job_descriptions        | INSERT, UPDATE
+ worker | intelligence.pipeline_runs           | INSERT
+ worker | intelligence.system_prompts          | INSERT, UPDATE
+ worker | intelligence.ui_access_grant         | INSERT, UPDATE
+ tl     | intelligence.chief_laudo             | INSERT, UPDATE
+ tl     | intelligence.chief_laudo_modal_state | INSERT, UPDATE
+ tl     | intelligence.jd_chief_stages         | INSERT, UPDATE
+ tl     | intelligence.jd_results              | INSERT, UPDATE
+ tl     | intelligence.platform_sync_state     | INSERT, UPDATE
+ tl     | intelligence.system_prompts          | INSERT, UPDATE
+ tl     | intelligence.ui_access_grant         | INSERT, UPDATE
+(18 rows)
+
+       grupo       |                tabela                
+-------------------+--------------------------------------
+ analytical_reader | app.active_campaign_campaigns
+ analytical_reader | app.active_campaign_contact_messages
+ analytical_reader | app.active_campaign_contacts
+ analytical_reader | app.chief_ads
+ analytical_reader | app.chief_status_versions
+ analytical_reader | app.chief_versions_meta
+ worker            | app.active_campaign_campaigns
+ worker            | app.active_campaign_contact_messages
+ worker            | app.active_campaign_contacts
+ worker            | app.chief_ads
+ worker            | app.chief_status_versions
+ worker            | app.chief_versions_meta
+ tl                | app.active_campaign_campaigns
+ tl                | app.active_campaign_contact_messages
+ tl                | app.active_campaign_contacts
+ tl                | app.chief_ads
+ tl                | app.chief_status_versions
+ tl                | app.chief_versions_meta
+(18 rows)
+
+       grupo       | tabelas | colunas 
+-------------------+---------+---------
+ analytical_reader |      23 |     362
+ worker            |      23 |     362
+ tl                |      23 |     362
+(3 rows)
+
+ criador | defaclacl 
+---------+-----------
+(0 rows)
+
+ chiefs_encrypted_password | chiefs_document | startups_reset_token | credit_cards | conta_azul_oauth_tokens | api_tokens | oauth_accounts 
+---------------------------+-----------------+----------------------+--------------+-------------------------+------------+----------------
+ f                         | f               | f                    | f            | f                       | f          | f
+(1 row)
+
+ role |   schema   | create 
+------+------------+--------
+ tl   | analytical | t
+ tl   | knowledge  | t
+ tl   | comercial  | t
+(3 rows)
+

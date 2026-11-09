@@ -102,6 +102,11 @@ ALTER DEFAULT PRIVILEGES FOR ROLE app_user IN SCHEMA app
 
 -- Copia os grants de SELECT do intelligence_user em app (aclexplode, não
 -- information_schema: este esconde roles de que a sessão não é membro).
+-- EXCLUSÕES (07/11, cadastro ciclo 3): o que o intelligence_user recebeu para o
+-- cadastro mas não vai para os agentes nem para a intelligence_ro —
+-- app.chief_accounts (dados bancários/CNPJ, seção 32 do #912), app.tickets e
+-- app.ticket_comments (seção 33, a confirmar) e, em app.chiefs, as colunas
+-- linkedin_token, linkedin_expires (token OAuth) e document (CPF) — §5.1.
 DO $$
 DECLARE
   r record;
@@ -116,6 +121,7 @@ BEGIN
      WHERE c.relnamespace = 'app'::regnamespace
        AND a.grantee = 'intelligence_user'::regrole
        AND a.privilege_type = 'SELECT'
+       AND c.relname NOT IN ('chief_accounts', 'tickets', 'ticket_comments')
   LOOP
     EXECUTE format('GRANT SELECT ON %s TO tl, worker, analytical_reader', r.tab);
     n_tab := n_tab + 1;
@@ -132,6 +138,8 @@ BEGIN
        AND at.attnum > 0 AND NOT at.attisdropped
        AND a.grantee = 'intelligence_user'::regrole
        AND a.privilege_type = 'SELECT'
+       AND c.relname NOT IN ('chief_accounts', 'tickets', 'ticket_comments')
+       AND NOT (c.relname = 'chiefs' AND at.attname IN ('linkedin_token', 'linkedin_expires', 'document'))
      GROUP BY at.attrelid
   LOOP
     EXECUTE format('GRANT SELECT (%s) ON %s TO tl, worker, analytical_reader', r.cols, r.tab);
@@ -142,6 +150,12 @@ BEGIN
     RAISE EXCEPTION 'allowlist do intelligence_user não encontrada em app (% tabelas por coluna; esperado 21) — aplicar ddl/p2-grants-intelligence-user-minimo.sql antes', n_col;
   END IF;
   RAISE NOTICE 'app: % tabelas por coluna + % tabelas inteiras para tl, worker, analytical_reader', n_col, n_tab;
+  -- prova das exclusões (07/11)
+  IF has_table_privilege('tl', 'app.chief_accounts', 'SELECT') OR has_column_privilege('tl', 'app.chief_accounts', 'holder_document', 'SELECT')
+     OR has_column_privilege('tl', 'app.chiefs', 'linkedin_token', 'SELECT') OR has_column_privilege('tl', 'app.chiefs', 'document', 'SELECT')
+     OR has_table_privilege('tl', 'app.tickets', 'SELECT') THEN
+    RAISE EXCEPTION 'exclusão da 2a falhou: tl lê chief_accounts/tickets ou chiefs.linkedin_token/document';
+  END IF;
 END $$;
 
 -- 2b · intelligence e analytical ------------------------------------------

@@ -11,7 +11,8 @@
 #     | tee evidencias/feedback-2026-09-22/NN-permissoes-agentes-homolog.txt
 #   (produção: AMBIENTE=producao — o worker passa a ser só leitura)
 # Squad do Duda (06/10): raiz, grass, ocean, white — worker nos dois ambientes;
-# em homolog o raiz também é tl. Esperado: homolog 380 PASS; produção 360 PASS.
+# em homolog o raiz também é tl. Esperado: homolog 416 PASS; produção 396 PASS
+# (até 06/11: 380 / 360; +3 sondas por usuário em 07/11, cadastro ciclo 3).
 set -uo pipefail
 
 : "${APP:?defina APP=<app-heroku>}"
@@ -52,6 +53,9 @@ for u in rubi roma jade safira tokyo bogota ametista oslo raiz grass ocean white
   t "$u" negado "SELECT document FROM app.chiefs LIMIT 1"
   t "$u" negado "SELECT reset_password_token FROM app.startups LIMIT 1"
   t "$u" negado "SELECT 1 FROM app.credit_cards LIMIT 1"
+  t "$u" negado "SELECT linkedin_token FROM app.chiefs LIMIT 1"               # ciclo 3 (07/11): fora da cópia da allowlist (2a)
+  t "$u" negado "SELECT 1 FROM app.chief_accounts LIMIT 1"
+  t "$u" negado "SELECT 1 FROM app.tickets LIMIT 1"
   t "$u" negado "SELECT 1 FROM app.conta_azul_oauth_tokens LIMIT 1"
   t "$u" negado "SELECT 1 FROM app.api_tokens LIMIT 1"
   t "$u" negado "SELECT 1 FROM app.oauth_accounts LIMIT 1"
@@ -79,7 +83,11 @@ for u in $TLS; do
   t "$u" ok     "$(ins intelligence.jd_results)"
   t "$u" ok     "UPDATE intelligence.jd_results SET id = id WHERE false"
   t "$u" ok     "UPDATE intelligence.platform_sync_state SET last_sync_at = last_sync_at WHERE false"
-  t "$u" negado "$(ins intelligence.job_descriptions)"                       # fora da lista do tl
+  if [[ "$u" == raiz ]]; then                                                # raiz em homolog é tl E worker
+    t "$u" ok     "$(ins intelligence.job_descriptions)"                       # herda do worker
+  else
+    t "$u" negado "$(ins intelligence.job_descriptions)"                       # fora da lista do tl
+  fi
 done
 
 # worker
@@ -98,13 +106,15 @@ for u in $WORKERS; do
   fi
 done
 
-# raiz em homolog: tl + worker → escreve também nas tabelas do worker (sem a negação de analytical, que o tl tem)
+# raiz em homolog: tl + worker → escreve também nas tabelas do worker (sem a negação de analytical, que o tl tem).
+# 09/11: as duas sondas "negado" de raiz (job_descriptions no loop do tl, platform_sync_state aqui) eram
+# erro do teste — primeira rodada do teste na HML com raiz em tl+worker; a ACL batia com o DDL.
 if [[ "$AMBIENTE" == homolog ]]; then
   t raiz ok     "$(ins intelligence.job_descriptions)"
   t raiz ok     "UPDATE intelligence.job_descriptions SET id = id WHERE false"
   t raiz ok     "$(ins intelligence.pipeline_runs)"
   t raiz negado "UPDATE intelligence.pipeline_runs SET id = id WHERE false"
-  t raiz negado "$(ins intelligence.platform_sync_state)"
+  t raiz ok     "$(ins intelligence.platform_sync_state)"                    # herda do tl (lista 3 do DDL)
 fi
 
 # reader (analytical_reader)

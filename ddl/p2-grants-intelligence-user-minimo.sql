@@ -133,8 +133,88 @@ GRANT SELECT ON app.chief_versions_meta TO intelligence_user;
 
 -- UPDATE por coluna nas 53 colunas de enriquecimento (= p2-grants-enrichment-update.sql)
 GRANT UPDATE ("BP_verification_notes", all_job_titles, attractiveness_classification, attractiveness_score, avatar_blob_key, avatar_url, avg_tenure_months, capacidade_mentoria, career_start_date, chair_inferred, current_roles_count, deleted_at, deletion_reason, english_level_inferred, enrichment_claimed_at, enrichment_error, enrichment_meta, enrichment_status, exec_level_months, executive_competency, ferramentas_dominadas, field_confidence, iqp_classification, iqp_score, is_deleted, is_potential_apt_tier1, job_title_normalized, linkedin_enriched_at, longest_tenure_months, momento_empresa_ideal, natureza_atuacao, needs_re_enrichment, perfil_atuacao, perfil_cultural, porte_empresa_ideal, prazo_disponivel, profile_completeness_score, regiao_influencia_secundaria, registered_at, resume_combined, resume_experience_synthetic, sector_experience_detail, stakeholder_mgmt, state_inferred, state_inferred_confidence, tolerancia_ambiguidade, total_career_months, unique_companies_count, vectorization_status, work_model_inferred, years_career_inferred, years_executive_inferred, years_experience) ON app.chiefs TO intelligence_user;
--- #911 (a decidir, cliente): updated_at fora da lista de UPDATE — começar restrito.
--- GRANT UPDATE (updated_at) ON app.chiefs TO intelligence_user;
+-- #911 FECHADO em 07/11 (cadastro ciclo 3, item 003): updated_at entra no UPDATE
+-- (seção 29) — sem ele o INSERT do chief novo dá 500.
+
+-- ============================================================
+-- Cadastro do chief, ciclo 3 (Chiefs na fluffy 04–05/11/2026; e-mail do Renan
+-- 07/11; arquivos ddl/app/001–007 no repo do Intelligence). Listas = ACL real
+-- da fluffy lida em 07/11 (rascunhos/leitura-cadastro-2026-11-07.sql). No PINK
+-- só depois do release do Rails com a migration plataforma#416 (4 colunas novas
+-- em app.chiefs: entry_source, vinculo, horas_semana_livres, a_partir_de) — a
+-- seção 29 avisa e pula coluna que ainda não exista; re-rodar após o release.
+-- ============================================================
+
+-- 29 · app.chiefs (001/002/003/004): SELECT +14 colunas — entram na allowlist e
+--      portanto na cópia aos agentes (seção 2a do p2-roles-agentes.sql), EXCETO
+--      linkedin_token, linkedin_expires e document, excluídos lá (tokens e CPF:
+--      §5.1 do briefing). INSERT em 14 colunas (fluxo de criação + 003:
+--      created_at/updated_at NOT NULL sem default) e USAGE em chiefs_id_seq.
+--      UPDATE +41 colunas (telas de perfil + 004 + 003 updated_at).
+DO $$
+DECLARE
+  sel text[] := ARRAY['a_partir_de','contact_email','document','email_optin','entry_source','horas_semana_livres','linkedin_expires','linkedin_token','picture_url','provider','terms_accepted','terms_accepted_at','uid','vinculo'];
+  ins text[] := ARRAY['contact_email','created_at','email','entry_source','linkedin_expires','linkedin_token','name','picture_url','provider','role','slug','status','uid','updated_at'];
+  upd text[] := ARRAY['a_partir_de','availability_status','biggest_problems','biggest_team_responsibility','birth_at','business_model','business_moment','c_level_experience','chair','city','company','company_profiles','contact_email','document','email_optin','entry_source','gender','hard_skills','horas_semana_livres','important_cases_connecting_customers','industries_experience','job_title','linkedin','linkedin_expires','linkedin_token','main_companies','phone','picture_url','profile_percentage','provider','relevant_problems','salary','sectors_experience','state','status','terms_accepted','terms_accepted_at','uid','updated_at','vinculo','work_model'];
+  faltam text[] := '{}';
+  lista text;
+  r record;
+BEGIN
+  SELECT coalesce(array_agg(DISTINCT c), '{}') INTO faltam
+    FROM unnest(sel || ins || upd) c
+   WHERE NOT EXISTS (SELECT 1 FROM information_schema.columns
+                      WHERE table_schema = 'app' AND table_name = 'chiefs' AND column_name = c);
+  IF cardinality(faltam) > 0 THEN
+    RAISE WARNING 'app.chiefs sem as colunas % (migration plataforma#416 ainda não aplicada?) — grants dessas colunas PULADOS; re-rodar depois do release do Rails', faltam;
+  END IF;
+  FOR r IN SELECT * FROM (VALUES ('SELECT', sel), ('INSERT', ins), ('UPDATE', upd)) v(priv, cols) LOOP
+    SELECT string_agg(quote_ident(c), ', ' ORDER BY c) INTO lista FROM unnest(r.cols) c WHERE c <> ALL (faltam);
+    IF lista IS NOT NULL THEN
+      EXECUTE format('GRANT %s (%s) ON app.chiefs TO intelligence_user', r.priv, lista);
+    END IF;
+  END LOOP;
+END $$;
+GRANT USAGE ON SEQUENCE app.chiefs_id_seq TO intelligence_user;
+
+-- 30 · app.legal_pages (005): Termos de Uso e Política de Privacidade dentro do
+--      cadastro. Conteúdo público; copiado aos agentes pela 2a (sem problema).
+GRANT SELECT (slug, title, content, updated_at) ON app.legal_pages TO intelligence_user;
+
+-- 31 · app.chief_ads (007): INSERT dos serviços da etapa "oferta" do cadastro +
+--      sequence. SELECT já na seção 27.
+GRANT INSERT ON app.chief_ads TO intelligence_user;
+GRANT USAGE ON SEQUENCE app.chief_ads_id_seq TO intelligence_user;
+
+-- 32 · app.chief_accounts (006) — dados de recebimento PJ do chief (empresa,
+--      CNPJ em holder_document, dados bancários), gravados pelo cadastro sem
+--      Pagar.me (decisão do Renan 05/11). Tabela da lista PII/financeiro do
+--      contrato. DECISÃO 09/11 (Amelia): por coluna; a seção roda só com
+--      -v cadastro_pj=1, flag FIXA do re-run (HML e PINK). Desenho: por coluna (13 — sem external_id = id do
+--      Pagar.me, sem transfer_interval/transfer_day/transfer_enabled =
+--      configuração de repasse do financeiro), SELECT/INSERT/UPDATE sem DELETE,
+--      USAGE na sequence; EXCLUÍDA da cópia aos agentes (2a) e da intelligence_ro.
+--      Sem a variável esta seção é pulada e o REVOKE do topo derruba o SELECT
+--      table-level que a Chiefs deu na fluffy (INSERT/UPDATE table-level ficam):
+--      sempre rodar com a variável.
+\if :{?cadastro_pj}
+REVOKE ALL ON app.chief_accounts FROM intelligence_user;   -- zera o table-level da Chiefs
+GRANT SELECT (id, chief_id, holder_name, bank, branch_number, branch_check_digit, account_number, account_check_digit, holder_type, holder_document, account_type, created_at, updated_at),
+      INSERT (id, chief_id, holder_name, bank, branch_number, branch_check_digit, account_number, account_check_digit, holder_type, holder_document, account_type, created_at, updated_at),
+      UPDATE (id, chief_id, holder_name, bank, branch_number, branch_check_digit, account_number, account_check_digit, holder_type, holder_document, account_type, created_at, updated_at)
+   ON app.chief_accounts TO intelligence_user;
+GRANT USAGE ON SEQUENCE app.chief_accounts_id_seq TO intelligence_user;
+\else
+\echo 'AVISO: seção 32 (app.chief_accounts) PULADA — faltou -v cadastro_pj=1 (flag fixa desde 09/11); o SELECT table-level foi revogado pelo topo'
+\endif
+
+-- 33 · app.tickets / app.ticket_comments — NÃO constavam no e-mail de 07/11;
+--      encontrados na ACL da fluffy (SELECT/INSERT/UPDATE table-level +
+--      sequences, grantor app_user; 39/54 linhas). Versionados como estão para
+--      não serem derrubados pelo REVOKE do topo, A CONFIRMAR com o Renan (que
+--      feature? faz parte do ciclo 3?). Se negado: remover esta seção e revogar.
+--      Excluídos da cópia aos agentes (2a) até a confirmação.
+GRANT SELECT, INSERT, UPDATE ON app.tickets, app.ticket_comments TO intelligence_user;
+GRANT USAGE ON SEQUENCE app.tickets_id_seq, app.ticket_comments_id_seq TO intelligence_user;
 
 COMMIT;
 
@@ -142,7 +222,7 @@ COMMIT;
 -- Verificação (evidência em evidencias/feedback-2026-09-22/)
 -- ============================================================
 
--- 1. SELECT table-level em app: esperado 6 linhas (3 active_campaign_* + chief_ads + views chief_status_versions e chief_versions_meta)
+-- 1. SELECT table-level em app: esperado 8 linhas (3 active_campaign_* + chief_ads + views chief_status_versions e chief_versions_meta + tickets + ticket_comments, seção 33)
 --    (se sobrar outra, o grantor não é app_user — revogar como o grantor)
 SELECT table_name, grantor
   FROM information_schema.role_table_grants
@@ -155,17 +235,19 @@ SELECT pg_get_userbyid(d.defaclrole) AS criador, d.defaclobjtype, d.defaclacl
  WHERE d.defaclnamespace = 'app'::regnamespace
    AND d.defaclacl::text LIKE '%intelligence_user=%';
 
--- 3. Tabelas de app com SELECT por coluna: esperado 28 relações / 448 colunas
---    (21 da allowlist = 342, page_views 5, chief_ads 16, chief_status_versions 8,
---    chief_versions_meta 3, + as 3 active_campaign_* com todas as
---    colunas: o information_schema lista grant table-level em cada coluna)
+-- 3. Tabelas de app com SELECT por coluna: esperado 32 relações / 498 colunas
+--    (até 19/10: 28 / 448 = 21 da allowlist 342, page_views 5, chief_ads 16,
+--    chief_status_versions 8, chief_versions_meta 3, + as 3 active_campaign_*
+--    inteiras; ciclo 3 (07/11): + chiefs 14, legal_pages 4, tickets 13,
+--    ticket_comments 6, chief_accounts 13 [só com cadastro_pj; sem ela 31 / 485].
+--    PINK antes da migration #416: −4 colunas de chiefs → 494 / 481).
 SELECT count(DISTINCT table_name) AS tabelas_com_select_coluna,
        count(*)                   AS colunas_com_select
   FROM information_schema.column_privileges
  WHERE grantee = 'intelligence_user' AND table_schema = 'app'
    AND privilege_type = 'SELECT';
 
--- 4. UPDATE em app.chiefs: esperado 53
+-- 4. UPDATE em app.chiefs: esperado 94 (53 enriquecimento + 41 do ciclo 3; PINK antes da #416: 90)
 SELECT count(*) AS colunas_com_update
   FROM information_schema.column_privileges
  WHERE grantee = 'intelligence_user' AND table_schema = 'app'
@@ -177,7 +259,9 @@ SELECT has_table_privilege('intelligence_user', 'app.schema_migrations', 'SELECT
        -- não existe app.users no main: encrypted_password vive em chiefs, startups e chiefs_start
        has_column_privilege('intelligence_user', 'app.chiefs', 'encrypted_password', 'SELECT')   AS chiefs_encrypted_password,
        has_column_privilege('intelligence_user', 'app.startups', 'encrypted_password', 'SELECT') AS startups_encrypted_password,
-       has_table_privilege('intelligence_user', 'app.chief_accounts', 'SELECT')      AS chief_accounts,
+       has_table_privilege('intelligence_user', 'app.chief_accounts', 'SELECT')      AS chief_accounts,   -- table-level f mesmo com a seção 32 (por coluna)
+       has_column_privilege('intelligence_user', 'app.chief_accounts', 'external_id', 'SELECT') AS chief_accounts_external_id,
+       has_table_privilege('intelligence_user', 'app.chief_accounts', 'DELETE')      AS chief_accounts_delete,
        has_table_privilege('intelligence_user', 'app.credit_cards', 'SELECT')        AS credit_cards,
        has_table_privilege('intelligence_user', 'app.versions', 'SELECT') AS versions_tabela,
        has_table_privilege('intelligence_user', 'app.page_views', 'SELECT') AS page_views_tabela;
