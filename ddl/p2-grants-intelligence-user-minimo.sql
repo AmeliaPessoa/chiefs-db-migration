@@ -138,22 +138,25 @@ GRANT UPDATE ("BP_verification_notes", all_job_titles, attractiveness_classifica
 
 -- ============================================================
 -- Cadastro do chief, ciclo 3 (Chiefs na fluffy 04–05/11/2026; e-mail do Renan
--- 07/11; arquivos ddl/app/001–007 no repo do Intelligence). Listas = ACL real
--- da fluffy lida em 07/11 (rascunhos/leitura-cadastro-2026-11-07.sql). No PINK
+-- 07/11; arquivos ddl/app/001–008 no repo do Intelligence, 008 = UPDATE em
+-- hard_skills, 06/11). Listas = ACL real da fluffy lida em 07/11
+-- (rascunhos/leitura-cadastro-2026-11-07.sql), ajustada pelo retorno do Renan
+-- de 10/11 (linkedin_* write-only; ticket_comments sem UPDATE). No PINK
 -- só depois do release do Rails com a migration plataforma#416 (4 colunas novas
 -- em app.chiefs: entry_source, vinculo, horas_semana_livres, a_partir_de) — a
 -- seção 29 avisa e pula coluna que ainda não exista; re-rodar após o release.
 -- ============================================================
 
--- 29 · app.chiefs (001/002/003/004): SELECT +14 colunas — entram na allowlist e
+-- 29 · app.chiefs (001/002/003/004): SELECT +12 colunas — entram na allowlist e
 --      portanto na cópia aos agentes (seção 2a do p2-roles-agentes.sql), EXCETO
---      linkedin_token, linkedin_expires e document, excluídos lá (tokens e CPF:
---      §5.1 do briefing). INSERT em 14 colunas (fluxo de criação + 003:
+--      document (CPF: SELECT só para checar duplicidade no cadastro; §5.1).
+--      linkedin_token/linkedin_expires são WRITE-ONLY (Renan 10/11: nenhuma
+--      leitura no código) — ficam só em INSERT/UPDATE. INSERT em 14 colunas (fluxo de criação + 003:
 --      created_at/updated_at NOT NULL sem default) e USAGE em chiefs_id_seq.
 --      UPDATE +41 colunas (telas de perfil + 004 + 003 updated_at).
 DO $$
 DECLARE
-  sel text[] := ARRAY['a_partir_de','contact_email','document','email_optin','entry_source','horas_semana_livres','linkedin_expires','linkedin_token','picture_url','provider','terms_accepted','terms_accepted_at','uid','vinculo'];
+  sel text[] := ARRAY['a_partir_de','contact_email','document','email_optin','entry_source','horas_semana_livres','picture_url','provider','terms_accepted','terms_accepted_at','uid','vinculo'];
   ins text[] := ARRAY['contact_email','created_at','email','entry_source','linkedin_expires','linkedin_token','name','picture_url','provider','role','slug','status','uid','updated_at'];
   upd text[] := ARRAY['a_partir_de','availability_status','biggest_problems','biggest_team_responsibility','birth_at','business_model','business_moment','c_level_experience','chair','city','company','company_profiles','contact_email','document','email_optin','entry_source','gender','hard_skills','horas_semana_livres','important_cases_connecting_customers','industries_experience','job_title','linkedin','linkedin_expires','linkedin_token','main_companies','phone','picture_url','profile_percentage','provider','relevant_problems','salary','sectors_experience','state','status','terms_accepted','terms_accepted_at','uid','updated_at','vinculo','work_model'];
   faltam text[] := '{}';
@@ -207,13 +210,16 @@ GRANT USAGE ON SEQUENCE app.chief_accounts_id_seq TO intelligence_user;
 \echo 'AVISO: seção 32 (app.chief_accounts) PULADA — faltou -v cadastro_pj=1 (flag fixa desde 09/11); o SELECT table-level foi revogado pelo topo'
 \endif
 
--- 33 · app.tickets / app.ticket_comments — NÃO constavam no e-mail de 07/11;
---      encontrados na ACL da fluffy (SELECT/INSERT/UPDATE table-level +
---      sequences, grantor app_user; 39/54 linhas). Versionados como estão para
---      não serem derrubados pelo REVOKE do topo, A CONFIRMAR com o Renan (que
---      feature? faz parte do ciclo 3?). Se negado: remover esta seção e revogar.
---      Excluídos da cópia aos agentes (2a) até a confirmação.
-GRANT SELECT, INSERT, UPDATE ON app.tickets, app.ticket_comments TO intelligence_user;
+-- 33 · app.tickets / app.ticket_comments — tela "Suporte" do cadastro novo
+--      (issue #1308 do Intelligence; confirmado pelo Renan em 10/11, faltou no
+--      e-mail de 07/11). Mínimo do código: tickets SELECT/INSERT/UPDATE (status,
+--      admin_unread, chief_unread, updated_at); ticket_comments SELECT/INSERT
+--      (sem UPDATE — a fluffy tinha, reduzido aqui); sem DELETE; USAGE nas 2
+--      sequences. Table-level (sem PII além do chief_id). Excluídos da cópia
+--      aos agentes (2a).
+REVOKE ALL ON app.tickets, app.ticket_comments FROM intelligence_user;   -- zera o table-level da Chiefs (tinha UPDATE em ticket_comments)
+GRANT SELECT, INSERT, UPDATE ON app.tickets TO intelligence_user;
+GRANT SELECT, INSERT ON app.ticket_comments TO intelligence_user;
 GRANT USAGE ON SEQUENCE app.tickets_id_seq, app.ticket_comments_id_seq TO intelligence_user;
 
 COMMIT;
@@ -235,12 +241,12 @@ SELECT pg_get_userbyid(d.defaclrole) AS criador, d.defaclobjtype, d.defaclacl
  WHERE d.defaclnamespace = 'app'::regnamespace
    AND d.defaclacl::text LIKE '%intelligence_user=%';
 
--- 3. Tabelas de app com SELECT por coluna: esperado 32 relações / 498 colunas
+-- 3. Tabelas de app com SELECT por coluna: esperado 32 relações / 496 colunas
 --    (até 19/10: 28 / 448 = 21 da allowlist 342, page_views 5, chief_ads 16,
 --    chief_status_versions 8, chief_versions_meta 3, + as 3 active_campaign_*
---    inteiras; ciclo 3 (07/11): + chiefs 14, legal_pages 4, tickets 13,
---    ticket_comments 6, chief_accounts 13 [só com cadastro_pj; sem ela 31 / 485].
---    PINK antes da migration #416: −4 colunas de chiefs → 494 / 481).
+--    inteiras; ciclo 3 (07/11, ajuste 10/11): + chiefs 12, legal_pages 4,
+--    tickets 13, ticket_comments 6, chief_accounts 13 [só com cadastro_pj; sem
+--    ela 31 / 483]. PINK antes da migration #416: −4 colunas de chiefs → 492 / 479).
 SELECT count(DISTINCT table_name) AS tabelas_com_select_coluna,
        count(*)                   AS colunas_com_select
   FROM information_schema.column_privileges
@@ -262,6 +268,8 @@ SELECT has_table_privilege('intelligence_user', 'app.schema_migrations', 'SELECT
        has_table_privilege('intelligence_user', 'app.chief_accounts', 'SELECT')      AS chief_accounts,   -- table-level f mesmo com a seção 32 (por coluna)
        has_column_privilege('intelligence_user', 'app.chief_accounts', 'external_id', 'SELECT') AS chief_accounts_external_id,
        has_table_privilege('intelligence_user', 'app.chief_accounts', 'DELETE')      AS chief_accounts_delete,
+       has_column_privilege('intelligence_user', 'app.chiefs', 'linkedin_token', 'SELECT') AS chiefs_linkedin_token_select,   -- write-only (10/11)
+       has_table_privilege('intelligence_user', 'app.ticket_comments', 'UPDATE')    AS ticket_comments_update,
        has_table_privilege('intelligence_user', 'app.credit_cards', 'SELECT')        AS credit_cards,
        has_table_privilege('intelligence_user', 'app.versions', 'SELECT') AS versions_tabela,
        has_table_privilege('intelligence_user', 'app.page_views', 'SELECT') AS page_views_tabela;
